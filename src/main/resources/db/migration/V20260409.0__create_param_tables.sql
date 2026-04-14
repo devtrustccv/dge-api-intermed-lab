@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS tbl_cefp (
     concelho VARCHAR(50),
     zona VARCHAR(50),
     endereco VARCHAR(550),
+    descricao TEXT,
     area_abrangida JSONB,
     dm_estado VARCHAR(25),
     date_create TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
