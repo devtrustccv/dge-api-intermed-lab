@@ -1,0 +1,1 @@
+ALTER TABLE tbl_cefp ADD COLUMN IF NOT EXISTS descricao TEXT;
