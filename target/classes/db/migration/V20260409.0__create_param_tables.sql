@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS tbl_cefp (
+CREATE TABLE IF NOT EXISTS emprego_t_cefp (
     id SERIAL PRIMARY KEY,
     denominacao VARCHAR(550),
     sigla VARCHAR(25),
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS tbl_cefp (
     user_update VARCHAR(150)
 );
 
-CREATE TABLE IF NOT EXISTS tbl_tecnicos (
+CREATE TABLE IF NOT EXISTS emprego_t_tecnicos (
     id SERIAL PRIMARY KEY,
     denominacao VARCHAR(550),
     tipo_tecnico VARCHAR(25),
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS tbl_tecnicos (
     user_update VARCHAR(150)
 );
 
-CREATE TABLE IF NOT EXISTS tbl_requisito (
+CREATE TABLE IF NOT EXISTS emprego_t_requisito (
     id SERIAL PRIMARY KEY,
     requisito VARCHAR(550),
     tipo_servico VARCHAR(255),
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS tbl_requisito (
     user_update VARCHAR(150)
 );
 
-CREATE TABLE IF NOT EXISTS tbl_param_report (
+CREATE TABLE IF NOT EXISTS emprego_t_param_report (
     id SERIAL PRIMARY KEY,
     logotipo_iefp VARCHAR(555),
     logotipo_dge VARCHAR(555),
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS tbl_param_report (
     user_create VARCHAR(255)
 );
 
-CREATE TABLE IF NOT EXISTS tbl_tipo_documento_param (
+CREATE TABLE IF NOT EXISTS emprego_t_tipo_documento_param (
     id SERIAL PRIMARY KEY,
     formulario_referente VARCHAR(255),
     obrigatoriedade VARCHAR(25),
@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS tbl_tipo_documento_param (
     date_update TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS tbl_cefp_areas_abrangidas (
+CREATE TABLE IF NOT EXISTS emprego_t_cefp_areas_abrangidas (
     id SERIAL PRIMARY KEY,
     ilha VARCHAR(255),
     concelho VARCHAR(25),
@@ -88,22 +88,22 @@ BEGIN
     IF NOT EXISTS (
         SELECT 1
         FROM pg_constraint
-        WHERE conname = 'fk_tbl_tecnicos_cefp'
+        WHERE conname = 'fk_emprego_t_tecnicos_cefp'
     ) THEN
-        ALTER TABLE tbl_tecnicos
-            ADD CONSTRAINT fk_tbl_tecnicos_cefp
+        ALTER TABLE emprego_t_tecnicos
+            ADD CONSTRAINT fk_emprego_t_tecnicos_cefp
             FOREIGN KEY (cefp_id)
-            REFERENCES tbl_cefp(id);
+            REFERENCES emprego_t_cefp(id);
     END IF;
 
     IF NOT EXISTS (
         SELECT 1
         FROM pg_constraint
-        WHERE conname = 'fk_tbl_cefp_areas_abrangidas_cefp'
+        WHERE conname = 'fk_emprego_t_cefp_areas_abrangidas_cefp'
     ) THEN
-        ALTER TABLE tbl_cefp_areas_abrangidas
-            ADD CONSTRAINT fk_tbl_cefp_areas_abrangidas_cefp
+        ALTER TABLE emprego_t_cefp_areas_abrangidas
+            ADD CONSTRAINT fk_emprego_t_cefp_areas_abrangidas_cefp
             FOREIGN KEY (cefp_id)
-            REFERENCES tbl_cefp(id);
+            REFERENCES emprego_t_cefp(id);
     END IF;
 END $$;
