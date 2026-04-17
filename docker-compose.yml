@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  dge-api-intermed-lab:
+    container_name: dge-api-intermed-lab
+    #image: devtrustcv/dge-api-intermed-lab:0.0.0
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_CONFIG_LOCATION=/app/config/application.properties
+    volumes:
+      - ./src/main/resources/application.properties:/app/config/application.properties
+      - ./src/main/resources/db/migration/:/app/flyway/sql/  # Montando os scripts do Flyway
+    networks:
+      - network-postgres
+volumes:
+  postgres_data:
+
+networks:
+  network-postgres:
+    external: true
