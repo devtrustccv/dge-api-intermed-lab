@@ -2,10 +2,18 @@ spring.application.name=dge-api-intermed-lab
 server.servlet.context-path=/api
 server.port=9000
 api.version=1.0
+api.base.service.url=
 spring.datasource.url=jdbc:postgresql://localhost:5432/bd_dge_emprego
 spring.datasource.username=postgres
 spring.datasource.password=postgres
 spring.datasource.driver-class-name=org.postgresql.Driver
+
+# BD tertiary (db_igrp_dge)
+spring.datasource.tertiary.url=jdbc:postgresql://localhost:5432/db_dge_global
+spring.datasource.tertiary.username=postgres
+spring.datasource.tertiary.password=postgres
+spring.datasource.tertiary.driver-class-name=org.postgresql.Driver
+
 #spring.jpa.hibernate.ddl-auto=update
 spring.jpa.properties.hibernate.default_schema=public
 spring.jpa.properties.hibernate.format_sql=true

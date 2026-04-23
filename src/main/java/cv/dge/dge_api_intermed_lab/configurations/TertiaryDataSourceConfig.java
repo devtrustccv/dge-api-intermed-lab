@@ -1,0 +1,68 @@
+package cv.dge.dge_api_intermed_lab.configurations;
+
+
+import jakarta.persistence.EntityManagerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import java.util.HashMap;
+import java.util.Map;
+import javax.sql.DataSource;
+
+@Configuration
+@EnableTransactionManagement
+@EnableJpaRepositories(
+        basePackages = "cv.dge.dge_api_intermed_lab.infrastructure.tertiary.repository",
+        entityManagerFactoryRef = "tertiaryEntityManagerFactory",
+        transactionManagerRef = "tertiaryTransactionManager"
+)
+public class TertiaryDataSourceConfig {
+
+    @Bean(name = "tertiaryDataSourceProperties")
+    @ConfigurationProperties(prefix = "spring.datasource.tertiary")
+    public DataSourceProperties tertiaryDataSourceProperties() {
+        return new DataSourceProperties();
+    }
+
+    @Bean(name = "tertiaryDataSource")
+    @ConfigurationProperties(prefix = "spring.datasource.tertiary.hikari")
+    public DataSource tertiaryDataSource(
+            @Qualifier("tertiaryDataSourceProperties") DataSourceProperties properties
+    ) {
+        return properties.initializeDataSourceBuilder().build();
+    }
+
+    @Bean(name = "tertiaryEntityManagerFactory")
+    public LocalContainerEntityManagerFactoryBean tertiaryEntityManagerFactory(
+            EntityManagerFactoryBuilder builder,
+            @Qualifier("tertiaryDataSource") DataSource dataSource
+    ) {
+
+        Map<String, Object> props = new HashMap<>();
+        props.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
+        props.put("hibernate.hbm2ddl.auto", "none");
+        props.put("hibernate.default_schema", "public");
+
+        return builder
+                .dataSource(dataSource)
+                .packages("cv.dge.dge_api_intermed_lab.infrastructure.tertiary")
+                .persistenceUnit("tertiary")
+                .properties(props)
+                .build();
+    }
+
+    @Bean(name = "tertiaryTransactionManager")
+    public PlatformTransactionManager tertiaryTransactionManager(
+            @Qualifier("tertiaryEntityManagerFactory") EntityManagerFactory emf) {
+        return new JpaTransactionManager(emf);
+    }
+}
