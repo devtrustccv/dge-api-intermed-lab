@@ -30,3 +30,13 @@ springdoc.swagger-ui.path=/swagger-ui.html
 server.error.whitelabel.enabled=false
 logging.level.org.flywaydb=INFO
 logging.level.cv.dge.dge_api_rvcc=DEBUG
+#base api  
+api.base.service.url=http://localhost:8083/api
+server.tomcat.max-part-count=200
+spring.servlet.multipart.max-file-size=20MB
+spring.servlet.multipart.max-request-size=25MB
+
+##dados doc 
+document.acolhimento.app-code=interm_laboral
+document.acolhimento.tipo-relacao=EMPREGO_T_DETALHES_ACOLHIMENTO
+document.acolhimento.estado=A

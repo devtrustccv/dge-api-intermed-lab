@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpMethod;
@@ -32,35 +31,48 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class DocumentServiceImpl implements DocumentService {
 
-   
+    private static final String DOCUMENTOS_ENDPOINT = "/documentos";
+    private static final String DEFAULT_N_PROCESSO = "SEM-PROCESSO";
 
-    @Autowired
-    private DocRelacaoRepository docRelacaoRepository;
-
- 
+    private final DocRelacaoRepository docRelacaoRepository;
 
     private final RestClientHelper restClientHelper;
+    private final RestTemplate restTemplate;
 
     @Value("${api.base.service.url}")
     private String url;
 
-    @Autowired
-    private RestTemplate restTemplate;
-
-    public DocumentServiceImpl(RestClientHelper restClientHelper) {
+    public DocumentServiceImpl(
+            RestClientHelper restClientHelper,
+            DocRelacaoRepository docRelacaoRepository,
+            RestTemplate restTemplate
+    ) {
         this.restClientHelper = restClientHelper;
+        this.docRelacaoRepository = docRelacaoRepository;
+        this.restTemplate = restTemplate;
     }
 
+    @Override
     public String save(DocRelacaoDTO dto) {
-        String apiUrl = url + "/documentos";
+        return guardarDocumento(dto);
+    }
 
-        String nProcesso = dto.getNProcesso() != null && !dto.getNProcesso().isBlank()
-                ? dto.getNProcesso()
-                : "SEM-PROCESSO";
+    @Override
+    public String saveReclamcao(DocRelacaoDTO dto) {
+        return guardarDocumento(dto);
+    }
 
-        Map<String, String> headersMap = new HashMap<>();
-        headersMap.put("Content-Type", MediaType.MULTIPART_FORM_DATA_VALUE);
+    private String guardarDocumento(DocRelacaoDTO dto) {
+        String apiUrl = url + DOCUMENTOS_ENDPOINT;
+        Map<String, String> headersMap = criarHeadersMultipart();
+        MultiValueMap<String, Object> body = criarBodyDocumento(dto);
+        ResponseEntity<String> response = enviarDocumento(apiUrl, body, headersMap);
 
+        registarResultadoUpload(response);
+        return body.getFirst("path").toString();
+    }
+
+    private MultiValueMap<String, Object> criarBodyDocumento(DocRelacaoDTO dto) {
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("tipoRelacao", dto.getTipoRelacao());
         body.add("idRelacao", dto.getIdRelacao());
@@ -68,10 +80,7 @@ public class DocumentServiceImpl implements DocumentService {
         body.add("idTpDoc", dto.getIdTpDoc());
         body.add("appCode", dto.getAppCode());
         body.add("fileName", dto.getFileName());
-        String ext = getFileExtension(dto.getFile().getOriginalFilename());
-
-        var path = getPathFile(dto.getFileName(), dto.getTipoRelacao(), dto.getIdRelacao(), nProcesso, dto.getAppCode(), ext);
-        body.add("path", path);
+        body.add("path", resolverPathDocumento(dto));
 
         if (dto.getIdTpDoc() != null) {
             body.add("idTpDoc", dto.getIdTpDoc());
@@ -79,26 +88,58 @@ public class DocumentServiceImpl implements DocumentService {
 
         MultipartFile file = dto.getFile();
         if (file != null && !file.isEmpty()) {
-            try {
-                ByteArrayResource fileResource = new ByteArrayResource(file.getBytes()) {
-                    @Override
-                    public String getFilename() {
-                        return file.getOriginalFilename();
-                    }
-                };
-                body.add("file", fileResource);
-            } catch (IOException e) {
-                throw new RuntimeException("Erro ao processar o arquivo", e);
-            }
+            body.add("file", criarRecursoArquivo(file));
         }
+        return body;
+    }
 
-        ResponseEntity<String> response = restClientHelper.sendRequest(
+    private ResponseEntity<String> enviarDocumento(
+            String apiUrl,
+            MultiValueMap<String, Object> body,
+            Map<String, String> headersMap
+    ) {
+        return restClientHelper.sendRequest(
                 apiUrl,
                 HttpMethod.POST,
                 body,
                 String.class,
                 headersMap
         );
+    }
+
+    private Map<String, String> criarHeadersMultipart() {
+        Map<String, String> headersMap = new HashMap<>();
+        headersMap.put("Content-Type", MediaType.MULTIPART_FORM_DATA_VALUE);
+        return headersMap;
+    }
+
+    private String resolverPathDocumento(DocRelacaoDTO dto) {
+        if (dto.getPath() != null && !dto.getPath().isBlank()) {
+            return dto.getPath();
+        }
+
+        String ext = getFileExtension(dto.getFile().getOriginalFilename());
+        String nProcesso = dto.getNProcesso() != null && !dto.getNProcesso().isBlank()
+                ? dto.getNProcesso()
+                : DEFAULT_N_PROCESSO;
+
+        return getPathFile(dto.getFileName(), dto.getTipoRelacao(), dto.getIdRelacao(), nProcesso, dto.getAppCode(), ext);
+    }
+
+    private ByteArrayResource criarRecursoArquivo(MultipartFile file) {
+        try {
+            return new ByteArrayResource(file.getBytes()) {
+                @Override
+                public String getFilename() {
+                    return file.getOriginalFilename();
+                }
+            };
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao processar o arquivo", e);
+        }
+    }
+
+    private void registarResultadoUpload(ResponseEntity<String> response) {
         System.out.println("documento");
 
         if (response.getStatusCode().is2xxSuccessful()) {
@@ -106,8 +147,6 @@ public class DocumentServiceImpl implements DocumentService {
         } else {
             System.err.println("Erro ao salvar documento: " + response.getBody());
         }
-
-        return path;
     }
 
     public String getFileExtension(String fileName) {
@@ -186,62 +225,4 @@ public class DocumentServiceImpl implements DocumentService {
         return response.getUrl();
     }
 
-    public String saveReclamcao(DocRelacaoDTO dto) {
-        String apiUrl = url + "/documentos";
-
-        String nProcesso = dto.getNProcesso() != null && !dto.getNProcesso().isBlank()
-                ? dto.getNProcesso()
-                : "SEM-PROCESSO";
-
-        Map<String, String> headersMap = new HashMap<>();
-        headersMap.put("Content-Type", MediaType.MULTIPART_FORM_DATA_VALUE);
-
-        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.add("tipoRelacao", dto.getTipoRelacao());
-        body.add("idRelacao", dto.getIdRelacao());
-        body.add("estado", dto.getEstado());
-        body.add("idTpDoc", dto.getIdTpDoc());
-        body.add("appCode", dto.getAppCode());
-        body.add("fileName", dto.getFileName());
-        String ext = getFileExtension(dto.getFile().getOriginalFilename());
-
-        var path = getPathFile(dto.getFileName(), dto.getTipoRelacao(), dto.getIdRelacao(), nProcesso, dto.getAppCode(), ext);
-        body.add("path", path);
-
-        if (dto.getIdTpDoc() != null) {
-            body.add("idTpDoc", dto.getIdTpDoc());
-        }
-
-        MultipartFile file = dto.getFile();
-        if (file != null && !file.isEmpty()) {
-            try {
-                ByteArrayResource fileResource = new ByteArrayResource(file.getBytes()) {
-                    @Override
-                    public String getFilename() {
-                        return file.getOriginalFilename();
-                    }
-                };
-                body.add("file", fileResource);
-            } catch (IOException e) {
-                throw new RuntimeException("Erro ao processar o arquivo", e);
-            }
-        }
-
-        ResponseEntity<String> response = restClientHelper.sendRequest(
-                apiUrl,
-                HttpMethod.POST,
-                body,
-                String.class,
-                headersMap
-        );
-        System.out.println("documento");
-
-        if (response.getStatusCode().is2xxSuccessful()) {
-            System.out.println("Documento salvo com sucesso!");
-        } else {
-            System.err.println("Erro ao salvar documento: " + response.getBody());
-        }
-
-        return path;
-    }
 }

@@ -6,6 +6,9 @@ import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoReport
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.CefpReporterDTO;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.EntidadeReporterDTO;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.UtenteReporterDTO;
+import cv.dge.dge_api_intermed_lab.application.document.dto.DocRelacaoDTO;
+import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
+import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
 import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.Cefp;
 import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.DetalhesAcolhimento;
 import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.DetalhesEmpregoUtente;
@@ -32,14 +35,21 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
 public class AcolhimentoService {
+    private static final String MSG_PEDIDO_OBRIGATORIO = "Corpo do pedido e obrigatorio.";
+    private static final String MSG_TIPO_SERVICO_OBRIGATORIO = "tipoServico e obrigatorio.";
+    private static final String MSG_ACOLHIMENTO_NAO_ENCONTRADO = "Acolhimento nao encontrado.";
+    private static final String MSG_ERRO_UPLOAD = "Erro ao enviar ficheiro do acolhimento.";
 
     private final UtenteRepository utenteRepository;
     private final DetalhesAcolhimentoRepository detalhesAcolhimentoRepository;
@@ -47,11 +57,21 @@ public class AcolhimentoService {
     private final CefpRepository cefpRepository;
     private final EntidadeRepository entidadeRepository;
     private final ParamReportRepository paramReportRepository;
+    private final DocumentService documentService;
+
+    @Value("${document.acolhimento.tipo-relacao:acolhimento}")
+    private String tipoRelacaoDocumentoAcolhimento;
+
+    @Value("${document.acolhimento.app-code:emprego}")
+    private String appCodeDocumentoAcolhimento;
+
+    @Value("${document.acolhimento.estado:A}")
+    private String estadoDocumentoAcolhimento;
 
     @Transactional(readOnly = true)
     public AcolhimentoReporterResponse buscarParaReporter(Integer idAcolhimento) {
         DetalhesAcolhimento acolhimento = detalhesAcolhimentoRepository.findById(idAcolhimento)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Acolhimento nao encontrado."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, MSG_ACOLHIMENTO_NAO_ENCONTRADO));
 
         Cefp cefp = resolverCefpDoAcolhimento(acolhimento);
         Utente utente = resolverUtenteDoAcolhimento(acolhimento);
@@ -80,24 +100,16 @@ public class AcolhimentoService {
 
     @Transactional
     public AcolhimentoRegistoResponse registar(AcolhimentoRegistoRequest request) {
-        if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Corpo do pedido e obrigatorio.");
-        }
+        return registar(request, List.of());
+    }
 
-        String tipoUtente = codigo(primeiro(
-                request.getTipoUtente(),
-                procurarProfundo(request.getDetalhes(), "tipoUtente", "tipo_utente")
-        ));
-        String tipoServico = codigo(primeiro(
-                request.getTipoServico(),
-                procurarProfundo(request.getDetalhes(), "tipoServico", "tipo_servico", "tipoServicoSolicitado", "tipo_servico_solicitado")
-        ));
+    @Transactional
+    public AcolhimentoRegistoResponse registar(AcolhimentoRegistoRequest request, List<MultipartFile> ficheiros) {
+        validarRequest(request);
 
-        if (emBranco(tipoServico)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "tipoServico e obrigatorio.");
-        }
-
-        String utilizador = texto(primeiro(request.getUserCreate(), procurarProfundo(request.getDetalhes(), "userCreate", "user_create")));
+        String tipoUtente = resolverTipoUtente(request);
+        String tipoServico = resolverTipoServico(request);
+        String utilizador = resolverUtilizador(request);
 
         Utente utente = guardarUtente(request, utilizador);
         String numInscricao = gerarNumeroInscricao();
@@ -107,8 +119,76 @@ public class AcolhimentoService {
         adicionarCefpNoJson(detalhes, cefp);
         detalhes.put("numInscricao", numInscricao);
 
+        DetalhesAcolhimento acolhimento = criarAcolhimento(
+                request,
+                utente,
+                detalhes,
+                cefp,
+                tipoUtente,
+                tipoServico,
+                numInscricao,
+                utilizador
+        );
+
+        DetalhesAcolhimento salvo = detalhesAcolhimentoRepository.save(acolhimento);
+        guardarDetalhesEmpregoSeExistir(request, salvo.getIdPessoa(), utente.getId(), utilizador);
+        guardarAnexosSeExistirem(salvo, request, ficheiros);
+
+        return new AcolhimentoRegistoResponse(
+                salvo.getId(),
+                utente.getId(),
+                salvo.getIdPessoa(),
+                salvo.getNumInscricao(),
+                salvo.getCefpId(),
+                salvo.getOrgId(),
+                salvo.getDetalhes()
+        );
+    }
+
+    private void validarRequest(AcolhimentoRegistoRequest request) {
+        if (request == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, MSG_PEDIDO_OBRIGATORIO);
+        }
+    }
+
+    private String resolverTipoUtente(AcolhimentoRegistoRequest request) {
+        return codigo(primeiro(
+                request.getTipoUtente(),
+                procurarProfundo(request.getDetalhes(), "tipoUtente", "tipo_utente")
+        ));
+    }
+
+    private String resolverTipoServico(AcolhimentoRegistoRequest request) {
+        String tipoServico = codigo(primeiro(
+                request.getTipoServico(),
+                procurarProfundo(request.getDetalhes(), "tipoServico", "tipo_servico", "tipoServicoSolicitado", "tipo_servico_solicitado")
+        ));
+        if (emBranco(tipoServico)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, MSG_TIPO_SERVICO_OBRIGATORIO);
+        }
+        return tipoServico;
+    }
+
+    private String resolverUtilizador(AcolhimentoRegistoRequest request) {
+        return texto(primeiro(
+                request.getUserCreate(),
+                procurarProfundo(request.getDetalhes(), "userCreate", "user_create")
+        ));
+    }
+
+    private DetalhesAcolhimento criarAcolhimento(
+            AcolhimentoRegistoRequest request,
+            Utente utente,
+            Map<String, Object> detalhes,
+            Cefp cefp,
+            String tipoUtente,
+            String tipoServico,
+            String numInscricao,
+            String utilizador
+    ) {
         Integer cefpId = inteiro(primeiro(request.getCefpId(), procurarProfundo(detalhes, "cefpId", "cefp_id")));
         Integer orgId = inteiro(primeiro(request.getOrgId(), procurarProfundo(detalhes, "orgId", "org_id", "organizationId")));
+
         if (cefp != null) {
             cefpId = cefp.getId();
             orgId = cefp.getOrganizationId();
@@ -144,19 +224,147 @@ public class AcolhimentoService {
         acolhimento.setStatusEntrevista(codigo(request.getStatusEntrevista()));
         acolhimento.setNumInscricao(numInscricao);
         acolhimento.setUserCreate(utilizador);
+        return acolhimento;
+    }
 
-        DetalhesAcolhimento salvo = detalhesAcolhimentoRepository.save(acolhimento);
-        guardarDetalhesEmpregoSeExistir(request, salvo.getIdPessoa(), utente.getId(), utilizador);
+    private void guardarAnexosSeExistirem(
+            DetalhesAcolhimento acolhimento,
+            AcolhimentoRegistoRequest request,
+            List<MultipartFile> ficheiros
+    ) {
+        List<MultipartFile> ficheirosValidos = ficheiros == null
+                ? List.of()
+                : ficheiros.stream().filter(this::temConteudo).toList();
 
-        return new AcolhimentoRegistoResponse(
-                salvo.getId(),
-                utente.getId(),
-                salvo.getIdPessoa(),
-                salvo.getNumInscricao(),
-                salvo.getCefpId(),
-                salvo.getOrgId(),
-                salvo.getDetalhes()
+        if (ficheirosValidos.isEmpty()) {
+            return;
+        }
+
+        for (int indice = 0; indice < ficheirosValidos.size(); indice++) {
+            MultipartFile ficheiro = ficheirosValidos.get(indice);
+            Map<String, Object> metadados = documentoNoIndice(request, indice);
+            String nomeOriginal = nomeOriginal(ficheiro, indice);
+            String nomeBase = nomeBaseDocumento(nomeOriginal, metadados, indice);
+
+            DocRelacaoDTO documento = DocRelacaoDTO.builder()
+                    .idRelacao(acolhimento.getId())
+                    .tipoRelacao(tipoRelacaoDocumentoAcolhimento)
+                    .estado(texto(primeiro(valor(metadados, "estado"), estadoDocumentoAcolhimento)))
+                    .idTpDoc(texto(valor(metadados, "idTpDoc", "id_tp_doc")))
+                    .name(texto(primeiro(valor(metadados, "name", "nome"), nomeOriginal)))
+                    .fileName(nomeBase)
+                    .path(construirPathDocumentoAcolhimento(acolhimento.getId(), nomeBase, ficheiro))
+                    .appCode(appCodeDocumentoAcolhimento)
+                    .file(ficheiro)
+                    .build();
+
+            try {
+                documentService.save(documento);
+            } catch (RuntimeException ex) {
+                throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, MSG_ERRO_UPLOAD, ex);
+            }
+        }
+
+        atualizarAnexosNoDetalhes(acolhimento);
+    }
+
+    private void atualizarAnexosNoDetalhes(DetalhesAcolhimento acolhimento) {
+        List<DocumentoResponseDTO> documentos = documentService.getDocumentosPorRelacao(
+                acolhimento.getId(),
+                tipoRelacaoDocumentoAcolhimento,
+                appCodeDocumentoAcolhimento
         );
+
+        Map<String, Object> detalhesAtualizados = new LinkedHashMap<>();
+        if (acolhimento.getDetalhes() != null) {
+            detalhesAtualizados.putAll(acolhimento.getDetalhes());
+        }
+        detalhesAtualizados.put("anexos", documentos.stream().map(this::mapearDocumento).toList());
+        acolhimento.setDetalhes(detalhesAtualizados);
+        detalhesAcolhimentoRepository.save(acolhimento);
+    }
+    private Map<String, Object> mapearDocumento(DocumentoResponseDTO documento) {
+        Map<String, Object> dados = new LinkedHashMap<>();
+        colocarSePresente(dados, "id", documento.getId());
+        colocarSePresente(dados, "name", primeiro(documento.getName(), documento.getFileName()));
+        colocarSePresente(dados, "fileName", documento.getFileName());
+        colocarSePresente(dados, "path", documento.getPath());
+        colocarSePresente(dados, "tipoRelacao", documento.getTipoRelacao());
+        colocarSePresente(dados, "idRelacao", documento.getIdRelacao());
+        colocarSePresente(dados, "idTpDoc", documento.getIdTpDoc());
+        colocarSePresente(dados, "estado", documento.getEstado());
+        colocarSePresente(dados, "appCode", documento.getAppCode());
+        colocarSePresente(dados, "previewUrl", documento.getPreviewUrl());
+        return dados;
+    }
+
+    private Map<String, Object> documentoNoIndice(AcolhimentoRegistoRequest request, int indice) {
+        if (request == null || request.getDocumentos() == null || indice < 0 || indice >= request.getDocumentos().size()) {
+            return new LinkedHashMap<>();
+        }
+        return mapa(request.getDocumentos().get(indice));
+    }
+
+    private String nomeOriginal(MultipartFile ficheiro, int indice) {
+        String nome = StringUtils.cleanPath(
+                Optional.ofNullable(ficheiro.getOriginalFilename()).orElse("anexo-" + (indice + 1))
+        );
+        return emBranco(nome) ? "anexo-" + (indice + 1) : nome;
+    }
+
+    private String nomeBaseDocumento(String nomeOriginal, Map<String, Object> metadados, int indice) {
+        String nomeConfigurado = texto(primeiro(
+                valor(metadados, "fileName", "file_name", "name", "nome"),
+                removerExtensao(nomeOriginal),
+                "anexo-" + (indice + 1)
+        ));
+        String nomeBase = removerExtensao(nomeConfigurado);
+        return emBranco(nomeBase) ? "anexo-" + (indice + 1) : nomeBase;
+    }
+
+    private String removerExtensao(String nomeFicheiro) {
+        if (emBranco(nomeFicheiro)) {
+            return null;
+        }
+        int indice = nomeFicheiro.lastIndexOf('.');
+        return indice <= 0 ? nomeFicheiro : nomeFicheiro.substring(0, indice);
+    }
+
+    private String construirPathDocumentoAcolhimento(Integer idAcolhimento, String nomeBase, MultipartFile ficheiro) {
+        String ext = "";
+        String original = ficheiro == null ? null : ficheiro.getOriginalFilename();
+        if (!emBranco(original)) {
+            int indice = original.lastIndexOf('.');
+            ext = indice >= 0 ? original.substring(indice) : "";
+        }
+
+        String nomeSeguro = sanitizarSegmentoPath(nomeBase);
+        String tipoRelacaoSeguro = sanitizarSegmentoPath(tipoRelacaoDocumentoAcolhimento);
+        return appCodeDocumentoAcolhimento
+                + "/"
+                + LocalDateTime.now().getYear()
+                + "/modulos/"
+                + tipoRelacaoSeguro
+                + "/"
+                + idAcolhimento
+                + "/"
+                + nomeSeguro
+                + ext;
+    }
+
+    private String sanitizarSegmentoPath(String valor) {
+        String limpo = texto(valor);
+        if (emBranco(limpo)) {
+            return "documento";
+        }
+        return limpo
+                .trim()
+                .replaceAll("[\\\\/:*?\"<>|]+", "_")
+                .replace(' ', '_');
+    }
+
+    private boolean temConteudo(MultipartFile ficheiro) {
+        return ficheiro != null && !ficheiro.isEmpty();
     }
 
     private Cefp resolverCefpDoAcolhimento(DetalhesAcolhimento acolhimento) {
@@ -288,16 +496,16 @@ public class AcolhimentoService {
     }
 
     private Optional<Utente> localizarUtente(Integer idUtente, Integer idPessoa, String tipoDocumento, String numDocumento) {
-        if (idUtente != null) {
-            Optional<Utente> porId = utenteRepository.findById(idUtente);
-            if (porId.isPresent()) {
-                return porId;
-            }
-        }
         if (idPessoa != null) {
             Optional<Utente> porPessoa = utenteRepository.findFirstByPessoaId(idPessoa);
             if (porPessoa.isPresent()) {
                 return porPessoa;
+            }
+        }
+        if (idUtente != null) {
+            Optional<Utente> porId = utenteRepository.findById(idUtente);
+            if (porId.isPresent()) {
+                return porId;
             }
         }
         if (!emBranco(tipoDocumento) && !emBranco(numDocumento)) {
