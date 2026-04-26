@@ -9,6 +9,7 @@ import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.UtenteReporterDTO
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocRelacaoDTO;
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
+import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
 import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.Cefp;
 import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.DetalhesAcolhimento;
 import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.DetalhesEmpregoUtente;
@@ -57,6 +58,7 @@ public class AcolhimentoService {
     private final CefpRepository cefpRepository;
     private final EntidadeRepository entidadeRepository;
     private final ParamReportRepository paramReportRepository;
+    private final GlobalGeografiaService globalGeografiaService;
     private final DocumentService documentService;
 
     @Value("${document.acolhimento.tipo-relacao:acolhimento}")
@@ -77,6 +79,7 @@ public class AcolhimentoService {
         Utente utente = resolverUtenteDoAcolhimento(acolhimento);
         Entidade entidade = resolverEntidadeDoAcolhimento(acolhimento);
         ParamReport paramReport = paramReportRepository.findFirstByOrderByIdDesc().orElse(null);
+        Map<String, Object> detalhesReporter = detalhesComNomesGeografia(acolhimento.getDetalhes());
 
         return new AcolhimentoReporterResponse(
                 acolhimento.getId(),
@@ -92,9 +95,9 @@ public class AcolhimentoService {
                 utente == null ? null : utente.getNome(),
                 acolhimento.getTecnicoAtendimento(),
                 toCefpReporterDTO(cefp),
-                toUtenteReporterDTO(utente),
+                toUtenteReporterDTO(utente, acolhimento.getDetalhes()),
                 toEntidadeReporterDTO(entidade),
-                acolhimento.getDetalhes()
+                detalhesReporter
         );
     }
 
@@ -394,6 +397,69 @@ public class AcolhimentoService {
         return entidadeRepository.findById(acolhimento.getIdEntidade()).orElse(null);
     }
 
+    private Map<String, Object> detalhesComNomesGeografia(Map<String, Object> detalhes) {
+        if (detalhes == null) {
+            return null;
+        }
+        return mapaComNomesGeografia(detalhes, new LinkedHashMap<>());
+    }
+
+    private Map<String, Object> mapaComNomesGeografia(Map<?, ?> origem, Map<String, String> cache) {
+        Map<String, Object> destino = new LinkedHashMap<>();
+        origem.forEach((chave, valor) -> {
+            if (chave != null) {
+                String nomeChave = chave.toString();
+                destino.put(nomeChave, valorComNomeGeografia(nomeChave, valor, cache));
+            }
+        });
+        return destino;
+    }
+
+    private Object valorComNomeGeografia(String chave, Object valor, Map<String, String> cache) {
+        if (valor instanceof Map<?, ?> mapa) {
+            if (chaveGeografica(chave)) {
+                String nome = resolverNomeGeografia(texto(valor), chave, cache);
+                if (!emBranco(nome)) {
+                    return nome;
+                }
+            }
+            return mapaComNomesGeografia(mapa, cache);
+        }
+        if (valor instanceof Collection<?> colecao) {
+            return colecao.stream()
+                    .map(item -> valorComNomeGeografia(chave, item, cache))
+                    .toList();
+        }
+        if (!chaveGeografica(chave)) {
+            return valor;
+        }
+        String nome = resolverNomeGeografia(texto(valor), chave, cache);
+        return emBranco(nome) ? valor : nome;
+    }
+
+    private boolean chaveGeografica(String chave) {
+        String normalizada = normalizar(chave);
+        return normalizada.contains("pais")
+                || normalizada.contains("ilha")
+                || normalizada.contains("concelho")
+                || normalizada.contains("zona")
+                || normalizada.contains("naturalidade");
+    }
+
+    private String resolverNomeGeografia(String codigo, String chave, Map<String, String> cache) {
+        if (emBranco(codigo)) {
+            return null;
+        }
+        String chaveCache = normalizar(chave) + ":" + codigo.trim();
+        if (cache.containsKey(chaveCache)) {
+            return cache.get(chaveCache);
+        }
+
+        String nome = globalGeografiaService.buscarNomePorCodigo(codigo).orElse(null);
+        cache.put(chaveCache, nome);
+        return nome;
+    }
+
     private CefpReporterDTO toCefpReporterDTO(Cefp cefp) {
         if (cefp == null) {
             return null;
@@ -408,7 +474,7 @@ public class AcolhimentoService {
         );
     }
 
-    private UtenteReporterDTO toUtenteReporterDTO(Utente utente) {
+    private UtenteReporterDTO toUtenteReporterDTO(Utente utente, Map<String, Object> detalhes) {
         if (utente == null) {
             return null;
         }
@@ -419,10 +485,18 @@ public class AcolhimentoService {
                 utente.getDataNascimento(),
                 utente.getTipoDocumento(),
                 utente.getNumDocumento(),
+                dataEmissaoDocumento(detalhes),
                 utente.getSexo(),
                 utente.getNif(),
                 utente.getHabilitacaoLiteraria()
         );
+    }
+
+    private LocalDate dataEmissaoDocumento(Map<String, Object> detalhes) {
+        return data(primeiro(
+                valor(detalhes, "dataEmissaoDocumento", "data_emissao_documento", "dataEmissao", "data_emissao", "data_de_emissao"),
+                procurarProfundo(detalhes, "dataEmissaoDocumento", "data_emissao_documento", "dataEmissao", "data_emissao", "data_de_emissao")
+        ));
     }
 
     private EntidadeReporterDTO toEntidadeReporterDTO(Entidade entidade) {

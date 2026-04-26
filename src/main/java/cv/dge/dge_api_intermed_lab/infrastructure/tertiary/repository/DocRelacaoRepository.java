@@ -17,5 +17,5 @@ public interface DocRelacaoRepository extends JpaRepository<DocRelacaoEntity, In
             @Param("idRelacao") Long idRelacao,
             @Param("tipoRelacao") String tipoRelacao,
             @Param("appCode") String appCode);
-    
+
 }

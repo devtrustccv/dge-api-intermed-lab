@@ -9,6 +9,7 @@ public record UtenteReporterDTO(
         LocalDate dataNascimento,
         String tipoDocumento,
         String numDocumento,
+        LocalDate dataEmissaoDocumento,
         String sexo,
         Integer nif,
         String habilitacaoLiteraria

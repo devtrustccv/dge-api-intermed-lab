@@ -7,4 +7,6 @@ import java.util.Optional;
 public interface GlobalGeografiaRepository extends JpaRepository<GlobalGeografia, String> {
 
     Optional<GlobalGeografia> findById(String id);
+
+    Optional<GlobalGeografia> findFirstByCodigoIgnoreCase(String codigo);
 }

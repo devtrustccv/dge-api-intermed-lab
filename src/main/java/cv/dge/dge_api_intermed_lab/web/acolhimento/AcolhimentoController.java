@@ -1,10 +1,12 @@
 package cv.dge.dge_api_intermed_lab.web.acolhimento;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoPessoaResponse;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoRegistoRequest;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoRegistoResponse;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoReporterResponse;
 import java.util.LinkedHashMap;
+import cv.dge.dge_api_intermed_lab.application.acolhimento.service.AcolhimentoConsultaService;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.service.AcolhimentoService;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +42,7 @@ public class AcolhimentoController {
     private static final String MSG_MULTIPART_INVALIDO = "Campos multipart invalidos.";
 
     private final AcolhimentoService acolhimentoService;
+    private final AcolhimentoConsultaService acolhimentoConsultaService;
     private final ObjectMapper objectMapper;
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -62,6 +65,11 @@ public class AcolhimentoController {
     @GetMapping("reporter/{id}")
     public AcolhimentoReporterResponse buscarParaReporter(@PathVariable("id") Integer idAcolhimento) {
         return acolhimentoService.buscarParaReporter(idAcolhimento);
+    }
+
+    @GetMapping("pessoa/{id_pessoa}")
+    public AcolhimentoPessoaResponse buscarPorPessoa(@PathVariable("id_pessoa") Integer idPessoa) {
+        return acolhimentoConsultaService.buscarPorIdPessoa(idPessoa);
     }
 
     private AcolhimentoRegistoRequest converterRequest(String dadosJson, MultiValueMap<String, String> campos) {

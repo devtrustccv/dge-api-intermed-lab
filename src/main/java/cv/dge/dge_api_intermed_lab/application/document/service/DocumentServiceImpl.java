@@ -187,13 +187,15 @@ public class DocumentServiceImpl implements DocumentService {
     private DocumentoResponseDTO convertToDTO(DocRelacaoEntity entity) {
         DocumentoResponseDTO dto = new DocumentoResponseDTO();
         dto.setId(Long.valueOf(entity.getId()));
+        dto.setName(entity.getName());
         dto.setFileName(entity.getFileName());
         dto.setPath(entity.getPath());
         dto.setTipoRelacao(entity.getTipoRelacao());
-        dto.setIdRelacao(Math.toIntExact(entity.getIdRelacao()));
-        dto.setIdTpDoc(String.valueOf(entity.getIdTpDoc()));
+        dto.setIdRelacao(entity.getIdRelacao() == null ? null : Math.toIntExact(entity.getIdRelacao()));
+        dto.setIdTpDoc(entity.getIdTpDoc() == null ? null : String.valueOf(entity.getIdTpDoc()));
         dto.setEstado(entity.getEstado());
         dto.setAppCode(entity.getAppCode());
+        dto.setDataCriacao(entity.getDateCreate() == null ? null : entity.getDateCreate().toString());
 
         String previewUrl = buildPreviewUrl(entity.getPath(), false);
         dto.setPreviewUrl(previewUrl);
