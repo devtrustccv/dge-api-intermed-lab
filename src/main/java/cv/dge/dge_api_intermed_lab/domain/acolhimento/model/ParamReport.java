@@ -20,7 +20,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "emprego_t_tipo_documento_param")
+@Table(name = "emprego_t_parametrizacao_report")
 public class ParamReport {
 
     @Id
