@@ -15,35 +15,22 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "emprego_t_entidade")
-public class Entidade {
+@Table(name = "emprego_t_agendamento_entrevista")
+public class AgendamentoEntrevista {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String denominacao;
+    @Column(name = "id_acolhimento")
+    private Integer idAcolhimento;
 
-    @Column(name = "global_id_entidade")
-    private Integer globalIdEntidade;
+    @Column(name = "id_utente")
+    private Integer idUtente;
 
-    private Integer nif;
-
-    @Column(name = "registo_social")
-    private String registoSocial;
-
-    @Column(name = "natureza_juridica")
-    private String naturezaJuridica;
+    @Column(name = "tipo_servico")
+    private String tipoServico;
 
     @Column(name = "date_create", insertable = false, updatable = false)
     private LocalDateTime dateCreate;
-
-    @Column(name = "user_create")
-    private String userCreate;
-
-    @Column(name = "date_update")
-    private LocalDateTime dateUpdate;
-
-    @Column(name = "user_update")
-    private String userUpdate;
 }

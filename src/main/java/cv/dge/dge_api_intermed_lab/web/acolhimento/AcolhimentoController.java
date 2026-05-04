@@ -1,12 +1,15 @@
 package cv.dge.dge_api_intermed_lab.web.acolhimento;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoEmpresaRequest;
+import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoEmpresaResponse;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoPessoaResponse;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoRegistoRequest;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoRegistoResponse;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoReporterResponse;
 import java.util.LinkedHashMap;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.service.AcolhimentoConsultaService;
+import cv.dge.dge_api_intermed_lab.application.acolhimento.service.AcolhimentoEmpresaService;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.service.AcolhimentoService;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +45,7 @@ public class AcolhimentoController {
     private static final String MSG_MULTIPART_INVALIDO = "Campos multipart invalidos.";
 
     private final AcolhimentoService acolhimentoService;
+    private final AcolhimentoEmpresaService acolhimentoEmpresaService;
     private final AcolhimentoConsultaService acolhimentoConsultaService;
     private final ObjectMapper objectMapper;
 
@@ -60,6 +64,23 @@ public class AcolhimentoController {
             @RequestPart(value = "ficheiros", required = false) List<MultipartFile> ficheiros
     ) {
         return acolhimentoService.registar(converterRequest(dadosJson, campos), juntarFicheiros(ficheiro, ficheiros));
+    }
+
+    @PostMapping(value = "empresas", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public AcolhimentoEmpresaResponse registarEmpresa(@RequestBody AcolhimentoEmpresaRequest request) {
+        return acolhimentoEmpresaService.registar(request);
+    }
+
+    @PostMapping(value = "empresas", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public AcolhimentoEmpresaResponse registarEmpresaComFicheiro(
+            @RequestPart(value = PARTE_DADOS, required = false) String dadosJson,
+            @RequestParam(required = false) MultiValueMap<String, String> campos,
+            @RequestPart(value = "ficheiro", required = false) MultipartFile ficheiro,
+            @RequestPart(value = "ficheiros", required = false) List<MultipartFile> ficheiros
+    ) {
+        return acolhimentoEmpresaService.registar(converterEmpresaRequest(dadosJson, campos), juntarFicheiros(ficheiro, ficheiros));
     }
 
     @GetMapping("reporter/{id}")
@@ -89,6 +110,28 @@ public class AcolhimentoController {
 
         try {
             return objectMapper.convertValue(estrutura, AcolhimentoRegistoRequest.class);
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, MSG_MULTIPART_INVALIDO, ex);
+        }
+    }
+
+    private AcolhimentoEmpresaRequest converterEmpresaRequest(String dadosJson, MultiValueMap<String, String> campos) {
+        if (dadosJson != null && !dadosJson.isBlank()) {
+            try {
+                return objectMapper.readValue(dadosJson, AcolhimentoEmpresaRequest.class);
+            } catch (Exception ex) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, MSG_JSON_INVALIDO, ex);
+            }
+        }
+
+        if (campos == null || campos.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, MSG_DADOS_OBRIGATORIOS);
+        }
+
+        Map<String, Object> estrutura = construirEstruturaMultipart(campos);
+
+        try {
+            return objectMapper.convertValue(estrutura, AcolhimentoEmpresaRequest.class);
         } catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, MSG_MULTIPART_INVALIDO, ex);
         }
