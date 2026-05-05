@@ -74,7 +74,7 @@ public class AcolhimentoRegistoRequest {
     @JsonAlias({"detalhes", "formulario"})
     private Map<String, Object> detalhes = new LinkedHashMap<>();
 
-    @JsonAlias({"anexos", "documentos", "docs"})
+    @JsonAlias({"anexos", "documentos", "docs", "formlist_1"})
     private List<Map<String, Object>> documentos = new ArrayList<>();
 
     public void setUtente(Map<String, Object> utente) {

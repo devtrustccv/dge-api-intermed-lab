@@ -7,7 +7,6 @@ import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.CefpReporterDTO;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.EntidadeReporterDTO;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.UtenteReporterDTO;
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocRelacaoDTO;
-import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
 import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
 import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.Cefp;
@@ -29,6 +28,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -119,8 +119,6 @@ public class AcolhimentoService {
 
         Map<String, Object> detalhes = montarDetalhes(request, utente);
         Cefp cefp = resolverCefp(request, detalhes);
-        adicionarCefpNoJson(detalhes, cefp);
-        detalhes.put("numInscricao", numInscricao);
 
         DetalhesAcolhimento acolhimento = criarAcolhimento(
                 request,
@@ -243,9 +241,15 @@ public class AcolhimentoService {
             return;
         }
 
+        List<Map<String, Object>> anexos = listaMapas(acolhimento.getDetalhes() == null ? null : acolhimento.getDetalhes().get("anexos"));
         for (int indice = 0; indice < ficheirosValidos.size(); indice++) {
             MultipartFile ficheiro = ficheirosValidos.get(indice);
-            Map<String, Object> metadados = documentoNoIndice(request, indice);
+            Map<String, Object> metadados = anexoNoIndice(anexos, request, indice);
+            String tipoDocumento = texto(valor(metadados, "tipo_documento_anexo", "tipo_documento", "documento", "idTpDoc", "id_tp_doc"));
+            if (emBranco(tipoDocumento)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "tipo_documento_anexo e obrigatorio para cada ficheiro.");
+            }
+
             String nomeOriginal = nomeOriginal(ficheiro, indice);
             String nomeBase = nomeBaseDocumento(nomeOriginal, metadados, indice);
 
@@ -253,8 +257,11 @@ public class AcolhimentoService {
                     .idRelacao(acolhimento.getId())
                     .tipoRelacao(tipoRelacaoDocumentoAcolhimento)
                     .estado(texto(primeiro(valor(metadados, "estado"), estadoDocumentoAcolhimento)))
-                    .idTpDoc(texto(valor(metadados, "idTpDoc", "id_tp_doc")))
-                    .name(texto(primeiro(valor(metadados, "name", "nome"), nomeOriginal)))
+                    .idTpDoc(tipoDocumento)
+                    .name(texto(primeiro(
+                            valor(metadados, "tipo_documento_anexo_desc", "tipo_documento_desc", "documento_desc", "name", "nome"),
+                            nomeOriginal
+                    )))
                     .fileName(nomeBase)
                     .path(construirPathDocumentoAcolhimento(acolhimento.getId(), nomeBase, ficheiro))
                     .appCode(appCodeDocumentoAcolhimento)
@@ -262,43 +269,39 @@ public class AcolhimentoService {
                     .build();
 
             try {
-                documentService.save(documento);
+                String path = documentService.save(documento);
+                atualizarAnexoComPath(anexos, indice, metadados, path);
             } catch (RuntimeException ex) {
                 throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, MSG_ERRO_UPLOAD, ex);
             }
         }
 
-        atualizarAnexosNoDetalhes(acolhimento);
-    }
-
-    private void atualizarAnexosNoDetalhes(DetalhesAcolhimento acolhimento) {
-        List<DocumentoResponseDTO> documentos = documentService.getDocumentosPorRelacao(
-                acolhimento.getId(),
-                tipoRelacaoDocumentoAcolhimento,
-                appCodeDocumentoAcolhimento
-        );
-
         Map<String, Object> detalhesAtualizados = new LinkedHashMap<>();
         if (acolhimento.getDetalhes() != null) {
             detalhesAtualizados.putAll(acolhimento.getDetalhes());
         }
-        detalhesAtualizados.put("anexos", documentos.stream().map(this::mapearDocumento).toList());
+        detalhesAtualizados.put("anexos", anexos);
         acolhimento.setDetalhes(detalhesAtualizados);
         detalhesAcolhimentoRepository.save(acolhimento);
     }
-    private Map<String, Object> mapearDocumento(DocumentoResponseDTO documento) {
-        Map<String, Object> dados = new LinkedHashMap<>();
-        colocarSePresente(dados, "id", documento.getId());
-        colocarSePresente(dados, "name", primeiro(documento.getName(), documento.getFileName()));
-        colocarSePresente(dados, "fileName", documento.getFileName());
-        colocarSePresente(dados, "path", documento.getPath());
-        colocarSePresente(dados, "tipoRelacao", documento.getTipoRelacao());
-        colocarSePresente(dados, "idRelacao", documento.getIdRelacao());
-        colocarSePresente(dados, "idTpDoc", documento.getIdTpDoc());
-        colocarSePresente(dados, "estado", documento.getEstado());
-        colocarSePresente(dados, "appCode", documento.getAppCode());
-        colocarSePresente(dados, "previewUrl", documento.getPreviewUrl());
-        return dados;
+
+    private Map<String, Object> anexoNoIndice(List<Map<String, Object>> anexos, AcolhimentoRegistoRequest request, int indice) {
+        if (anexos != null && indice >= 0 && indice < anexos.size()) {
+            return anexos.get(indice);
+        }
+        return documentoNoIndice(request, indice);
+    }
+
+    private void atualizarAnexoComPath(List<Map<String, Object>> anexos, int indice, Map<String, Object> metadados, String path) {
+        while (anexos.size() <= indice) {
+            anexos.add(new LinkedHashMap<>());
+        }
+        Map<String, Object> anexo = anexos.get(indice);
+        if (anexo.isEmpty()) {
+            anexo.putAll(mapearAnexosDetalhes(List.of(metadados)).stream().findFirst().orElseGet(LinkedHashMap::new));
+        }
+        anexo.put("ver_documento", valorOuVazio(path));
+        anexo.put("ver_documento_desc", valorOuVazio(path));
     }
 
     private Map<String, Object> documentoNoIndice(AcolhimentoRegistoRequest request, int indice) {
@@ -317,7 +320,7 @@ public class AcolhimentoService {
 
     private String nomeBaseDocumento(String nomeOriginal, Map<String, Object> metadados, int indice) {
         String nomeConfigurado = texto(primeiro(
-                valor(metadados, "fileName", "file_name", "name", "nome"),
+                valor(metadados, "tipo_documento_anexo_desc", "tipo_documento_desc", "documento_desc", "fileName", "file_name", "name", "nome"),
                 removerExtensao(nomeOriginal),
                 "anexo-" + (indice + 1)
         ));
@@ -598,26 +601,130 @@ public class AcolhimentoService {
     }
 
     private Map<String, Object> montarDetalhes(AcolhimentoRegistoRequest request, Utente utente) {
-        Map<String, Object> detalhes = new LinkedHashMap<>(request.getDetalhes());
+        Map<String, Object> origem = new LinkedHashMap<>(request.getDetalhes());
         if (!request.getUtente().isEmpty()) {
-            detalhes.putIfAbsent("utente", request.getUtente());
+            origem.putIfAbsent("utente", request.getUtente());
         }
         if (!request.getDadosEmprego().isEmpty()) {
-            detalhes.putIfAbsent("dadosEmprego", request.getDadosEmprego());
+            origem.putIfAbsent("dadosEmprego", request.getDadosEmprego());
         }
         if (!request.getDocumentos().isEmpty()) {
-            detalhes.putIfAbsent("anexos", request.getDocumentos());
+            origem.putIfAbsent("anexos", request.getDocumentos());
         }
-        colocarSePresente(detalhes, "idPessoa", primeiro(request.getIdPessoa(), utente.getPessoaId()));
-        colocarSePresente(detalhes, "idUtente", utente.getId());
-        colocarSePresente(detalhes, "tipoUtente", request.getTipoUtente());
-        colocarSePresente(detalhes, "tipoUtenteDesc", request.getTipoUtenteDesc());
-        colocarSePresente(detalhes, "tipoServico", request.getTipoServico());
-        colocarSePresente(detalhes, "tipoServicoDesc", request.getTipoServicoDesc());
-        colocarSePresente(detalhes, "canal", request.getCanal());
-        colocarSePresente(detalhes, "canalDesc", request.getCanalDesc());
-        colocarSePresente(detalhes, "fonteInformacao", request.getFonteInformacao());
+
+        Map<String, Object> detalhes = new LinkedHashMap<>();
+        colocarDetalhe(detalhes, "csu", campoFormulario(origem, "csu"));
+        colocarDetalhe(detalhes, "como_obteve_informacao", primeiro(
+                request.getFonteInformacao(),
+                campoFormulario(origem, "como_obteve_informacao", "como_obteve_informacao_sobre_os_servicos_do_iefp", "fonteInformacao", "fonte_informacao")
+        ));
+        colocarDetalhe(detalhes, "ilha", campoFormulario(origem, "ilha"));
+        colocarDetalhe(detalhes, "zona", campoFormulario(origem, "zona"));
+        colocarDetalhe(detalhes, "area_", campoFormulario(origem, "area_", "area"));
+        colocarDetalhe(detalhes, "email", campoFormulario(origem, "email"));
+        colocarDetalhe(detalhes, "outro", campoFormulario(origem, "outro"));
+        detalhes.put("anexos", mapearAnexosDetalhes(primeiro(
+                request.getDocumentos(),
+                campoFormulario(origem, "anexos", "documentos", "docs", "formlist_1")
+        )));
+        colocarDetalhe(detalhes, "empresa", campoFormulario(origem, "empresa"));
+        colocarDetalhe(detalhes, "concelho", campoFormulario(origem, "concelho"));
+        colocarDetalhe(detalhes, "endereco", campoFormulario(origem, "endereco", "enderecoContato", "enderecoContacto", "endereco_e_contacto"));
+        colocarDetalhe(detalhes, "telefone", campoFormulario(origem, "telefone"));
+        colocarDetalhe(detalhes, "link_foto", campoFormulario(origem, "link_foto", "linkFoto", "faceUrl", "face_url"));
+        colocarDetalhe(detalhes, "profissao", campoFormulario(origem, "profissao"));
+        colocarDetalhe(detalhes, "telemovel", campoFormulario(origem, "telemovel"));
+        colocarDetalhe(detalhes, "observacoes", campoFormulario(origem, "observacoes", "observacoes_"));
+        colocarDetalhe(detalhes, "estado_civil", campoFormulario(origem, "estado_civil", "estadoCivil"));
+        colocarDetalhe(detalhes, "ilha_empresa", campoFormulario(origem, "ilha_empresa", "ilhaEmpresa"));
+        colocarDetalhe(detalhes, "naturalidade", campoFormulario(origem, "naturalidade"));
+        colocarDetalhe(detalhes, "zona_empresa", campoFormulario(origem, "zona_empresa", "zonaEmpresa"));
+        colocarDetalhe(detalhes, "data_validade", campoFormulario(origem, "data_validade", "dataValidade"));
+        colocarDetalhe(detalhes, "carta_conducao", campoFormulario(origem, "carta_conducao", "cartaConducao"));
+        colocarDetalhe(detalhes, "zona_empresa_1", campoFormulario(origem, "zona_empresa_1", "zonaEmpresa1"));
+        colocarDetalhe(detalhes, "concelho_empresa", campoFormulario(origem, "concelho_empresa", "concelhoEmpresa"));
+        colocarDetalhe(detalhes, "local_de_emissao", campoFormulario(origem, "local_de_emissao", "localEmissao", "local_de_emissao_documento"));
+        colocarDetalhe(detalhes, "o_que_deseja_criar", campoFormulario(origem, "o_que_deseja_criar", "oQueDesejaCriar"));
+        colocarDetalhe(detalhes, "setor_de_atividade", campoFormulario(origem, "setor_de_atividade", "setorDeAtividade", "setor_atividade", "setorAtividade"));
+        colocarDetalhe(detalhes, "o_que_deseja_criar_1", campoFormulario(origem, "o_que_deseja_criar_1", "area_de_trabalho__pretendida", "areaDeTrabalhoPretendida"));
+        colocarDetalhe(detalhes, "setor_de_atividade_1", campoFormulario(origem, "setor_de_atividade_1", "setorDeAtividade1"));
+        colocarDetalhe(detalhes, "tipo_servico_solicitado", primeiro(
+                request.getTipoServico(),
+                campoFormulario(origem, "tipo_servico_solicitado", "tipoServicoSolicitado", "tipo_servico", "tipoServico")
+        ));
+        colocarDetalhe(detalhes, "local_de_trabalho_preferencial", campoFormulario(origem, "local_de_trabalho_preferencial", "localTrabalhoPreferencial"));
+        colocarDetalhe(detalhes, "situacao_face_ao_emprego", campoFormulario(
+                origem,
+                "situacao_face_ao_emprego",
+                "situacaoFaceAoEmprego",
+                "situacaoFaceEmprego",
+                "situacao_emprego",
+                "situacaoEmprego"
+        ));
+        colocarDetalhe(detalhes, "autoriza_a_divulgacao_dos_seus_dados_para_efeito__de_emprego", campoFormulario(
+                origem,
+                "autoriza_a_divulgacao_dos_seus_dados_para_efeito__de_emprego",
+                "autoriza_a_divulgacao_dos_seus_dados_para_efeito_de_emprego",
+                "autorizaDivulgacaoDadosEmprego"
+        ));
         return detalhes;
+    }
+
+    private void colocarDetalhe(Map<String, Object> destino, String chave, Object valor) {
+        destino.put(chave, valor == null ? "" : valor);
+    }
+
+    private Object campoFormulario(Map<String, Object> origem, String... chaves) {
+        return primeiro(valor(origem, chaves), procurarProfundo(origem, chaves));
+    }
+
+    private List<Map<String, Object>> mapearAnexosDetalhes(Object origem) {
+        List<Map<String, Object>> anexos = new ArrayList<>();
+        for (Map<String, Object> itemOrigem : listaMapas(origem)) {
+            Object tipoDocumento = primeiro(
+                    campoFormulario(itemOrigem, "tipo_documento_anexo"),
+                    campoFormulario(itemOrigem, "tipo_documento", "documento")
+            );
+            if (tipoDocumento == null) {
+                continue;
+            }
+
+            Object verDocumento = campoFormulario(itemOrigem, "ver_documento", "anexo", "path");
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("id", valorOuVazio(valorOpcao(campoFormulario(itemOrigem, "id", "formlist_1_id"))));
+            item.put("ver_documento", valorOuVazio(valorOpcao(verDocumento)));
+            item.put("ver_documento_desc", valorOuVazio(valorOpcao(verDocumento)));
+            item.put("tipo_documento_anexo", valorOuVazio(valorOpcao(tipoDocumento)));
+            item.put("tipo_documento_anexo_desc", valorOuVazio(valorOpcao(tipoDocumento)));
+            anexos.add(item);
+        }
+        return anexos;
+    }
+
+    private List<Map<String, Object>> listaMapas(Object origem) {
+        if (!(origem instanceof Collection<?> colecao)) {
+            return new ArrayList<>();
+        }
+        List<Map<String, Object>> destino = new ArrayList<>();
+        for (Object item : colecao) {
+            Map<String, Object> mapa = mapa(item);
+            if (!mapa.isEmpty()) {
+                destino.add(mapa);
+            }
+        }
+        return destino;
+    }
+
+    private Object valorOpcao(Object valor) {
+        if (valor instanceof Map<?, ?> mapa) {
+            Object chave = valor(mapa, "key", "codigo", "code", "id", "valor", "value");
+            return chave == null ? texto(valor) : chave;
+        }
+        return valor;
+    }
+
+    private Object valorOuVazio(Object valor) {
+        return valor == null ? "" : valor;
     }
 
     private Cefp resolverCefp(AcolhimentoRegistoRequest request, Map<String, Object> detalhes) {

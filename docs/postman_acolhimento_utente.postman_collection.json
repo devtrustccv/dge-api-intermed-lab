@@ -1,0 +1,73 @@
+{
+  "info": {
+    "_postman_id": "b8a4a52a-2b75-4a50-9a86-acolhimento-utente",
+    "name": "Acolhimento Utente",
+    "description": "Collection para testar a criacao de acolhimento de utente.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Criar Acolhimento Utente",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tipoServico\": \"EMPREGO\",\n  \"tipoUtente\": \"UTENTE\",\n  \"canal\": \"CEFP\",\n  \"fonteInformacao\": \"CEFP\",\n  \"denominacaoUtente\": \"Utente Teste\",\n  \"idPessoa\": 2001101700869,\n  \"nif\": 123456789,\n  \"utente\": {\n    \"idPessoa\": 2001101700869,\n    \"nome\": \"Utente Teste\",\n    \"tipoDocumento\": \"CNI\",\n    \"numDocumento\": \"2001101700869\",\n    \"dataNascimento\": \"1990-01-10\",\n    \"sexo\": \"M\",\n    \"nif\": 123456789,\n    \"habilitacaoLiteraria\": \"12\"\n  },\n  \"dadosEmprego\": {\n    \"situacao_face_ao_emprego\": \"DESEMPREGADO\",\n    \"profissao\": \"Tecnico de Informatica\",\n    \"empresa\": \"Empresa Teste Lda\",\n    \"setor_de_atividade\": \"TECNOLOGIA\",\n    \"ilha_empresa\": \"ST\",\n    \"concelho_empresa\": \"PR\",\n    \"zona_empresa\": \"PALMAREJO\"\n  },\n  \"detalhes\": {\n    \"csu\": \"CSU-001\",\n    \"como_obteve_informacao\": \"CEFP\",\n    \"ilha\": \"ST\",\n    \"zona\": \"ACHADA_SANTO_ANTONIO\",\n    \"area_\": \"INFORMATICA\",\n    \"email\": \"utente.teste@email.cv\",\n    \"outro\": \"Informacao adicional de teste\",\n    \"empresa\": \"Empresa Teste Lda\",\n    \"concelho\": \"PR\",\n    \"endereco\": \"Achada Santo Antonio, Praia\",\n    \"telefone\": \"2600000\",\n    \"link_foto\": \"https://sniacapps.gov.cv/sniac_prod/SNIAC.IGRP_PORTAL.download_file_img_bio?p_tipo_doc=1&p_id_pessoa=2001101700869&p_id_tp_imagem=1&p_id_documento=89959228\",\n    \"profissao\": \"Tecnico de Informatica\",\n    \"telemovel\": \"9912345\",\n    \"observacoes\": \"Registo de teste completo\",\n    \"estado_civil\": \"S\",\n    \"ilha_empresa\": \"ST\",\n    \"naturalidade\": \"238\",\n    \"zona_empresa\": \"PALMAREJO\",\n    \"data_validade\": \"09-01-2030\",\n    \"carta_conducao\": \"S\",\n    \"zona_empresa_1\": \"9911122\",\n    \"concelho_empresa\": \"PR\",\n    \"local_de_emissao\": \"CASA DO CIDADAO DA PRAIA\",\n    \"o_que_deseja_criar\": \"NEGOCIO_PROPRIO\",\n    \"setor_de_atividade\": \"TECNOLOGIA\",\n    \"o_que_deseja_criar_1\": \"DESENVOLVIMENTO_SOFTWARE\",\n    \"setor_de_atividade_1\": \"SERVICOS\",\n    \"tipo_servico_solicitado\": \"EMPREGO\",\n    \"situacao_face_ao_emprego\": \"DESEMPREGADO\",\n    \"local_de_trabalho_preferencial\": \"PRAIA\",\n    \"autoriza_a_divulgacao_dos_seus_dados_para_efeito__de_emprego\": \"S\"\n  },\n  \"anexos\": [\n    {\n      \"id\": \"22\",\n      \"ver_documento\": \"\",\n      \"ver_documento_desc\": \"\",\n      \"tipo_documento_anexo\": \"CNI\",\n      \"tipo_documento_anexo_desc\": \"CNI\"\n    },\n    {\n      \"id\": \"23\",\n      \"ver_documento\": \"\",\n      \"ver_documento_desc\": \"\",\n      \"tipo_documento_anexo\": \"TRE\",\n      \"tipo_documento_anexo_desc\": \"TRE\"\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/v1/acolhimentos",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1",
+            "acolhimentos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Buscar Acolhimento Reporter",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/acolhimentos/reporter/{{idAcolhimento}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1",
+            "acolhimentos",
+            "reporter",
+            "{{idAcolhimento}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:9001/api"
+    },
+    {
+      "key": "idAcolhimento",
+      "value": "1"
+    }
+  ]
+}
