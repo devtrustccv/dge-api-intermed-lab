@@ -1,0 +1,226 @@
+{
+  "info": {
+    "_postman_id": "a7fdf7e8-2c2f-4a6c-9c18-orientacao-servicos",
+    "name": "Orientacao Servicos",
+    "description": "Collection para testar os endpoints de orientacao de servicos.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "PEPE",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idEntrevista\": {{idEntrevista}},\n  \"tipoServico\": \"PEPE\",\n  \"utilizador\": \"teste.api\",\n  \"detalhesServico\": {\n    \"organica_a_que_recorre\": \"CEFP Praia\",\n    \"localidade\": \"Praia\",\n    \"area_funcional_estagio\": \"Administracao\",\n    \"habilitacao_academica\": \"Licenciatura\",\n    \"designacao_certificado_diploma\": \"Licenciado em Gestao\",\n    \"estabelecimento_ensino\": \"Universidade de Cabo Verde\",\n    \"data_inicio\": \"2022-01-10\",\n    \"data_conclusao_curso\": \"2025-07-20\",\n    \"area\": \"Gestao\",\n    \"esta_desempregado\": \"Sim\",\n    \"ja_alguma_vez_trabalhou\": \"Sim\",\n    \"competencias_informaticas\": [\"Word\", \"Excel\", \"Internet\"],\n    \"outras_competencias\": \"Comunicacao e trabalho em equipa\",\n    \"declaracao_honra\": true,\n    \"data_declaracao\": \"2026-05-04\",\n    \"experiencias_profissionais\": [\n      {\n        \"natureza_funcoes\": \"Assistente administrativo\",\n        \"data_inicio\": \"2024-01-01\",\n        \"data_fim\": \"2024-12-31\",\n        \"empresa\": \"Empresa Teste\",\n        \"principais_tarefas_responsabilidades\": \"Arquivo, atendimento e apoio administrativo\"\n      }\n    ],\n    \"linguas_estrangeiras\": [\n      {\n        \"idioma\": \"Ingles\",\n        \"nivel_oralidade\": \"Bom\",\n        \"nivel_escrita\": \"Bom\",\n        \"nivel_leitura\": \"Muito Bom\",\n        \"certificacao\": \"Nao\"\n      }\n    ]\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/v1/orientacao/servicos"
+      },
+      "response": []
+    },
+    {
+      "name": "FPIF",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idEntrevista\": {{idEntrevista}},\n  \"tipoServico\": \"FPIF\",\n  \"utilizador\": \"teste.api\",\n  \"detalhesServico\": {\n    \"principais_razoes\": \"Pretendo melhorar as minhas competencias profissionais.\",\n    \"concluiu_o_curso_em\": \"2026-04-30\",\n    \"classificacao_final\": 16,\n    \"coordenador_curso\": \"Joao Silva\",\n    \"observacoes\": \"Teste de inscricao FPIF\",\n    \"recebido_por\": \"Tecnico Teste\",\n    \"data_inscricao\": \"2026-05-04\",\n    \"documentos_entregues\": [\n      {\n        \"documento\": \"1\",\n        \"documento_desc\": \"Documento de Identificacao\",\n        \"entregue\": true\n      },\n      {\n        \"documento\": \"2\",\n        \"documento_desc\": \"Certificado de Habilitacoes\",\n        \"entregue\": false\n      }\n    ]\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/v1/orientacao/servicos"
+      },
+      "response": []
+    },
+    {
+      "name": "GERME",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idEntrevista\": {{idEntrevista}},\n  \"tipoServico\": \"GERME\",\n  \"utilizador\": \"teste.api\",\n  \"detalhesServico\": {\n    \"ja_frequentou_formacao\": \"Sim\",\n    \"tem_experiencia_profissional\": \"Sim\",\n    \"cite_a_experiencia\": \"Experiencia em comercio e atendimento ao cliente.\",\n    \"tens_ideia_negocio\": \"Sim\",\n    \"tens_empresa_constituida\": \"Nao\",\n    \"valor_investimento\": \"250000\",\n    \"finalidade_investimento\": \"Compra de equipamentos e stock inicial.\",\n    \"fonte_financiamento\": \"Poupanca propria e credito\",\n    \"tem_formacao_germe\": \"Nao\",\n    \"tipo_formacao\": \"Empreendedorismo\",\n    \"beneficiou_apoio_iefp_proempresa\": \"Nao\",\n    \"tipo_apoio\": \"\",\n    \"cursos_formacoes\": [\n      {\n        \"curso_formacao_estagio\": \"Gestao de Pequenos Negocios\",\n        \"periodo\": \"2025\",\n        \"ch\": \"40\",\n        \"instituicao\": \"IEFP\"\n      }\n    ],\n    \"ideias_negocio\": [\n      {\n        \"ideia_projeto_negocio\": \"Mercearia de bairro\",\n        \"local_implementacao\": \"Praia\",\n        \"area_negocio\": \"Comercio\"\n      }\n    ]\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/v1/orientacao/servicos"
+      },
+      "response": []
+    },
+    {
+      "name": "Servico Emprego",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idEntrevista\": {{idEntrevista}},\n  \"tipoServico\": \"SERVICO_EMPREGO\",\n  \"utilizador\": \"teste.api\",\n  \"detalhesServico\": {\n    \"area_de_formacao\": \"Informatica\",\n    \"media_final\": \"15\",\n    \"tem_carta_conducao\": \"Sim\",\n    \"tipo_carta_conducao\": \"B\",\n    \"ja_frequentou_formacao\": \"Sim\",\n    \"situacao_face_ao_emprego\": \"Desempregado\",\n    \"profissao_exercida\": \"Tecnico informatico\",\n    \"duracao_desemprego_meses\": 6,\n    \"profissao_pretendida\": \"Tecnico de suporte\",\n    \"emprego_pretendido\": \"Contrato de trabalho\",\n    \"ja_tem_experiencia\": \"Sim\",\n    \"descricao_experiencia\": \"Suporte tecnico e manutencao de computadores.\",\n    \"descricao_situacao_socioeconomico\": \"Sem rendimento fixo.\",\n    \"deficiente\": \"Nao\",\n    \"linguas_estrangeiras\": [\n      {\n        \"idioma\": \"Ingles\",\n        \"nivel_oralidade\": \"Medio\",\n        \"nivel_escrita\": \"Medio\",\n        \"nivel_leitura\": \"Bom\",\n        \"certificacao\": \"Nao\"\n      }\n    ],\n    \"acoes_formacao\": [\n      {\n        \"curso\": \"Redes de computadores\",\n        \"periodo_ch\": \"60h\",\n        \"instituicao\": \"Centro de Formacao\"\n      }\n    ]\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/v1/orientacao/servicos"
+      },
+      "response": []
+    },
+    {
+      "name": "Subsidio Desemprego",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idEntrevista\": {{idEntrevista}},\n  \"tipoServico\": \"SUB_DESEMP\",\n  \"utilizador\": \"teste.api\",\n  \"necessidadeAnalise\": true,\n  \"detalhesServico\": {\n    \"area_de_formacao\": \"Contabilidade\",\n    \"media_final\": \"14\",\n    \"carta_conducao\": \"Sim\",\n    \"tipo_carta\": \"B\",\n    \"ja_frequentou_formacao\": \"Sim\",\n    \"situacao_face_ao_emprego\": \"Desempregado\",\n    \"profissao_exercida\": \"Auxiliar administrativo\",\n    \"duracao_desemprego_meses\": 8,\n    \"profissao_pretendida\": \"Assistente administrativo\",\n    \"emprego_pretendido\": \"Emprego formal\",\n    \"ja_tem_experiencia\": \"Sim\",\n    \"descricao_experiencia\": \"Atendimento, arquivo e apoio administrativo.\",\n    \"descricao_situacao_socioeconomico\": \"Agregado com baixo rendimento.\",\n    \"deficiente\": \"Nao\",\n    \"pretende_requerer_subsidio_desemprego\": \"Sim\",\n    \"linguas_estrangeiras\": [\n      {\n        \"idioma\": \"Frances\",\n        \"nivel_oralidade\": \"Basico\",\n        \"nivel_escrita\": \"Basico\",\n        \"nivel_leitura\": \"Medio\",\n        \"certificacao\": \"Nao\"\n      }\n    ],\n    \"acoes_formacao\": [\n      {\n        \"curso\": \"Atendimento ao publico\",\n        \"periodo_ch\": \"30h\",\n        \"instituicao\": \"IEFP\"\n      }\n    ],\n    \"requisitos\": [\n      {\n        \"requisito\": \"1\",\n        \"requisito_desc\": \"Inscricao no centro de emprego\",\n        \"selecionado\": true\n      },\n      {\n        \"requisito\": \"2\",\n        \"requisito_desc\": \"Comprovativo de desemprego\",\n        \"selecionado\": true\n      }\n    ],\n    \"anexos\": [\n      {\n        \"documento\": \"1\",\n        \"documento_desc\": \"Documento de Identificacao\",\n        \"anexo\": \"\"\n      },\n      {\n        \"documento\": \"2\",\n        \"documento_desc\": \"Declaracao de desemprego\",\n        \"anexo\": \"\"\n      }\n    ]\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/v1/orientacao/servicos"
+      },
+      "response": []
+    },
+    {
+      "name": "Subsidio Desemprego com ficheiros",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "dados",
+              "value": "{\"idEntrevista\":1,\"tipoServico\":\"SUB_DESEMP\",\"utilizador\":\"teste.api\",\"necessidadeAnalise\":true,\"detalhesServico\":{\"area_de_formacao\":\"Contabilidade\",\"media_final\":\"14\",\"carta_conducao\":\"Sim\",\"tipo_carta\":\"B\",\"ja_frequentou_formacao\":\"Sim\",\"situacao_face_ao_emprego\":\"Desempregado\",\"profissao_exercida\":\"Auxiliar administrativo\",\"duracao_desemprego_meses\":8,\"profissao_pretendida\":\"Assistente administrativo\",\"emprego_pretendido\":\"Emprego formal\",\"ja_tem_experiencia\":\"Sim\",\"descricao_experiencia\":\"Atendimento, arquivo e apoio administrativo.\",\"descricao_situacao_socioeconomico\":\"Agregado com baixo rendimento.\",\"deficiente\":\"Nao\",\"pretende_requerer_subsidio_desemprego\":\"Sim\",\"linguas_estrangeiras\":[{\"idioma\":\"Frances\",\"nivel_oralidade\":\"Basico\",\"nivel_escrita\":\"Basico\",\"nivel_leitura\":\"Medio\",\"certificacao\":\"Nao\"}],\"acoes_formacao\":[{\"curso\":\"Atendimento ao publico\",\"periodo_ch\":\"30h\",\"instituicao\":\"IEFP\"}],\"requisitos\":[{\"requisito\":\"1\",\"requisito_desc\":\"Inscricao no centro de emprego\",\"selecionado\":true},{\"requisito\":\"2\",\"requisito_desc\":\"Comprovativo de desemprego\",\"selecionado\":true}],\"anexos\":[{\"documento\":\"1\",\"documento_desc\":\"Documento de Identificacao\",\"anexo\":\"\"},{\"documento\":\"2\",\"documento_desc\":\"Declaracao de desemprego\",\"anexo\":\"\"}]}}",
+              "type": "text"
+            },
+            {
+              "key": "ficheiros",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "ficheiros",
+              "type": "file",
+              "src": []
+            }
+          ]
+        },
+        "url": "{{baseUrl}}/v1/orientacao/servicos"
+      },
+      "response": []
+    },
+    {
+      "name": "Educacao Financeira",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idEntrevista\": {{idEntrevista}},\n  \"tipoServico\": \"EDUCACAO_FINANCEIRA\",\n  \"utilizador\": \"teste.api\",\n  \"detalhesServico\": {\n    \"area\": \"Financas pessoais\",\n    \"nivel\": \"Inicial\",\n    \"disponibilidade\": \"Manha\",\n    \"objetivos_formacao\": \"Aprender a gerir rendimento, poupanca e despesas.\",\n    \"situacao_socioeconomico_familiar\": \"Baixo rendimento familiar.\",\n    \"cursos_formacao\": [\n      {\n        \"nome_curso\": \"Educacao Financeira Basica\",\n        \"periodo\": \"2026\",\n        \"ch\": \"20\",\n        \"nivel_formacao\": \"Inicial\",\n        \"instituicao\": \"IEFP\"\n      }\n    ]\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/v1/orientacao/servicos"
+      },
+      "response": []
+    },
+    {
+      "name": "Formador",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idEntrevista\": {{idEntrevista}},\n  \"tipoServico\": \"FORMADOR\",\n  \"utilizador\": \"teste.api\",\n  \"detalhesServico\": {\n    \"area_dominio\": \"Gestao e empreendedorismo\",\n    \"descricao\": \"Formador com experiencia em gestao de pequenos negocios.\",\n    \"disponibilidade_horario\": [\n      {\n        \"dia_da_semana\": \"Segunda-feira\",\n        \"horario\": \"09:00-12:00\"\n      },\n      {\n        \"dia_da_semana\": \"Quarta-feira\",\n        \"horario\": \"14:00-17:00\"\n      }\n    ]\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/v1/orientacao/servicos"
+      },
+      "response": []
+    },
+    {
+      "name": "Consultar por Entrevista",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/v1/orientacao/servicos/entrevista/{{idEntrevista}}"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:9001/api"
+    },
+    {
+      "key": "idEntrevista",
+      "value": "1"
+    }
+  ]
+}
