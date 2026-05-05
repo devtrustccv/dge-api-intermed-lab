@@ -18,6 +18,9 @@ public class AcolhimentoEmpresaRequest {
     @JsonAlias({"id_entidade", "entidade_id"})
     private Integer idEntidade;
 
+    @JsonAlias({"global_id_entidade", "globalIdEntidade", "id_global_entidade", "idGlobalEntidade"})
+    private Integer globalIdEntidade;
+
     @JsonAlias({"id_tecnico", "id_tecnico_atendimento", "tecnico_id"})
     private Integer idTecnico;
 

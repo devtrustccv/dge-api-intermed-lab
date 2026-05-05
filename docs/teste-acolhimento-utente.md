@@ -216,3 +216,73 @@ Depois de criar, use o `id` retornado na resposta:
 ```http
 GET http://localhost:9001/api/v1/acolhimentos/reporter/1
 ```
+
+## Multipart Campo A Campo
+
+Tambem pode enviar sem `dados`, usando campos separados. A ordem define qual ficheiro pertence a qual documento:
+
+- `documentos[0]` corresponde ao primeiro campo `ficheiros`
+- `documentos[1]` corresponde ao segundo campo `ficheiros`
+
+```bash
+curl --location 'http://localhost:9001/api/v1/acolhimentos' \
+--form 'denominacaoUtente="Maria da Conceicao Silva"' \
+--form 'nif="123456789"' \
+--form 'cefpId="1"' \
+--form 'orgId="101"' \
+--form 'tipoUtente="CIDADAO"' \
+--form 'tipoServico="ATENDIMENTO"' \
+--form 'tipoServicoDesc="ATENDIMENTO"' \
+--form 'fonteInformacao="ONLINE"' \
+--form 'canal="ONLINE"' \
+--form 'canalDesc="ONLINE"' \
+--form 'statusEntrevista="PENDENTE"' \
+--form 'idTecnicoAtendimento="5"' \
+--form 'tecnicoAtendimento="Joao Fernandes"' \
+--form 'userCreate="1"' \
+--form 'utente.nome="Maria da Conceicao Silva"' \
+--form 'utente.dataNascimento="1995-08-21"' \
+--form 'utente.tipoDocumento="BI"' \
+--form 'utente.numDocumento="BI123456"' \
+--form 'utente.sexo="F"' \
+--form 'utente.nif="123456789"' \
+--form 'utente.habilitacaoLiteraria="12_ANO"' \
+--form 'detalhes.telefone="9911122"' \
+--form 'detalhes.telemovel="9911122"' \
+--form 'detalhes.email="maria.silva@email.com"' \
+--form 'detalhes.endereco="Achada Santo Antonio"' \
+--form 'detalhes.ilha="Santiago"' \
+--form 'detalhes.concelho="Praia"' \
+--form 'detalhes.zona="Achada Santo Antonio"' \
+--form 'detalhes.data_validade="2027-12-31"' \
+--form 'detalhes.local_de_emissao="Praia"' \
+--form 'detalhes.naturalidade="CV"' \
+--form 'detalhes.estado_civil="SOLTEIRA"' \
+--form 'detalhes.carta_conducao="SIM"' \
+--form 'detalhes.autoriza_a_divulgacao_dos_seus_dados_para_efeito__de_emprego="SIM"' \
+--form 'detalhes.situacao_face_ao_emprego="DESEMPREGADA"' \
+--form 'detalhes.profissao="Administrativa"' \
+--form 'detalhes.empresa=""' \
+--form 'detalhes.setor_de_atividade="Servicos"' \
+--form 'detalhes.setor_de_atividade_1=""' \
+--form 'detalhes.ilha_empresa="Santiago"' \
+--form 'detalhes.concelho_empresa="Praia"' \
+--form 'detalhes.zona_empresa="Palmarejo"' \
+--form 'detalhes.zona_empresa_1="9911122"' \
+--form 'detalhes.tipo_servico_solicitado="ATENDIMENTO"' \
+--form 'detalhes.local_de_trabalho_preferencial="Praia"' \
+--form 'detalhes.area_="Comercio"' \
+--form 'detalhes.o_que_deseja_criar="Pequeno negocio"' \
+--form 'detalhes.o_que_deseja_criar_1="Atendimento ao publico"' \
+--form 'detalhes.observacoes="Utente pretende apoio de insercao profissional"' \
+--form 'detalhes.outro=""' \
+--form 'documentos[0].idTpDoc="1"' \
+--form 'documentos[0].name="Bilhete de Identidade"' \
+--form 'documentos[0].fileName="bilhete_identidade"' \
+--form 'ficheiros=@"/caminho/bilhete_identidade.pdf"' \
+--form 'documentos[1].idTpDoc="2"' \
+--form 'documentos[1].name="Curriculo"' \
+--form 'documentos[1].fileName="curriculo"' \
+--form 'ficheiros=@"/caminho/curriculo.pdf"' \
+--form 'pessoa_id="1"'
+```

@@ -683,19 +683,24 @@ public class AcolhimentoService {
         for (Map<String, Object> itemOrigem : listaMapas(origem)) {
             Object tipoDocumento = primeiro(
                     campoFormulario(itemOrigem, "tipo_documento_anexo"),
-                    campoFormulario(itemOrigem, "tipo_documento", "documento")
+                    campoFormulario(itemOrigem, "tipo_documento", "documento", "idTpDoc", "id_tp_doc")
             );
             if (tipoDocumento == null) {
                 continue;
             }
 
             Object verDocumento = campoFormulario(itemOrigem, "ver_documento", "anexo", "path");
+            Object descricaoDocumento = primeiro(
+                    campoFormulario(itemOrigem, "tipo_documento_anexo_desc", "tipo_documento_desc", "documento_desc"),
+                    campoFormulario(itemOrigem, "name", "nome", "fileName", "file_name"),
+                    tipoDocumento
+            );
             Map<String, Object> item = new LinkedHashMap<>();
             item.put("id", valorOuVazio(valorOpcao(campoFormulario(itemOrigem, "id", "formlist_1_id"))));
             item.put("ver_documento", valorOuVazio(valorOpcao(verDocumento)));
             item.put("ver_documento_desc", valorOuVazio(valorOpcao(verDocumento)));
             item.put("tipo_documento_anexo", valorOuVazio(valorOpcao(tipoDocumento)));
-            item.put("tipo_documento_anexo_desc", valorOuVazio(valorOpcao(tipoDocumento)));
+            item.put("tipo_documento_anexo_desc", valorOuVazio(valorOpcao(descricaoDocumento)));
             anexos.add(item);
         }
         return anexos;
@@ -820,7 +825,7 @@ public class AcolhimentoService {
 
     private String gerarNumeroInscricao() {
         String prefixo = "ACO" + LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE) + "/";
-        Integer sequencia = detalhesAcolhimentoRepository.proximoNumeroInscricao(prefixo);
+        Integer sequencia = detalhesAcolhimentoRepository.proximoNumeroInscricao();
         if (sequencia == null || sequencia < 1) {
             sequencia = 1;
         }

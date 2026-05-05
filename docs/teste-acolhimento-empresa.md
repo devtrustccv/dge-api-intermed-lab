@@ -13,6 +13,7 @@ Use este JSON direto no body. Nao precisa colocar `dados` nem `detalhes`.
 {
   "id": null,
   "id_entidade": null,
+  "global_id_entidade": null,
   "id_tecnico": 1,
   "id_cefp": 1,
   "org_id": 1,
@@ -64,6 +65,7 @@ Use este JSON direto no body. Nao precisa colocar `dados` nem `detalhes`.
 {
   "id": null,
   "id_entidade": null,
+  "global_id_entidade": 1001,
   "id_tecnico": 1,
   "id_cefp": 1,
   "org_id": 1,
@@ -134,6 +136,7 @@ Content-Type: multipart/form-data
 curl --location 'http://localhost:9001/api/v1/acolhimentos/empresas' \
 --form 'nome_da_entidade="Empresa Teste Lda"' \
 --form 'nif="123456789"' \
+--form 'global_id_entidade="1001"' \
 --form 'registo_comercial="RC-2026-001"' \
 --form 'natureza_juridica="Sociedade por Quotas"' \
 --form 'n_colaboradores="25"' \
@@ -179,6 +182,7 @@ Tambem aceita os nomes camelCase se preferir:
 curl --location 'http://localhost:9001/api/v1/acolhimentos/empresas' \
 --form 'nomeDaEntidade="Empresa Teste Lda"' \
 --form 'nif="123456789"' \
+--form 'globalIdEntidade="1001"' \
 --form 'registoComercial="RC-2026-001"' \
 --form 'naturezaJuridica="Sociedade por Quotas"' \
 --form 'nColaboradores="25"' \

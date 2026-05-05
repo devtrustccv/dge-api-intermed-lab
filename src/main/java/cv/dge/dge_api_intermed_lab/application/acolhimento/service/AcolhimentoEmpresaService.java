@@ -120,6 +120,14 @@ public class AcolhimentoEmpresaService {
 
         boolean novo = entidade.getId() == null;
         entidade.setDenominacao(texto(campo(request, request.getNomeDaEntidade(), "nome_da_entidade", "denominacao", "denominacao_utente")));
+        entidade.setGlobalIdEntidade(inteiro(campo(
+                request,
+                request.getGlobalIdEntidade(),
+                "global_id_entidade",
+                "globalIdEntidade",
+                "id_global_entidade",
+                "idGlobalEntidade"
+        )));
         entidade.setNif(inteiro(campo(request, request.getNif(), "nif")));
         entidade.setRegistoSocial(texto(campo(request, request.getRegistoComercial(), "registo_comercial", "registo_social")));
         entidade.setNaturezaJuridica(texto(campo(request, request.getNaturezaJuridica(), "natureza_juridica")));
@@ -258,7 +266,7 @@ public class AcolhimentoEmpresaService {
 
     private String gerarNumeroInscricao() {
         String prefixo = "ACO" + LocalDate.now().format(INSCRICAO_DATE) + "/";
-        Integer sequencia = detalhesAcolhimentoRepository.proximoNumeroInscricao(prefixo);
+        Integer sequencia = detalhesAcolhimentoRepository.proximoNumeroInscricao();
         return prefixo + (sequencia == null || sequencia < 1 ? 1 : sequencia);
     }
 
