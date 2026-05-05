@@ -272,7 +272,11 @@ public class AcolhimentoService {
                 String path = documentService.save(documento);
                 atualizarAnexoComPath(anexos, indice, metadados, path);
             } catch (RuntimeException ex) {
-                throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, MSG_ERRO_UPLOAD, ex);
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_GATEWAY,
+                        MSG_ERRO_UPLOAD + " Verifique se o servico de documentos/MinIO esta disponivel.",
+                        ex
+                );
             }
         }
 

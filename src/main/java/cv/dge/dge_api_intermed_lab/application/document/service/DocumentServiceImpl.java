@@ -82,10 +82,6 @@ public class DocumentServiceImpl implements DocumentService {
         body.add("fileName", dto.getFileName());
         body.add("path", resolverPathDocumento(dto));
 
-        if (dto.getIdTpDoc() != null) {
-            body.add("idTpDoc", dto.getIdTpDoc());
-        }
-
         MultipartFile file = dto.getFile();
         if (file != null && !file.isEmpty()) {
             body.add("file", criarRecursoArquivo(file));

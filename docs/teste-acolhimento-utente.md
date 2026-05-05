@@ -94,6 +94,8 @@ Use este JSON direto no body do Postman em `Body > raw > JSON`.
 
 Para upload de ficheiros, use `multipart/form-data` com uma parte chamada `dados`, porque o JSON vai junto com ficheiro.
 O array `anexos` dentro de `dados` serve para identificar cada ficheiro enviado para o MinIO.
+O campo `tipo_documento_anexo` deve ser o ID numerico do tipo documental aceito pela API de documentos.
+Use `tipo_documento_anexo_desc` para guardar o texto, como `CNI` ou `TRE`.
 
 Regra:
 
@@ -188,12 +190,12 @@ Valor do campo `dados`:
   "anexos": [
     {
       "id": "22",
-      "tipo_documento_anexo": "CNI",
+      "tipo_documento_anexo": "1",
       "tipo_documento_anexo_desc": "CNI"
     },
     {
       "id": "23",
-      "tipo_documento_anexo": "TRE",
+      "tipo_documento_anexo": "2",
       "tipo_documento_anexo_desc": "TRE"
     }
   ]
