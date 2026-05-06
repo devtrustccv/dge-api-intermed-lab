@@ -32,6 +32,7 @@ public class AcolhimentoEmpresaService {
     private static final String TIPO_UTENTE_EMPRESA = "ENTIDADE";
     private static final String CANAL_CEFP = "CEFP";
     private static final String ESTADO_ATIVO = "A";
+    private static final String MSG_ERRO_UPLOAD = "Erro ao enviar ficheiro do acolhimento de empresa.";
     private static final DateTimeFormatter INSCRICAO_DATE = DateTimeFormatter.BASIC_ISO_DATE;
 
     private final EntidadeRepository entidadeRepository;
@@ -194,8 +195,9 @@ public class AcolhimentoEmpresaService {
         for (Map<String, Object> itemOrigem : origem == null ? List.<Map<String, Object>>of() : origem) {
             Map<String, Object> item = new LinkedHashMap<>();
             item.put("id", valor(itemOrigem, "id"));
-            item.put("tipo_documento_anexo", valor(itemOrigem, "tipo_documento_anexo", "tipo_documento", "documento"));
-            item.put("tipo_documento_anexo_desc", valor(itemOrigem, "tipo_documento_anexo_desc", "tipo_documento_desc", "documento_desc"));
+            item.put("tipo_documento_anexo", valor(itemOrigem, "tipo_documento_anexo", "tipo_documento", "documento", "idTpDoc", "id_tp_doc"));
+            item.put("tipo_documento_anexo_desc", valor(itemOrigem, "tipo_documento_anexo_desc", "tipo_documento_desc", "documento_desc", "name", "nome", "fileName", "file_name"));
+            item.put("fileName", valor(itemOrigem, "fileName", "file_name", "tipo_documento_anexo_desc", "tipo_documento_desc", "documento_desc", "name", "nome"));
             Object anexo = valor(itemOrigem, "anexo", "path");
             if (anexo != null) {
                 item.put("anexo", anexo);
@@ -210,37 +212,71 @@ public class AcolhimentoEmpresaService {
                 ? List.of()
                 : ficheiros.stream().filter(this::temConteudo).toList();
         List<Map<String, Object>> anexos = anexos(acolhimento.getDetalhes());
-        if (ficheirosValidos.isEmpty() || anexos.isEmpty()) {
+        if (ficheirosValidos.isEmpty()) {
             return;
         }
 
-        for (int indice = 0; indice < ficheirosValidos.size() && indice < anexos.size(); indice++) {
+        for (int indice = 0; indice < ficheirosValidos.size(); indice++) {
             MultipartFile ficheiro = ficheirosValidos.get(indice);
-            Map<String, Object> anexo = anexos.get(indice);
+            Map<String, Object> anexo = anexoNoIndice(anexos, indice);
             String tipoDocumento = texto(anexo.get("tipo_documento_anexo"));
             if (tipoDocumento == null) {
-                continue;
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "tipo_documento_anexo e obrigatorio para cada ficheiro.");
             }
-            String nomeBase = sanitizar(textoOuPadrao(anexo.get("tipo_documento_anexo_desc"), removerExtensao(ficheiro.getOriginalFilename())));
+            String nomeOriginal = nomeOriginal(ficheiro, indice);
+            String nomeBase = sanitizar(textoOuPadrao(anexo.get("fileName"), removerExtensao(nomeOriginal)));
             String path = construirPathDocumento(acolhimento.getId(), nomeBase, ficheiro);
-            documentService.save(DocRelacaoDTO.builder()
-                    .idRelacao(acolhimento.getId())
-                    .tipoRelacao(TIPO_RELACAO_EMPRESA)
-                    .estado(ESTADO_ATIVO)
-                    .idTpDoc(tipoDocumento)
-                    .name(textoOuPadrao(anexo.get("tipo_documento_anexo_desc"), nomeBase))
-                    .fileName(nomeBase)
-                    .path(path)
-                    .appCode(appCodeDocumentoEmpresa)
-                    .file(ficheiro)
-                    .build());
-            anexo.put("anexo", path);
+            try {
+                String pathGuardado = documentService.save(DocRelacaoDTO.builder()
+                        .idRelacao(acolhimento.getId())
+                        .tipoRelacao(TIPO_RELACAO_EMPRESA)
+                        .estado(ESTADO_ATIVO)
+                        .idTpDoc(tipoDocumento)
+                        .name(textoOuPadrao(anexo.get("tipo_documento_anexo_desc"), nomeOriginal))
+                        .fileName(nomeBase)
+                        .path(path)
+                        .appCode(appCodeDocumentoEmpresa)
+                        .file(ficheiro)
+                        .build());
+                atualizarAnexoComPath(anexos, indice, anexo, pathGuardado);
+            } catch (RuntimeException ex) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_GATEWAY,
+                        MSG_ERRO_UPLOAD + " Verifique se o servico de documentos/MinIO esta disponivel.",
+                        ex
+                );
+            }
         }
 
         Map<String, Object> detalhes = new LinkedHashMap<>(acolhimento.getDetalhes());
         detalhes.put("anexos", anexos);
         acolhimento.setDetalhes(detalhes);
         detalhesAcolhimentoRepository.save(acolhimento);
+    }
+
+    private Map<String, Object> anexoNoIndice(List<Map<String, Object>> anexos, int indice) {
+        if (indice >= 0 && indice < anexos.size()) {
+            return anexos.get(indice);
+        }
+        return new LinkedHashMap<>();
+    }
+
+    private void atualizarAnexoComPath(
+            List<Map<String, Object>> anexos,
+            int indice,
+            Map<String, Object> metadados,
+            String path
+    ) {
+        while (anexos.size() <= indice) {
+            anexos.add(new LinkedHashMap<>());
+        }
+        Map<String, Object> anexo = anexos.get(indice);
+        if (anexo.isEmpty()) {
+            anexo.putAll(metadados);
+        }
+        anexo.put("anexo", valorOuVazio(path));
+        anexo.put("ver_documento", valorOuVazio(path));
+        anexo.put("ver_documento_desc", valorOuVazio(path));
     }
 
     @SuppressWarnings("unchecked")
@@ -334,7 +370,12 @@ public class AcolhimentoEmpresaService {
                 + idAcolhimento
                 + "/"
                 + nomeBase
-                + extensao(ficheiro.getOriginalFilename());
+                + extensao(ficheiro == null ? null : ficheiro.getOriginalFilename());
+    }
+
+    private String nomeOriginal(MultipartFile ficheiro, int indice) {
+        String nome = ficheiro == null ? null : ficheiro.getOriginalFilename();
+        return nome == null || nome.isBlank() ? "anexo-" + (indice + 1) : nome;
     }
 
     private String removerExtensao(String nomeFicheiro) {
@@ -360,6 +401,10 @@ public class AcolhimentoEmpresaService {
     private String textoOuPadrao(Object valor, String padrao) {
         String texto = texto(valor);
         return texto == null ? padrao : texto;
+    }
+
+    private Object valorOuVazio(Object valor) {
+        return valor == null ? "" : valor;
     }
 
     private String texto(Object valor) {
