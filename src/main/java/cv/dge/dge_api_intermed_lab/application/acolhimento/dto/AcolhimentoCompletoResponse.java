@@ -1,6 +1,8 @@
 package cv.dge.dge_api_intermed_lab.application.acolhimento.dto;
 
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
+import cv.dge.dge_api_intermed_lab.application.orientacao.dto.OrientacaoEntrevistaResponse;
+import cv.dge.dge_api_intermed_lab.application.orientacao.dto.OrientacaoServicoResponse;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,6 +36,8 @@ public record AcolhimentoCompletoResponse(
         UtenteReporterDTO utente,
         EntidadeReporterDTO entidade,
         AcolhimentoDadosEmpregoResponse dadosEmprego,
+        OrientacaoEntrevistaResponse entrevista,
+        OrientacaoServicoResponse servico,
         List<DocumentoResponseDTO> documentos,
         Map<String, Object> detalhes
 ) {

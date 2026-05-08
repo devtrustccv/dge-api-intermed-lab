@@ -8,11 +8,17 @@ import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.EntidadeReporterD
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.UtenteReporterDTO;
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
+import cv.dge.dge_api_intermed_lab.application.orientacao.dto.OrientacaoEntrevistaResponse;
+import cv.dge.dge_api_intermed_lab.application.orientacao.dto.OrientacaoServicoResponse;
+import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.AcolhimentoServico;
+import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.AgendamentoEntrevista;
 import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.Cefp;
 import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.DetalhesAcolhimento;
 import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.DetalhesEmpregoUtente;
 import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.Entidade;
 import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.Utente;
+import cv.dge.dge_api_intermed_lab.infrastructure.acolhimento.repository.AcolhimentoServicoRepository;
+import cv.dge.dge_api_intermed_lab.infrastructure.acolhimento.repository.AgendamentoEntrevistaRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.acolhimento.repository.CefpRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.acolhimento.repository.DetalhesAcolhimentoRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.acolhimento.repository.DetalhesEmpregoUtenteRepository;
@@ -39,6 +45,8 @@ public class AcolhimentoConsultaService {
 
     private final DetalhesAcolhimentoRepository detalhesAcolhimentoRepository;
     private final DetalhesEmpregoUtenteRepository detalhesEmpregoUtenteRepository;
+    private final AgendamentoEntrevistaRepository agendamentoEntrevistaRepository;
+    private final AcolhimentoServicoRepository acolhimentoServicoRepository;
     private final UtenteRepository utenteRepository;
     private final CefpRepository cefpRepository;
     private final EntidadeRepository entidadeRepository;
@@ -78,6 +86,12 @@ public class AcolhimentoConsultaService {
                 .findFirstByIdPessoaOrderByDateCreateDescIdDesc(acolhimento.getIdPessoa())
                 .map(this::mapearDadosEmprego)
                 .orElse(null);
+        AgendamentoEntrevista entrevista = agendamentoEntrevistaRepository
+                .findFirstByIdAcolhimentoOrderByDateCreateDescIdDesc(acolhimento.getId())
+                .orElse(null);
+        AcolhimentoServico servico = resolverServico(acolhimento, entrevista);
+        OrientacaoServicoResponse servicoResponse = mapearServico(servico);
+        OrientacaoEntrevistaResponse entrevistaResponse = mapearEntrevista(entrevista, servicoResponse);
         List<DocumentoResponseDTO> documentos = documentService.getDocumentosPorRelacao(
                 acolhimento.getId(),
                 tipoRelacaoDocumentoAcolhimento,
@@ -112,8 +126,77 @@ public class AcolhimentoConsultaService {
                 toUtenteReporterDTO(utente, acolhimento.getDetalhes()),
                 toEntidadeReporterDTO(entidade),
                 dadosEmprego,
+                entrevistaResponse,
+                servicoResponse,
                 documentos,
                 acolhimento.getDetalhes()
+        );
+    }
+
+    private AcolhimentoServico resolverServico(DetalhesAcolhimento acolhimento, AgendamentoEntrevista entrevista) {
+        if (entrevista != null) {
+            return acolhimentoServicoRepository.findFirstByIdEntrevistaOrderByIdDesc(entrevista.getId())
+                    .orElseGet(() -> buscarServicoPorAcolhimento(acolhimento));
+        }
+        return buscarServicoPorAcolhimento(acolhimento);
+    }
+
+    private AcolhimentoServico buscarServicoPorAcolhimento(DetalhesAcolhimento acolhimento) {
+        return acolhimentoServicoRepository.findFirstByIdAcolhimentoOrderByIdDesc(acolhimento.getId()).orElse(null);
+    }
+
+    private OrientacaoEntrevistaResponse mapearEntrevista(
+            AgendamentoEntrevista entrevista,
+            OrientacaoServicoResponse servico
+    ) {
+        if (entrevista == null) {
+            return null;
+        }
+        return new OrientacaoEntrevistaResponse(
+                entrevista.getId(),
+                entrevista.getIdAcolhimento(),
+                entrevista.getIdUtente(),
+                entrevista.getIdTecnico(),
+                entrevista.getNomeTecnico(),
+                entrevista.getDataEntrevista(),
+                entrevista.getHoraInicio(),
+                entrevista.getHoraFim(),
+                entrevista.getLocal(),
+                entrevista.getStatusEntrevista(),
+                entrevista.getIdCefp(),
+                entrevista.getCefp(),
+                entrevista.getTipoServico(),
+                entrevista.getCanal(),
+                entrevista.getLocalEntrevista(),
+                entrevista.getResultadoEntrevista(),
+                entrevista.getParecerIo(),
+                entrevista.getObsParecerIo(),
+                entrevista.getPathResultado(),
+                entrevista.getDateCreate(),
+                entrevista.getUserCreate(),
+                entrevista.getDateUpdate(),
+                entrevista.getUserUpdate(),
+                null,
+                servico
+        );
+    }
+
+    private OrientacaoServicoResponse mapearServico(AcolhimentoServico servico) {
+        if (servico == null) {
+            return null;
+        }
+        return new OrientacaoServicoResponse(
+                servico.getId(),
+                servico.getIdEntrevista(),
+                servico.getIdAcolhimento(),
+                servico.getIdUtente(),
+                servico.getTipoUtente(),
+                servico.getTipoUtenteDesc(),
+                servico.getTipoServico(),
+                servico.getTipoServicoDesc(),
+                servico.getNecessidadeAnalise(),
+                servico.getDetalhesServico(),
+                servico.getDetalhesAnalise()
         );
     }
 
