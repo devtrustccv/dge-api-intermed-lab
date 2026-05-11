@@ -99,6 +99,23 @@ public class OrientacaoServicoService {
         return toResponse(servico);
     }
 
+    @Transactional(readOnly = true)
+    public OrientacaoServicoResponse buscarPorEntrevistaETipoServico(Integer idEntrevista, String tipoServico) {
+        if (idEntrevista == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, MSG_ENTREVISTA_OBRIGATORIA);
+        }
+
+        String tipoServicoLimpo = texto(tipoServico);
+        if (tipoServicoLimpo == null) {
+            return buscarPorEntrevista(idEntrevista);
+        }
+
+        AcolhimentoServico servico = acolhimentoServicoRepository
+                .findFirstByIdEntrevistaAndTipoServicoOrderByIdDesc(idEntrevista, tipoServicoLimpo)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, MSG_SERVICO_NAO_ENCONTRADO));
+        return toResponse(servico);
+    }
+
     private void validarRequest(OrientacaoServicoRequest request) {
         if (request == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, MSG_PEDIDO_OBRIGATORIO);

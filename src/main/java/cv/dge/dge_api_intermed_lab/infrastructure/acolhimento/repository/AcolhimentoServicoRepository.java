@@ -8,5 +8,7 @@ public interface AcolhimentoServicoRepository extends JpaRepository<AcolhimentoS
 
     Optional<AcolhimentoServico> findFirstByIdEntrevistaOrderByIdDesc(Integer idEntrevista);
 
+    Optional<AcolhimentoServico> findFirstByIdEntrevistaAndTipoServicoOrderByIdDesc(Integer idEntrevista, String tipoServico);
+
     Optional<AcolhimentoServico> findFirstByIdAcolhimentoOrderByIdDesc(Integer idAcolhimento);
 }

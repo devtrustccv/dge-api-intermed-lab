@@ -18,6 +18,7 @@ public class ComboboxService {
                 p.tipo_documento_desc
             FROM emprego_t_tipo_documento_param p
             WHERE UPPER(p.status) = 'A'
+            AND p.formulario_referente = 'CIDADAO_UTENTE'
             ORDER BY p.date_create DESC, p.id DESC
             """;
 
