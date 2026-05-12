@@ -4,6 +4,8 @@ import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoEmpres
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoEmpresaResponse;
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocRelacaoDTO;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
+import cv.dge.dge_api_intermed_lab.application.notification.dto.NotificationRequestDTO;
+import cv.dge.dge_api_intermed_lab.application.notification.service.NotificationService;
 import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.DetalhesAcolhimento;
 import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.Entidade;
 import cv.dge.dge_api_intermed_lab.infrastructure.acolhimento.repository.DetalhesAcolhimentoRepository;
@@ -38,6 +40,7 @@ public class AcolhimentoEmpresaService {
     private final EntidadeRepository entidadeRepository;
     private final DetalhesAcolhimentoRepository detalhesAcolhimentoRepository;
     private final DocumentService documentService;
+    private final NotificationService notificationService;
 
     @Value("${document.empresa.app-code:interm_laboral}")
     private String appCodeDocumentoEmpresa;
@@ -82,6 +85,7 @@ public class AcolhimentoEmpresaService {
 
         DetalhesAcolhimento salvo = detalhesAcolhimentoRepository.save(acolhimento);
         guardarAnexosSeExistirem(salvo, ficheiros);
+        enviarEmailAcolhimentoEntidade(salvo);
 
         return new AcolhimentoEmpresaResponse(
                 salvo.getId(),
@@ -91,6 +95,35 @@ public class AcolhimentoEmpresaService {
                 salvo.getOrgId(),
                 salvo.getDetalhes()
         );
+    }
+
+    private void enviarEmailAcolhimentoEntidade(DetalhesAcolhimento acolhimento) {
+        String email = texto(valor(acolhimento.getDetalhes(), "email"));
+        if (email == null) {
+            return;
+        }
+
+        var configEmail = notificationService.loadConfigNotification(
+                "acolhimento_entidade",
+                null,
+                null,
+                appCodeDocumentoEmpresa
+        );
+        if (configEmail == null) {
+            throw new IllegalArgumentException(
+                    "Configuracao de email com o codigo [acolhimento_entidade] nao existe em "
+                            + appCodeDocumentoEmpresa
+                            + "."
+            );
+        }
+
+        NotificationRequestDTO dto = new NotificationRequestDTO();
+        dto.setAppName(appCodeDocumentoEmpresa);
+        dto.setAssunto(configEmail.getAssunto());
+        dto.setMensagem(configEmail.getMensagem());
+        dto.setEmail(email);
+
+        notificationService.enviarEmail(dto);
     }
 
     private void validar(AcolhimentoEmpresaRequest request) {

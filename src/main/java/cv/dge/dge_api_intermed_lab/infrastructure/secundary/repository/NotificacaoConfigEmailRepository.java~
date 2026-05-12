@@ -1,0 +1,4 @@
+package dge.dge_equiv_api.infrastructure.quaternary.repository;
+
+public interface NotificacaoConfigEmailRepository {
+}

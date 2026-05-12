@@ -14,6 +14,12 @@ spring.datasource.tertiary.username=postgres
 spring.datasource.tertiary.password=postgres
 spring.datasource.tertiary.driver-class-name=org.postgresql.Driver
 
+# BD secundary (db_gestao_notificacao)
+spring.datasource.secundary.url=jdbc:postgresql://localhost:5432/db_gestao_notificacao
+spring.datasource.secundary.username=postgres
+spring.datasource.secundary.password=postgres
+spring.datasource.secundary.driver-class-name=org.postgresql.Driver
+
 #spring.jpa.hibernate.ddl-auto=update
 spring.jpa.properties.hibernate.default_schema=public
 spring.jpa.properties.hibernate.format_sql=true

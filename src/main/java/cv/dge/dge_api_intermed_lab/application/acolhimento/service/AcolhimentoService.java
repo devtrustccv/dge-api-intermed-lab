@@ -9,6 +9,8 @@ import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.UtenteReporterDTO
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocRelacaoDTO;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
 import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
+import cv.dge.dge_api_intermed_lab.application.notification.dto.NotificationRequestDTO;
+import cv.dge.dge_api_intermed_lab.application.notification.service.NotificationService;
 import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.Cefp;
 import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.DetalhesAcolhimento;
 import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.DetalhesEmpregoUtente;
@@ -60,6 +62,7 @@ public class AcolhimentoService {
     private final ParamReportRepository paramReportRepository;
     private final GlobalGeografiaService globalGeografiaService;
     private final DocumentService documentService;
+    private final NotificationService notificationService;
 
     @Value("${document.acolhimento.tipo-relacao:acolhimento}")
     private String tipoRelacaoDocumentoAcolhimento;
@@ -134,6 +137,7 @@ public class AcolhimentoService {
         DetalhesAcolhimento salvo = detalhesAcolhimentoRepository.save(acolhimento);
         guardarDetalhesEmpregoSeExistir(request, salvo.getIdPessoa(), utente.getId(), utilizador);
         guardarAnexosSeExistirem(salvo, request, ficheiros);
+        enviarEmailAcolhimentoUtente(salvo, utente);
 
         return new AcolhimentoRegistoResponse(
                 salvo.getId(),
@@ -144,6 +148,38 @@ public class AcolhimentoService {
                 salvo.getOrgId(),
                 salvo.getDetalhes()
         );
+    }
+
+    private void enviarEmailAcolhimentoUtente(DetalhesAcolhimento acolhimento, Utente utente) {
+        String email = texto(primeiro(
+                valor(acolhimento.getDetalhes(), "email"),
+                procurarProfundo(acolhimento.getDetalhes(), "email")
+        ));
+        if (emBranco(email)) {
+            return;
+        }
+
+        var configEmail = notificationService.loadConfigNotification(
+                "acolhimento_utente_cidadao",
+                null,
+                null,
+                appCodeDocumentoAcolhimento
+        );
+        if (configEmail == null) {
+            throw new IllegalArgumentException(
+                    "Configuracao de email com o codigo [acolhimento_utente_cidadao] nao existe em "
+                            + appCodeDocumentoAcolhimento
+                            + "."
+            );
+        }
+
+        NotificationRequestDTO dto = new NotificationRequestDTO();
+        dto.setAppName(appCodeDocumentoAcolhimento);
+        dto.setAssunto(configEmail.getAssunto());
+        dto.setMensagem(configEmail.getMensagem());
+        dto.setEmail(email);
+
+        notificationService.enviarEmail(dto);
     }
 
     private void validarRequest(AcolhimentoRegistoRequest request) {
