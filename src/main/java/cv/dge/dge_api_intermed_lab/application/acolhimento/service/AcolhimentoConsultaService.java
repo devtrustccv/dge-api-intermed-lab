@@ -57,6 +57,7 @@ public class AcolhimentoConsultaService {
 
     @Value("${document.acolhimento.app-code:emprego}")
     private String appCodeDocumentoAcolhimento;
+    
 
     @Transactional(readOnly = true)
     public AcolhimentoPessoaResponse buscarPorIdPessoa(Integer idPessoa) {

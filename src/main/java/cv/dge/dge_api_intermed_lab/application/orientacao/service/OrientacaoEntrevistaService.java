@@ -33,8 +33,7 @@ public class OrientacaoEntrevistaService {
                 ? null
                 : detalhesAcolhimentoRepository.findById(entrevista.getIdAcolhimento()).orElse(null);
 
-        AcolhimentoServico servico = acolhimentoServicoRepository.findFirstByIdEntrevistaOrderByIdDesc(entrevista.getId())
-                .orElse(null);
+        AcolhimentoServico servico = buscarServicoDaEntrevista(entrevista);
 
         return new OrientacaoEntrevistaResponse(
                 entrevista.getId(),
@@ -95,6 +94,18 @@ public class OrientacaoEntrevistaService {
         dados.put("dateUpdate", acolhimento.getDateUpdate());
         dados.put("userUpdate", acolhimento.getUserUpdate());
         return dados;
+    }
+
+    private AcolhimentoServico buscarServicoDaEntrevista(AgendamentoEntrevista entrevista) {
+        String tipoServico = entrevista.getTipoServico();
+        if (tipoServico != null && !tipoServico.isBlank()) {
+            return acolhimentoServicoRepository
+                    .findFirstByIdEntrevistaAndTipoServicoOrderByIdDesc(entrevista.getId(), tipoServico)
+                    .orElse(null);
+        }
+
+        return acolhimentoServicoRepository.findFirstByIdEntrevistaOrderByIdDesc(entrevista.getId())
+                .orElse(null);
     }
 
     private OrientacaoServicoResponse mapearServico(AcolhimentoServico servico) {

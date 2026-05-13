@@ -2,14 +2,12 @@ package cv.dge.dge_api_intermed_lab.application.document.service;
 
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocRelacaoDTO;
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
-import cv.dge.dge_api_intermed_lab.application.document.dto.PublicUrlResponse;
 import cv.dge.dge_api_intermed_lab.infrastructure.tertiary.DocRelacaoEntity;
 import cv.dge.dge_api_intermed_lab.infrastructure.tertiary.repository.DocRelacaoRepository;
 import cv.dge.dge_api_intermed_lab.utils.RestClientHelper;
 import io.micrometer.common.lang.NonNull;
 import io.micrometer.common.lang.Nullable;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -25,7 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -33,23 +30,24 @@ public class DocumentServiceImpl implements DocumentService {
 
     private static final String DOCUMENTOS_ENDPOINT = "/documentos";
     private static final String DEFAULT_N_PROCESSO = "SEM-PROCESSO";
+    private static final String DEFAULT_DOCUMENT_TYPE = "application/pdf";
 
     private final DocRelacaoRepository docRelacaoRepository;
 
     private final RestClientHelper restClientHelper;
-    private final RestTemplate restTemplate;
 
     @Value("${api.base.service.url}")
     private String url;
 
+    @Value("${doc.open}")
+    private String docOpen;
+
     public DocumentServiceImpl(
             RestClientHelper restClientHelper,
-            DocRelacaoRepository docRelacaoRepository,
-            RestTemplate restTemplate
+            DocRelacaoRepository docRelacaoRepository
     ) {
         this.restClientHelper = restClientHelper;
         this.docRelacaoRepository = docRelacaoRepository;
-        this.restTemplate = restTemplate;
     }
 
     @Override
@@ -193,34 +191,36 @@ public class DocumentServiceImpl implements DocumentService {
         dto.setAppCode(entity.getAppCode());
         dto.setDataCriacao(entity.getDateCreate() == null ? null : entity.getDateCreate().toString());
 
-        String previewUrl = buildPreviewUrl(entity.getPath(), false);
+        String previewUrl = buildPreviewUrl(entity.getPath());
         dto.setPreviewUrl(previewUrl);
 
         return dto;
     }
 
-    private String buildPreviewUrl(String path, boolean download) {
-        try {
-            if (path == null || path.isEmpty()) {
-                return "";
-            }
-
-            String encodedPath = URLEncoder.encode(path, StandardCharsets.UTF_8.toString());
-            return url + "/documentos/preview-by-path"
-                    + "?path=" + encodedPath
-                    + "&download=" + download;
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("Erro ao codificar URL", e);
-        }
+    private String buildPreviewUrl(String path) {
+        return gerarLinkPublico(path);
     }
 
+    @Override
     public String gerarLinkPublico(String path) {
-        String urls = url + "/documentos/public-url?file_path=" + path;
+        if (path == null || path.isBlank()) {
+            return "";
+        }
 
-        PublicUrlResponse response =
-                restTemplate.getForObject(urls, PublicUrlResponse.class);
+        return appendQueryParam(docOpen, "path_url", path)
+                + "&type=" + DEFAULT_DOCUMENT_TYPE;
+    }
 
-        return response.getUrl();
+    private String appendQueryParam(String baseUrl, String paramName, String paramValue) {
+        String separator = baseUrl.contains("?")
+                ? (baseUrl.endsWith("?") || baseUrl.endsWith("&") ? "" : "&")
+                : "?";
+
+        return baseUrl + separator + paramName + "=" + encodeQueryParam(paramValue);
+    }
+
+    private String encodeQueryParam(String value) {
+        return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 
 }

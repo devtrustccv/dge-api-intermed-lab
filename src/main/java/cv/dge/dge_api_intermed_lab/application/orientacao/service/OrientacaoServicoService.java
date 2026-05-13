@@ -190,6 +190,7 @@ public class OrientacaoServicoService {
                     .build());
 
             anexo.put("anexo", path);
+            anexo.put("ver_documento", documentService.gerarLinkPublico(path));
         }
 
         Map<String, Object> detalhesAtualizados = new LinkedHashMap<>(servico.getDetalhesServico());

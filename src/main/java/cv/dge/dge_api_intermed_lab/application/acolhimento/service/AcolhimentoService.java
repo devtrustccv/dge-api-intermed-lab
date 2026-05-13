@@ -340,8 +340,9 @@ public class AcolhimentoService {
         if (anexo.isEmpty()) {
             anexo.putAll(mapearAnexosDetalhes(List.of(metadados)).stream().findFirst().orElseGet(LinkedHashMap::new));
         }
-        anexo.put("ver_documento", valorOuVazio(path));
-        anexo.put("ver_documento_desc", valorOuVazio(path));
+        String publicUrl = documentService.gerarLinkPublico(path);
+        anexo.put("ver_documento", valorOuVazio(publicUrl));
+        anexo.put("ver_documento_desc", valorOuVazio(publicUrl));
     }
 
     private Map<String, Object> documentoNoIndice(AcolhimentoRegistoRequest request, int indice) {

@@ -307,9 +307,10 @@ public class AcolhimentoEmpresaService {
         if (anexo.isEmpty()) {
             anexo.putAll(metadados);
         }
+        String publicUrl = documentService.gerarLinkPublico(path);
         anexo.put("anexo", valorOuVazio(path));
-        anexo.put("ver_documento", valorOuVazio(path));
-        anexo.put("ver_documento_desc", valorOuVazio(path));
+        anexo.put("ver_documento", valorOuVazio(publicUrl));
+        anexo.put("ver_documento_desc", valorOuVazio(publicUrl));
     }
 
     @SuppressWarnings("unchecked")
