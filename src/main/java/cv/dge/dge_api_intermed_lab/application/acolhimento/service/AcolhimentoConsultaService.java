@@ -2,12 +2,14 @@ package cv.dge.dge_api_intermed_lab.application.acolhimento.service;
 
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoCompletoResponse;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoDadosEmpregoResponse;
+import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoEntidadeResponse;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoPessoaResponse;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.CefpReporterDTO;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.EntidadeReporterDTO;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.UtenteReporterDTO;
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
+import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
 import cv.dge.dge_api_intermed_lab.application.orientacao.dto.OrientacaoEntrevistaResponse;
 import cv.dge.dge_api_intermed_lab.application.orientacao.dto.OrientacaoServicoResponse;
 import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.AcolhimentoServico;
@@ -24,11 +26,17 @@ import cv.dge.dge_api_intermed_lab.infrastructure.acolhimento.repository.Detalhe
 import cv.dge.dge_api_intermed_lab.infrastructure.acolhimento.repository.DetalhesEmpregoUtenteRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.acolhimento.repository.EntidadeRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.acolhimento.repository.UtenteRepository;
+import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -41,7 +49,9 @@ import org.springframework.web.server.ResponseStatusException;
 public class AcolhimentoConsultaService {
 
     private static final String MSG_ID_PESSOA_OBRIGATORIO = "idPessoa e obrigatorio.";
+    private static final String MSG_ID_ENTIDADE_OBRIGATORIO = "idEntidade e obrigatorio.";
     private static final String MSG_ACOLHIMENTO_NAO_ENCONTRADO = "Nenhum acolhimento encontrado para o idPessoa informado.";
+    private static final String MSG_ACOLHIMENTO_ENTIDADE_NAO_ENCONTRADO = "Nenhum acolhimento encontrado para o idEntidade informado.";
 
     private final DetalhesAcolhimentoRepository detalhesAcolhimentoRepository;
     private final DetalhesEmpregoUtenteRepository detalhesEmpregoUtenteRepository;
@@ -51,13 +61,13 @@ public class AcolhimentoConsultaService {
     private final CefpRepository cefpRepository;
     private final EntidadeRepository entidadeRepository;
     private final DocumentService documentService;
+    private final GlobalGeografiaService globalGeografiaService;
 
     @Value("${document.acolhimento.tipo-relacao:acolhimento}")
     private String tipoRelacaoDocumentoAcolhimento;
 
     @Value("${document.acolhimento.app-code:emprego}")
     private String appCodeDocumentoAcolhimento;
-    
 
     @Transactional(readOnly = true)
     public AcolhimentoPessoaResponse buscarPorIdPessoa(Integer idPessoa) {
@@ -79,18 +89,36 @@ public class AcolhimentoConsultaService {
         return new AcolhimentoPessoaResponse(idPessoa, respostas.size(), respostas);
     }
 
+    @Transactional(readOnly = true)
+    public AcolhimentoEntidadeResponse buscarPorIdEntidade(Integer idEntidade) {
+        if (idEntidade == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, MSG_ID_ENTIDADE_OBRIGATORIO);
+        }
+
+        List<DetalhesAcolhimento> acolhimentos = detalhesAcolhimentoRepository
+                .findAllByIdEntidadeOrderByDateCreateDescIdDesc(idEntidade);
+
+        if (acolhimentos.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, MSG_ACOLHIMENTO_ENTIDADE_NAO_ENCONTRADO);
+        }
+
+        List<AcolhimentoCompletoResponse> respostas = acolhimentos.stream()
+                .map(this::mapearAcolhimentoCompleto)
+                .toList();
+
+        return new AcolhimentoEntidadeResponse(idEntidade, respostas.size(), respostas);
+    }
+
     private AcolhimentoCompletoResponse mapearAcolhimentoCompleto(DetalhesAcolhimento acolhimento) {
+        Map<String, Object> detalhes = normalizarDetalhesGeografia(acolhimento.getDetalhes());
         Cefp cefp = resolverCefpDoAcolhimento(acolhimento);
         Utente utente = resolverUtenteDoAcolhimento(acolhimento);
         Entidade entidade = resolverEntidadeDoAcolhimento(acolhimento);
-        AcolhimentoDadosEmpregoResponse dadosEmprego = detalhesEmpregoUtenteRepository
-                .findFirstByIdPessoaOrderByDateCreateDescIdDesc(acolhimento.getIdPessoa())
-                .map(this::mapearDadosEmprego)
-                .orElse(null);
+        AcolhimentoDadosEmpregoResponse dadosEmprego = resolverDadosEmprego(acolhimento);
         AgendamentoEntrevista entrevista = agendamentoEntrevistaRepository
                 .findFirstByIdAcolhimentoOrderByDateCreateDescIdDesc(acolhimento.getId())
                 .orElse(null);
-        AcolhimentoServico servico = resolverServico(acolhimento, entrevista);
+        AcolhimentoServico servico = entrevista == null ? null : resolverServico(acolhimento, entrevista);
         OrientacaoServicoResponse servicoResponse = mapearServico(servico);
         OrientacaoEntrevistaResponse entrevistaResponse = mapearEntrevista(entrevista, servicoResponse);
         List<DocumentoResponseDTO> documentos = documentService.getDocumentosPorRelacao(
@@ -124,22 +152,113 @@ public class AcolhimentoConsultaService {
                 acolhimento.getDateUpdate(),
                 acolhimento.getUserUpdate(),
                 toCefpReporterDTO(cefp),
-                toUtenteReporterDTO(utente, acolhimento.getDetalhes()),
+                toUtenteReporterDTO(utente, detalhes),
                 toEntidadeReporterDTO(entidade),
                 dadosEmprego,
                 entrevistaResponse,
-                servicoResponse,
+                null,
                 documentos,
-                acolhimento.getDetalhes()
+                detalhes
         );
+    }
+
+    private AcolhimentoDadosEmpregoResponse resolverDadosEmprego(DetalhesAcolhimento acolhimento) {
+        if (acolhimento.getIdPessoa() == null) {
+            return null;
+        }
+        return detalhesEmpregoUtenteRepository
+                .findFirstByIdPessoaOrderByDateCreateDescIdDesc(acolhimento.getIdPessoa())
+                .map(this::mapearDadosEmprego)
+                .orElse(null);
+    }
+
+    private Map<String, Object> normalizarDetalhesGeografia(Map<String, Object> detalhes) {
+        if (detalhes == null) {
+            return null;
+        }
+        return mapaComNomesGeografia(detalhes, new HashMap<>());
+    }
+
+    private Map<String, Object> mapaComNomesGeografia(Map<?, ?> origem, Map<String, String> cache) {
+        Map<String, Object> destino = new LinkedHashMap<>();
+        origem.forEach((chave, valor) -> {
+            if (chave != null) {
+                String nomeChave = chave.toString();
+                destino.put(nomeChave, valorComNomeGeografia(nomeChave, valor, cache));
+            }
+        });
+        return destino;
+    }
+
+    private Object valorComNomeGeografia(String chave, Object valor, Map<String, String> cache) {
+        if (valor instanceof Map<?, ?> mapa) {
+            return mapaComNomesGeografia(mapa, cache);
+        }
+        if (valor instanceof Collection<?> colecao) {
+            return colecao.stream()
+                    .map(item -> valorComNomeGeografia(chave, item, cache))
+                    .toList();
+        }
+        if (!chaveGeografica(chave)) {
+            return valor;
+        }
+
+        String nome = resolverNomeGeografia(valor == null ? null : valor.toString(), chave, cache);
+        return nome == null || nome.isBlank() ? valor : nome;
+    }
+
+    private boolean chaveGeografica(String chave) {
+        String normalizada = normalizar(chave);
+        return normalizada.contains("pais")
+                || normalizada.contains("ilha")
+                || normalizada.contains("concelho")
+                || normalizada.contains("zona")
+                || normalizada.contains("naturalidade");
+    }
+
+    private String resolverNomeGeografia(String codigo, String chave, Map<String, String> cache) {
+        if (codigo == null || codigo.isBlank()) {
+            return null;
+        }
+
+        String codigoLimpo = codigo.trim();
+        String chaveCache = normalizar(chave) + ":" + codigoLimpo;
+        if (cache.containsKey(chaveCache)) {
+            return cache.get(chaveCache);
+        }
+
+        String nome = globalGeografiaService.buscarNomePorCodigo(codigoLimpo).orElse(null);
+        cache.put(chaveCache, nome);
+        return nome;
+    }
+
+    private String normalizar(String valor) {
+        if (valor == null) {
+            return "";
+        }
+        String semAcentos = Normalizer.normalize(valor, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "");
+        return semAcentos.toLowerCase(Locale.ROOT);
     }
 
     private AcolhimentoServico resolverServico(DetalhesAcolhimento acolhimento, AgendamentoEntrevista entrevista) {
         if (entrevista != null) {
-            return acolhimentoServicoRepository.findFirstByIdEntrevistaOrderByIdDesc(entrevista.getId())
-                    .orElseGet(() -> buscarServicoPorAcolhimento(acolhimento));
+            return buscarServicoDaEntrevista(entrevista)
+                    .orElse(null);
         }
         return buscarServicoPorAcolhimento(acolhimento);
+    }
+
+    private Optional<AcolhimentoServico> buscarServicoDaEntrevista(AgendamentoEntrevista entrevista) {
+        String tipoServico = entrevista.getTipoServico();
+        if (tipoServico != null && !tipoServico.isBlank()) {
+            return acolhimentoServicoRepository.findFirstByIdEntrevistaAndTipoServicoOrderByIdDesc(
+                    entrevista.getId(),
+                    tipoServico
+            );
+        }
+
+        return acolhimentoServicoRepository.findFirstByIdEntrevistaOrderByIdDesc(entrevista.getId());
     }
 
     private AcolhimentoServico buscarServicoPorAcolhimento(DetalhesAcolhimento acolhimento) {

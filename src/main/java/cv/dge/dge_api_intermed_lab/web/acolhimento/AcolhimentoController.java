@@ -3,6 +3,7 @@ package cv.dge.dge_api_intermed_lab.web.acolhimento;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoEmpresaRequest;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoEmpresaResponse;
+import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoEntidadeResponse;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoPessoaResponse;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoRegistoRequest;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoRegistoResponse;
@@ -91,6 +92,11 @@ public class AcolhimentoController {
     @GetMapping("pessoa/{id_pessoa}")
     public AcolhimentoPessoaResponse buscarPorPessoa(@PathVariable("id_pessoa") Integer idPessoa) {
         return acolhimentoConsultaService.buscarPorIdPessoa(idPessoa);
+    }
+
+    @GetMapping("entidade/{id_entidade}")
+    public AcolhimentoEntidadeResponse buscarPorEntidade(@PathVariable("id_entidade") Integer idEntidade) {
+        return acolhimentoConsultaService.buscarPorIdEntidade(idEntidade);
     }
 
     private AcolhimentoRegistoRequest converterRequest(String dadosJson, MultiValueMap<String, String> campos) {

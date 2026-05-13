@@ -107,7 +107,14 @@ public class OrientacaoServicoService {
 
         String tipoServicoLimpo = texto(tipoServico);
         if (tipoServicoLimpo == null) {
-            return buscarPorEntrevista(idEntrevista);
+            tipoServicoLimpo = agendamentoEntrevistaRepository.findById(idEntrevista)
+                    .map(AgendamentoEntrevista::getTipoServico)
+                    .map(this::texto)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, MSG_ENTREVISTA_NAO_ENCONTRADA));
+        }
+
+        if (tipoServicoLimpo == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, MSG_SERVICO_NAO_ENCONTRADO);
         }
 
         AcolhimentoServico servico = acolhimentoServicoRepository

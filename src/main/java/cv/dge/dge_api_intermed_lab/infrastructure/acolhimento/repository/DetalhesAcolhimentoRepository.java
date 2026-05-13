@@ -9,6 +9,8 @@ public interface DetalhesAcolhimentoRepository extends JpaRepository<DetalhesAco
 
     List<DetalhesAcolhimento> findAllByIdPessoaOrderByDateCreateDescIdDesc(Integer idPessoa);
 
+    List<DetalhesAcolhimento> findAllByIdEntidadeOrderByDateCreateDescIdDesc(Integer idEntidade);
+
     @Query(value = """
             SELECT COALESCE(MAX(CAST(substring(num_inscricao from '/([0-9]+)$') AS INTEGER)), 0) + 1
             FROM emprego_t_detalhes_acolhimento

@@ -1,5 +1,6 @@
 package cv.dge.dge_api_intermed_lab.application.acolhimento.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
 import cv.dge.dge_api_intermed_lab.application.orientacao.dto.OrientacaoEntrevistaResponse;
 import cv.dge.dge_api_intermed_lab.application.orientacao.dto.OrientacaoServicoResponse;
@@ -37,6 +38,7 @@ public record AcolhimentoCompletoResponse(
         EntidadeReporterDTO entidade,
         AcolhimentoDadosEmpregoResponse dadosEmprego,
         OrientacaoEntrevistaResponse entrevista,
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         OrientacaoServicoResponse servico,
         List<DocumentoResponseDTO> documentos,
         Map<String, Object> detalhes
