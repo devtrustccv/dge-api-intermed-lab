@@ -3,6 +3,8 @@ package cv.dge.dge_api_intermed_lab.web.orientacao;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cv.dge.dge_api_intermed_lab.application.orientacao.dto.OrientacaoServicoRequest;
 import cv.dge.dge_api_intermed_lab.application.orientacao.dto.OrientacaoServicoResponse;
+import cv.dge.dge_api_intermed_lab.application.orientacao.dto.RequisitoResponse;
+import cv.dge.dge_api_intermed_lab.application.orientacao.service.RequisitoService;
 import cv.dge.dge_api_intermed_lab.application.orientacao.service.OrientacaoServicoService;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +29,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class OrientacaoServicoController {
 
     private final OrientacaoServicoService orientacaoServicoService;
+    private final RequisitoService requisitoService;
     private final ObjectMapper objectMapper;
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -51,6 +54,11 @@ public class OrientacaoServicoController {
             @RequestParam(value = "tipoServico", required = false) String tipoServico
     ) {
         return orientacaoServicoService.buscarPorEntrevistaETipoServico(idEntrevista, tipoServico);
+    }
+
+    @GetMapping("requisitos")
+    public List<RequisitoResponse> listarRequisitosAtivos() {
+        return requisitoService.listarAtivos();
     }
 
     private OrientacaoServicoRequest converterRequest(String dadosJson) {
