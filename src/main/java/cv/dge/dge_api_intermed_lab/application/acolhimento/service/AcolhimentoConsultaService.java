@@ -49,9 +49,9 @@ import org.springframework.web.server.ResponseStatusException;
 public class AcolhimentoConsultaService {
 
     private static final String MSG_ID_PESSOA_OBRIGATORIO = "idPessoa e obrigatorio.";
-    private static final String MSG_ID_ENTIDADE_OBRIGATORIO = "idEntidade e obrigatorio.";
+    private static final String MSG_ID_ENTIDADE_OBRIGATORIO = "globalIdEntidade e obrigatorio.";
     private static final String MSG_ACOLHIMENTO_NAO_ENCONTRADO = "Nenhum acolhimento encontrado para o idPessoa informado.";
-    private static final String MSG_ACOLHIMENTO_ENTIDADE_NAO_ENCONTRADO = "Nenhum acolhimento encontrado para o idEntidade informado.";
+    private static final String MSG_ACOLHIMENTO_ENTIDADE_NAO_ENCONTRADO = "Nenhum acolhimento encontrado para o globalIdEntidade informado.";
 
     private final DetalhesAcolhimentoRepository detalhesAcolhimentoRepository;
     private final DetalhesEmpregoUtenteRepository detalhesEmpregoUtenteRepository;
@@ -90,13 +90,21 @@ public class AcolhimentoConsultaService {
     }
 
     @Transactional(readOnly = true)
-    public AcolhimentoEntidadeResponse buscarPorIdEntidade(Integer idEntidade) {
-        if (idEntidade == null) {
+    public AcolhimentoEntidadeResponse buscarPorIdEntidade(Integer globalIdEntidade) {
+        if (globalIdEntidade == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, MSG_ID_ENTIDADE_OBRIGATORIO);
         }
 
+        List<Integer> idsEntidade = entidadeRepository.findAllByGlobalIdEntidade(globalIdEntidade).stream()
+                .map(Entidade::getId)
+                .toList();
+
+        if (idsEntidade.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, MSG_ACOLHIMENTO_ENTIDADE_NAO_ENCONTRADO);
+        }
+
         List<DetalhesAcolhimento> acolhimentos = detalhesAcolhimentoRepository
-                .findAllByIdEntidadeOrderByDateCreateDescIdDesc(idEntidade);
+                .findAllByIdEntidadeInOrderByDateCreateDescIdDesc(idsEntidade);
 
         if (acolhimentos.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, MSG_ACOLHIMENTO_ENTIDADE_NAO_ENCONTRADO);
@@ -106,7 +114,7 @@ public class AcolhimentoConsultaService {
                 .map(this::mapearAcolhimentoCompleto)
                 .toList();
 
-        return new AcolhimentoEntidadeResponse(idEntidade, respostas.size(), respostas);
+        return new AcolhimentoEntidadeResponse(globalIdEntidade, respostas.size(), respostas);
     }
 
     private AcolhimentoCompletoResponse mapearAcolhimentoCompleto(DetalhesAcolhimento acolhimento) {

@@ -95,8 +95,8 @@ public class AcolhimentoController {
     }
 
     @GetMapping("entidade/{id_entidade}")
-    public AcolhimentoEntidadeResponse buscarPorEntidade(@PathVariable("id_entidade") Integer idEntidade) {
-        return acolhimentoConsultaService.buscarPorIdEntidade(idEntidade);
+    public AcolhimentoEntidadeResponse buscarPorEntidade(@PathVariable("id_entidade") Integer globalIdEntidade) {
+        return acolhimentoConsultaService.buscarPorIdEntidade(globalIdEntidade);
     }
 
     private AcolhimentoRegistoRequest converterRequest(String dadosJson, MultiValueMap<String, String> campos) {
