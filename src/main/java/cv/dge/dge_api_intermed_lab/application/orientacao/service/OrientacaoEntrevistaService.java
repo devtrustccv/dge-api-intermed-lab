@@ -99,9 +99,12 @@ public class OrientacaoEntrevistaService {
     private AcolhimentoServico buscarServicoDaEntrevista(AgendamentoEntrevista entrevista) {
         String tipoServico = entrevista.getTipoServico();
         if (tipoServico != null && !tipoServico.isBlank()) {
-            return acolhimentoServicoRepository
+            AcolhimentoServico servicoPorTipo = acolhimentoServicoRepository
                     .findFirstByIdEntrevistaAndTipoServicoOrderByIdDesc(entrevista.getId(), tipoServico)
                     .orElse(null);
+            if (servicoPorTipo != null) {
+                return servicoPorTipo;
+            }
         }
 
         return acolhimentoServicoRepository.findFirstByIdEntrevistaOrderByIdDesc(entrevista.getId())

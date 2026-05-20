@@ -260,10 +260,11 @@ public class AcolhimentoConsultaService {
     private Optional<AcolhimentoServico> buscarServicoDaEntrevista(AgendamentoEntrevista entrevista) {
         String tipoServico = entrevista.getTipoServico();
         if (tipoServico != null && !tipoServico.isBlank()) {
-            return acolhimentoServicoRepository.findFirstByIdEntrevistaAndTipoServicoOrderByIdDesc(
-                    entrevista.getId(),
-                    tipoServico
-            );
+            Optional<AcolhimentoServico> servicoPorTipo = acolhimentoServicoRepository
+                    .findFirstByIdEntrevistaAndTipoServicoOrderByIdDesc(entrevista.getId(), tipoServico);
+            if (servicoPorTipo.isPresent()) {
+                return servicoPorTipo;
+            }
         }
 
         return acolhimentoServicoRepository.findFirstByIdEntrevistaOrderByIdDesc(entrevista.getId());
