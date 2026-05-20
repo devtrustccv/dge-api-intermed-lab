@@ -13,12 +13,18 @@ import org.springframework.transaction.annotation.Transactional;
 public class RequisitoService {
 
     private static final String ESTADO_ATIVO = "A";
+    private static final String TIPO_SERVICO_SUBSIDIO_DESEMPREGO = "SUBSIDIO_DESEMPREGO";
 
     private final RequisitoRepository requisitoRepository;
 
     @Transactional(readOnly = true)
     public List<RequisitoResponse> listarAtivos() {
-        return requisitoRepository.findAllByEstadoIgnoreCaseOrderByDateCreateDescIdDesc(ESTADO_ATIVO).stream()
+        return requisitoRepository
+                .findAllByEstadoIgnoreCaseAndTipoServicoIgnoreCaseOrderByDateCreateDescIdDesc(
+                        ESTADO_ATIVO,
+                        TIPO_SERVICO_SUBSIDIO_DESEMPREGO
+                )
+                .stream()
                 .map(this::toResponse)
                 .toList();
     }

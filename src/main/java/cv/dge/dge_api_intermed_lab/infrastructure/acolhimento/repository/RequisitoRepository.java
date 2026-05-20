@@ -7,4 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface RequisitoRepository extends JpaRepository<Requisito, Integer> {
 
     List<Requisito> findAllByEstadoIgnoreCaseOrderByDateCreateDescIdDesc(String estado);
+
+    List<Requisito> findAllByEstadoIgnoreCaseAndTipoServicoIgnoreCaseOrderByDateCreateDescIdDesc(
+            String estado,
+            String tipoServico
+    );
 }
