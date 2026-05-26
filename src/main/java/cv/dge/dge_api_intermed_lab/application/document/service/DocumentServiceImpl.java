@@ -2,8 +2,9 @@ package cv.dge.dge_api_intermed_lab.application.document.service;
 
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocRelacaoDTO;
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
-import cv.dge.dge_api_intermed_lab.infrastructure.tertiary.DocRelacaoEntity;
-import cv.dge.dge_api_intermed_lab.infrastructure.tertiary.repository.DocRelacaoRepository;
+import cv.dge.dge_api_intermed_lab.application.document.mapper.DocRelacaoMapper;
+import cv.dge.dge_api_intermed_lab.domain.document.business.DocRelacaoBus;
+import cv.dge.dge_api_intermed_lab.infrastructure.document.DocRelacaoEntity;
 import cv.dge.dge_api_intermed_lab.utils.RestClientHelper;
 import io.micrometer.common.lang.NonNull;
 import io.micrometer.common.lang.Nullable;
@@ -32,7 +33,8 @@ public class DocumentServiceImpl implements DocumentService {
     private static final String DEFAULT_N_PROCESSO = "SEM-PROCESSO";
     private static final String DEFAULT_DOCUMENT_TYPE = "application/pdf";
 
-    private final DocRelacaoRepository docRelacaoRepository;
+    private final DocRelacaoBus docRelacaoBus;
+    private final DocRelacaoMapper docRelacaoMapper;
 
     private final RestClientHelper restClientHelper;
 
@@ -44,10 +46,12 @@ public class DocumentServiceImpl implements DocumentService {
 
     public DocumentServiceImpl(
             RestClientHelper restClientHelper,
-            DocRelacaoRepository docRelacaoRepository
+            DocRelacaoBus docRelacaoBus,
+            DocRelacaoMapper docRelacaoMapper
     ) {
         this.restClientHelper = restClientHelper;
-        this.docRelacaoRepository = docRelacaoRepository;
+        this.docRelacaoBus = docRelacaoBus;
+        this.docRelacaoMapper = docRelacaoMapper;
     }
 
     @Override
@@ -165,36 +169,16 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     public List<DocumentoResponseDTO> getDocumentosPorRelacao(Integer idRelacao, String tipoRelacao, String appCode) {
-        List<DocRelacaoEntity> documentosEntity = docRelacaoRepository.findByIdRelacaoAndTipoRelacaoAndAppCode(
-                Long.valueOf(idRelacao), tipoRelacao, appCode);
+        List<DocRelacaoEntity> documentosEntity = docRelacaoBus.findByRelacao(idRelacao, tipoRelacao, appCode);
 
         List<DocumentoResponseDTO> documentosDTO = new ArrayList<>();
 
         for (DocRelacaoEntity entity : documentosEntity) {
-            DocumentoResponseDTO dto = convertToDTO(entity);
+            DocumentoResponseDTO dto = docRelacaoMapper.toDocumentoResponse(entity, buildPreviewUrl(entity.getPath()));
             documentosDTO.add(dto);
         }
 
         return documentosDTO;
-    }
-
-    private DocumentoResponseDTO convertToDTO(DocRelacaoEntity entity) {
-        DocumentoResponseDTO dto = new DocumentoResponseDTO();
-        dto.setId(Long.valueOf(entity.getId()));
-        dto.setName(entity.getName());
-        dto.setFileName(entity.getFileName());
-        dto.setPath(entity.getPath());
-        dto.setTipoRelacao(entity.getTipoRelacao());
-        dto.setIdRelacao(entity.getIdRelacao() == null ? null : Math.toIntExact(entity.getIdRelacao()));
-        dto.setIdTpDoc(entity.getIdTpDoc() == null ? null : String.valueOf(entity.getIdTpDoc()));
-        dto.setEstado(entity.getEstado());
-        dto.setAppCode(entity.getAppCode());
-        dto.setDataCriacao(entity.getDateCreate() == null ? null : entity.getDateCreate().toString());
-
-        String previewUrl = buildPreviewUrl(entity.getPath());
-        dto.setPreviewUrl(previewUrl);
-
-        return dto;
     }
 
     private String buildPreviewUrl(String path) {

@@ -20,7 +20,10 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        basePackages = "cv.dge.dge_api_intermed_lab.infrastructure.acolhimento.repository",
+        basePackages = {
+                "cv.dge.dge_api_intermed_lab.infrastructure.acolhimento.repository",
+                "cv.dge.dge_api_intermed_lab.infrastructure.orientacao.repository"
+        },
         entityManagerFactoryRef = "primaryEntityManagerFactory",
         transactionManagerRef = "primaryTransactionManager"
 )
@@ -55,7 +58,10 @@ public class PrimaryDataSourceConfig {
 
         return builder
                 .dataSource(dataSource)
-                .packages("cv.dge.dge_api_intermed_lab.domain.acolhimento.model")
+                .packages(
+                        "cv.dge.dge_api_intermed_lab.domain.acolhimento.model",
+                        "cv.dge.dge_api_intermed_lab.domain.orientacao.model"
+                )
                 .persistenceUnit("primary")
                 .properties(props)
                 .build();

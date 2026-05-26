@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        basePackages = "cv.dge.dge_api_intermed_lab.infrastructure.secundary.repository",
+        basePackages = "cv.dge.dge_api_intermed_lab.infrastructure.notification.repository",
         entityManagerFactoryRef = "secundaryEntityManagerFactory",
         transactionManagerRef = "secundaryTransactionManager"
 )
@@ -50,7 +50,7 @@ public class SecundaryDataSourceConfig {
 
         return builder
                 .dataSource(dataSource)
-                .packages("cv.dge.dge_api_intermed_lab.infrastructure.secundary")
+                .packages("cv.dge.dge_api_intermed_lab.infrastructure.notification")
                 .persistenceUnit("secundary")
                 .properties(props)
                 .build();

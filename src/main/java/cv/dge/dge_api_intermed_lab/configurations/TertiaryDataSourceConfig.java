@@ -21,7 +21,10 @@ import javax.sql.DataSource;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        basePackages = "cv.dge.dge_api_intermed_lab.infrastructure.tertiary.repository",
+        basePackages = {
+                "cv.dge.dge_api_intermed_lab.infrastructure.document.repository",
+                "cv.dge.dge_api_intermed_lab.infrastructure.geografia.repository"
+        },
         entityManagerFactoryRef = "tertiaryEntityManagerFactory",
         transactionManagerRef = "tertiaryTransactionManager"
 )
@@ -54,7 +57,10 @@ public class TertiaryDataSourceConfig {
 
         return builder
                 .dataSource(dataSource)
-                .packages("cv.dge.dge_api_intermed_lab.infrastructure.tertiary")
+                .packages(
+                        "cv.dge.dge_api_intermed_lab.infrastructure.document",
+                        "cv.dge.dge_api_intermed_lab.infrastructure.geografia"
+                )
                 .persistenceUnit("tertiary")
                 .properties(props)
                 .build();
