@@ -4,6 +4,7 @@ import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoComple
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoDadosEmpregoResponse;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoEntidadeResponse;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoPessoaResponse;
+import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.UtenteResponse;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.mapper.AcolhimentoMapper;
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
@@ -54,6 +55,15 @@ public class AcolhimentoConsultaServiceImpl implements AcolhimentoConsultaServic
     @Value("${document.acolhimento.app-code:emprego}")
     private String appCodeDocumentoAcolhimento;
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<UtenteResponse> listarUtentes() {
+        return acolhimentoBus.findAllUtentes().stream()
+                .map(acolhimentoMapper::toUtenteResponse)
+                .toList();
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public AcolhimentoPessoaResponse buscarPorIdPessoa(Integer idPessoa) {
         if (idPessoa == null) {

@@ -9,6 +9,7 @@ import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoRegist
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoReporterResponse;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.CefpReporterDTO;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.EntidadeReporterDTO;
+import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.UtenteResponse;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.UtenteReporterDTO;
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
 import cv.dge.dge_api_intermed_lab.application.orientacao.dto.OrientacaoEntrevistaResponse;
@@ -181,6 +182,24 @@ public class AcolhimentoMapper {
                 entidade.getNif(),
                 entidade.getRegistoSocial(),
                 entidade.getNaturezaJuridica()
+        );
+    }
+
+    public UtenteResponse toUtenteResponse(Utente utente) {
+        return new UtenteResponse(
+                utente.getId(),
+                utente.getPessoaId(),
+                utente.getNome(),
+                utente.getDataNascimento(),
+                utente.getTipoDocumento(),
+                utente.getNumDocumento(),
+                utente.getSexo(),
+                utente.getNif(),
+                utente.getHabilitacaoLiteraria(),
+                utente.getDateCreate(),
+                utente.getUserCreate(),
+                utente.getDateUpdate(),
+                utente.getUserUpdate()
         );
     }
 

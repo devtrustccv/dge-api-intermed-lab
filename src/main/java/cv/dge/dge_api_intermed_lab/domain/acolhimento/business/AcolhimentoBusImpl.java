@@ -90,6 +90,11 @@ public class AcolhimentoBusImpl implements AcolhimentoBus {
     }
 
     @Override
+    public List<Utente> findAllUtentes() {
+        return utenteRepository.findAll();
+    }
+
+    @Override
     public Utente saveUtente(Utente utente) {
         return utenteRepository.save(utente);
     }

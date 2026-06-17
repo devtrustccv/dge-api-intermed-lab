@@ -8,6 +8,7 @@ import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoPessoa
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoRegistoRequest;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoRegistoResponse;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoReporterResponse;
+import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.UtenteResponse;
 import java.util.LinkedHashMap;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.service.AcolhimentoConsultaService;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.service.AcolhimentoEmpresaService;
@@ -87,6 +88,11 @@ public class AcolhimentoController {
     @GetMapping("reporter/{id}")
     public AcolhimentoReporterResponse buscarParaReporter(@PathVariable("id") Integer idAcolhimento) {
         return acolhimentoService.buscarParaReporter(idAcolhimento);
+    }
+
+    @GetMapping("utentes")
+    public List<UtenteResponse> listarUtentes() {
+        return acolhimentoConsultaService.listarUtentes();
     }
 
     @GetMapping("pessoa/{id_pessoa}")

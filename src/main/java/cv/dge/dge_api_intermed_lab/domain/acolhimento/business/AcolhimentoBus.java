@@ -35,6 +35,8 @@ public interface AcolhimentoBus {
 
     Optional<Utente> findUtenteByNumDocumento(String numDocumento);
 
+    List<Utente> findAllUtentes();
+
     Utente saveUtente(Utente utente);
 
     Optional<Cefp> findCefpById(Integer id);
