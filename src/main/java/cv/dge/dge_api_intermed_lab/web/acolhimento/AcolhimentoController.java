@@ -89,8 +89,8 @@ public class AcolhimentoController {
     public AcolhimentoReporterResponse buscarParaReporter(@PathVariable("id") Integer idAcolhimento) {
         return acolhimentoService.buscarParaReporter(idAcolhimento);
     }
-
-    @GetMapping("utentes")
+// enpoint para pac lista de utentes 
+    @GetMapping("pac-candidatura/contratacao")
     public List<UtenteResponse> listarUtentes() {
         return acolhimentoConsultaService.listarUtentes();
     }
