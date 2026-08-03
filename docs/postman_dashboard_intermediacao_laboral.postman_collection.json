@@ -1,0 +1,72 @@
+{
+  "info": {
+    "_postman_id": "c1db6d4d-98a1-4d33-9b0c-dashboard-intermediacao-laboral",
+    "name": "Dashboard Intermediacao Laboral",
+    "description": "Collection para testar o endpoint de dashboard da intermediacao laboral.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Dashboard Intermediacao Laboral",
+      "item": [
+        {
+          "name": "Buscar Dashboard Geral",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/intermediacao-laboral/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "intermediacao-laboral",
+                "dashboard"
+              ]
+            },
+            "description": "Retorna os KPIs gerais do dashboard: ofertas registadas, candidaturas recebidas, media de vagas por oferta, estagiarios selecionados, estagiarios avaliados, agrupamentos dos graficos e tabela de resumo por oferta."
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Dashboard por Entidade",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/intermediacao-laboral/dashboard?entidadeId={{entidadeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "intermediacao-laboral",
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "entidadeId",
+                  "value": "{{entidadeId}}",
+                  "description": "ID da entidade empregadora para filtrar os dados do dashboard."
+                }
+              ]
+            },
+            "description": "Retorna os mesmos KPIs do dashboard filtrados por entidade empregadora."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:9001/api"
+    },
+    {
+      "key": "entidadeId",
+      "value": "1"
+    }
+  ]
+}
