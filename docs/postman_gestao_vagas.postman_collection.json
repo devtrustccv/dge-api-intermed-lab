@@ -1,0 +1,218 @@
+{
+  "info": {
+    "_postman_id": "d7aa8031-1f6f-4891-b1c9-gestao-vagas",
+    "name": "Gestao de Vagas",
+    "description": "Collection para testar os endpoints de gestao de vagas de emprego e estagio.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Gestao de Vagas",
+      "item": [
+        {
+          "name": "Listar Vagas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/vagas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "vagas"
+              ],
+              "query": []
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Vagas com Filtros",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/vagas?tipoOferta=EMPREGO&entidadeId={{entidadeId}}&estado=ATIVA",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "vagas"
+              ],
+              "query": [
+                {
+                  "key": "tipoOferta",
+                  "value": "EMPREGO"
+                },
+                {
+                  "key": "entidadeId",
+                  "value": "{{entidadeId}}"
+                },
+                {
+                  "key": "estado",
+                  "value": "ATIVA"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Vaga Ativa",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoReferencia\": \"VG-POSTMAN-001\",\n  \"tipoOferta\": \"EMPREGO\",\n  \"titulo\": \"Tecnico de Informatica\",\n  \"descricao\": \"Vaga de teste criada pelo Postman.\",\n  \"dataInicioCandidatura\": \"2026-08-03\",\n  \"dataFimCandidatura\": \"2026-08-31\",\n  \"dataInicioPrevisto\": \"2026-09-15\",\n  \"duracaoContrato\": 12,\n  \"regimeContrato\": \"TERMO\",\n  \"entidadeId\": {{entidadeId}},\n  \"denominacaoEntidade\": \"Empresa Teste A\",\n  \"habilitacaoMinima\": \"12_ANO\",\n  \"nivelQualificacao\": \"NIVEL_4\",\n  \"numVagas\": 2,\n  \"habilitacaoMaxima\": \"LICENCIATURA\",\n  \"conhecimentoLinguistico\": [\n    {\n      \"idioma\": \"INGLES\",\n      \"nivelEscrita\": \"BOM\",\n      \"nivelOralidade\": \"BOM\",\n      \"certificacao\": \"NAO\"\n    }\n  ],\n  \"competenciasValorizadas\": [\"Java\", \"SQL\", \"Suporte tecnico\"],\n  \"horaInicio\": \"08:00:00\",\n  \"horaFim\": \"16:00:00\",\n  \"diasSemana\": [\"SEGUNDA\", \"TERCA\", \"QUARTA\", \"QUINTA\", \"SEXTA\"],\n  \"cursosAreaFormacao\": [\"Informatica\", \"Redes\"],\n  \"experienciaProfissional\": [\"Suporte tecnico\", \"Administracao de sistemas\"],\n  \"ilha\": \"ST\",\n  \"concelho\": \"PR\",\n  \"orientadorId\": 1,\n  \"coordenadorId\": 2,\n  \"emailContacto\": \"rh@empresa.cv\",\n  \"contacto\": \"9912345\",\n  \"observacao\": \"Teste de criacao ativa.\",\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/v1/vagas"
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Vaga Rascunho",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoReferencia\": \"VG-RASC-001\",\n  \"tipoOferta\": \"ESTAGIO\",\n  \"titulo\": \"Estagio Profissional\",\n  \"numVagas\": 3,\n  \"entidadeId\": {{entidadeId}},\n  \"denominacaoEntidade\": \"Empresa Teste A\",\n  \"ilha\": \"ST\",\n  \"concelho\": \"PR\",\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/v1/vagas/rascunho"
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Vaga por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/v1/vagas/{{vagaId}}"
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Vaga",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoReferencia\": \"VG-POSTMAN-001\",\n  \"tipoOferta\": \"EMPREGO\",\n  \"titulo\": \"Tecnico de Informatica Senior\",\n  \"descricao\": \"Vaga atualizada pelo Postman.\",\n  \"dataInicioCandidatura\": \"2026-08-03\",\n  \"dataFimCandidatura\": \"2026-09-05\",\n  \"dataInicioPrevisto\": \"2026-09-15\",\n  \"duracaoContrato\": 12,\n  \"regimeContrato\": \"TERMO\",\n  \"entidadeId\": {{entidadeId}},\n  \"denominacaoEntidade\": \"Empresa Teste A\",\n  \"habilitacaoMinima\": \"12_ANO\",\n  \"nivelQualificacao\": \"NIVEL_4\",\n  \"numVagas\": 2,\n  \"habilitacaoMaxima\": \"LICENCIATURA\",\n  \"conhecimentoLinguistico\": [],\n  \"competenciasValorizadas\": [\"Java\", \"SQL\", \"Spring Boot\"],\n  \"horaInicio\": \"08:00:00\",\n  \"horaFim\": \"16:00:00\",\n  \"diasSemana\": [\"SEGUNDA\", \"TERCA\", \"QUARTA\", \"QUINTA\", \"SEXTA\"],\n  \"cursosAreaFormacao\": [\"Informatica\"],\n  \"experienciaProfissional\": [\"Desenvolvimento backend\"],\n  \"ilha\": \"ST\",\n  \"concelho\": \"PR\",\n  \"orientadorId\": 1,\n  \"coordenadorId\": 2,\n  \"emailContacto\": \"rh@empresa.cv\",\n  \"contacto\": \"9912345\",\n  \"observacao\": \"Teste de atualizacao.\",\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/v1/vagas/{{vagaId}}"
+          },
+          "response": []
+        },
+        {
+          "name": "Alterar Estado",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"novoEstado\": \"FECHADA\",\n  \"observacao\": \"Encerrada para teste.\",\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/v1/vagas/{{vagaId}}/estado"
+          },
+          "response": []
+        },
+        {
+          "name": "Validar Rascunho",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/v1/vagas/{{vagaId}}/validar"
+          },
+          "response": []
+        },
+        {
+          "name": "Preparar Duplicacao",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/v1/vagas/{{vagaId}}/duplicar"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:9001/api"
+    },
+    {
+      "key": "entidadeId",
+      "value": "1"
+    },
+    {
+      "key": "vagaId",
+      "value": "1"
+    }
+  ]
+}
