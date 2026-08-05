@@ -1,0 +1,326 @@
+{
+  "info": {
+    "_postman_id": "f2e9f1a5-9f4a-4c6f-9b3a-coordenadores-orientadores",
+    "name": "Gestao de Coordenadores e Orientadores",
+    "description": "Collection para testar os endpoints de gestao de coordenadores e orientadores de estagio.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Coordenadores e Orientadores",
+      "item": [
+        {
+          "name": "Listar Todos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/coordenadores-orientadores",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "coordenadores-orientadores"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar com Filtros",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/coordenadores-orientadores?nome=Jose&tipo=ORIENTADOR&estado=A&dataInicio=2026-08-01&dataFim=2026-08-31",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "coordenadores-orientadores"
+              ],
+              "query": [
+                {
+                  "key": "nome",
+                  "value": "Jose"
+                },
+                {
+                  "key": "tipo",
+                  "value": "ORIENTADOR"
+                },
+                {
+                  "key": "estado",
+                  "value": "A"
+                },
+                {
+                  "key": "dataInicio",
+                  "value": "2026-08-01"
+                },
+                {
+                  "key": "dataFim",
+                  "value": "2026-08-31"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Pessoa por Documento",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/coordenadores-orientadores/pessoa?tipoDocumento=BI&numeroDocumento={{numeroDocumento}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "coordenadores-orientadores",
+                "pessoa"
+              ],
+              "query": [
+                {
+                  "key": "tipoDocumento",
+                  "value": "BI"
+                },
+                {
+                  "key": "numeroDocumento",
+                  "value": "{{numeroDocumento}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/coordenadores-orientadores/{{colaboradorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "coordenadores-orientadores",
+                "{{colaboradorId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Orientador por Documento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.dados && json.dados.id) pm.collectionVariables.set('colaboradorId', json.dados.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoDocumento\": \"BI\",\n  \"numeroDocumento\": \"{{numeroDocumento}}\",\n  \"tipo\": \"ORIENTADOR\",\n  \"cargo\": \"Tecnico de Emprego\",\n  \"email\": \"orientador.postman@teste.cv\",\n  \"telemovel\": \"9911111\",\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/coordenadores-orientadores",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "coordenadores-orientadores"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Coordenador por PessoaId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.dados && json.dados.id) pm.collectionVariables.set('colaboradorId', json.dados.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pessoaId\": {{pessoaId}},\n  \"tipo\": \"COORDENADOR\",\n  \"cargo\": \"Coordenador de Estagio\",\n  \"email\": \"coordenador.postman@teste.cv\",\n  \"telemovel\": \"9922222\",\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/coordenadores-orientadores",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "coordenadores-orientadores"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Detalhes",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"ORIENTADOR\",\n  \"cargo\": \"Orientador Principal\",\n  \"email\": \"orientador.atualizado@teste.cv\",\n  \"telemovel\": \"9933333\",\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/coordenadores-orientadores/{{colaboradorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "coordenadores-orientadores",
+                "{{colaboradorId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ofertas Associadas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/coordenadores-orientadores/{{colaboradorId}}/ofertas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "coordenadores-orientadores",
+                "{{colaboradorId}}",
+                "ofertas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Remover",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/coordenadores-orientadores/{{colaboradorId}}/remover",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "coordenadores-orientadores",
+                "{{colaboradorId}}",
+                "remover"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:9001/api",
+      "type": "string"
+    },
+    {
+      "key": "colaboradorId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "pessoaId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "numeroDocumento",
+      "value": "123456789",
+      "type": "string"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 package cv.dge.dge_api_intermed_lab.web.emprego;
 
+import cv.dge.dge_api_intermed_lab.application.emprego.dto.EmpregoApiResponse;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.VagaDuplicacaoResponse;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.VagaEstadoRequest;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.VagaFiltro;
@@ -32,7 +33,7 @@ public class GestaoVagaController {
     private final GestaoVagaService gestaoVagaService;
 
     @GetMapping
-    public List<VagaListaResponse> listar(
+    public EmpregoApiResponse<List<VagaListaResponse>> listar(
             @RequestParam(value = "tipoOferta", required = false) String tipoOferta,
             @RequestParam(value = "entidadeId", required = false) Integer entidadeId,
             @RequestParam(value = "ilha", required = false) String ilha,
@@ -47,55 +48,79 @@ public class GestaoVagaController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
             @RequestParam(value = "pesquisa", required = false) String pesquisa
     ) {
-        return gestaoVagaService.listar(new VagaFiltro(
-                tipoOferta,
-                entidadeId,
-                ilha,
-                concelho,
-                estado,
-                codigoReferencia,
-                orientadorId,
-                coordenadorId,
-                dataInicio,
-                dataFim,
-                pesquisa
-        ));
+        return EmpregoApiResponse.sucesso(
+                "Vagas listadas com sucesso.",
+                gestaoVagaService.listar(new VagaFiltro(
+                        tipoOferta,
+                        entidadeId,
+                        ilha,
+                        concelho,
+                        estado,
+                        codigoReferencia,
+                        orientadorId,
+                        coordenadorId,
+                        dataInicio,
+                        dataFim,
+                        pesquisa
+                ))
+        );
     }
 
     @GetMapping("{id}")
-    public VagaResponse buscarPorId(@PathVariable Integer id) {
-        return gestaoVagaService.buscarPorId(id);
+    public EmpregoApiResponse<VagaResponse> buscarPorId(@PathVariable Integer id) {
+        return EmpregoApiResponse.sucesso(
+                "Vaga encontrada com sucesso.",
+                gestaoVagaService.buscarPorId(id)
+        );
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public VagaResponse criar(@RequestBody VagaRequest request) {
-        return gestaoVagaService.criar(request);
+    public EmpregoApiResponse<VagaResponse> criar(@RequestBody VagaRequest request) {
+        return EmpregoApiResponse.sucesso(
+                "Vaga criada com sucesso.",
+                gestaoVagaService.criar(request)
+        );
     }
 
     @PostMapping("rascunho")
     @ResponseStatus(HttpStatus.CREATED)
-    public VagaResponse criarRascunho(@RequestBody VagaRequest request) {
-        return gestaoVagaService.criarRascunho(request);
+    public EmpregoApiResponse<VagaResponse> criarRascunho(@RequestBody VagaRequest request) {
+        return EmpregoApiResponse.sucesso(
+                "Rascunho da vaga criado com sucesso.",
+                gestaoVagaService.criarRascunho(request)
+        );
     }
 
     @PutMapping("{id}")
-    public VagaResponse atualizar(@PathVariable Integer id, @RequestBody VagaRequest request) {
-        return gestaoVagaService.atualizar(id, request);
+    public EmpregoApiResponse<VagaResponse> atualizar(@PathVariable Integer id, @RequestBody VagaRequest request) {
+        return EmpregoApiResponse.sucesso(
+                "Vaga atualizada com sucesso.",
+                gestaoVagaService.atualizar(id, request)
+        );
     }
 
     @PatchMapping("{id}/estado")
-    public VagaResponse alterarEstado(@PathVariable Integer id, @RequestBody VagaEstadoRequest request) {
-        return gestaoVagaService.alterarEstado(id, request);
+    public EmpregoApiResponse<VagaResponse> alterarEstado(@PathVariable Integer id, @RequestBody VagaEstadoRequest request) {
+        return EmpregoApiResponse.sucesso(
+                "Estado da vaga atualizado com sucesso.",
+                gestaoVagaService.alterarEstado(id, request)
+        );
     }
 
     @PatchMapping("{id}/validar")
-    public VagaResponse validar(@PathVariable Integer id, @RequestBody VagaValidacaoRequest request) {
-        return gestaoVagaService.validar(id, request);
+    public EmpregoApiResponse<VagaResponse> validar(@PathVariable Integer id, @RequestBody VagaValidacaoRequest request) {
+        return EmpregoApiResponse.sucesso(
+                "Vaga validada com sucesso.",
+                gestaoVagaService.validar(id, request)
+        );
     }
 
     @GetMapping("{id}/duplicar")
-    public VagaDuplicacaoResponse prepararDuplicacao(@PathVariable Integer id) {
-        return gestaoVagaService.prepararDuplicacao(id);
+    public EmpregoApiResponse<VagaDuplicacaoResponse> prepararDuplicacao(@PathVariable Integer id) {
+        return EmpregoApiResponse.sucesso(
+                "Dados da vaga preparados para duplicacao com sucesso.",
+                gestaoVagaService.prepararDuplicacao(id)
+        );
     }
 }

@@ -1,5 +1,6 @@
 package cv.dge.dge_api_intermed_lab.web.emprego;
 
+import cv.dge.dge_api_intermed_lab.application.emprego.dto.EmpregoApiResponse;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.IntermediacaoLaboralDashboardResponse;
 import cv.dge.dge_api_intermed_lab.application.emprego.service.IntermediacaoLaboralDashboardService;
 import lombok.RequiredArgsConstructor;
@@ -16,9 +17,12 @@ public class IntermediacaoLaboralDashboardController {
     private final IntermediacaoLaboralDashboardService dashboardService;
 
     @GetMapping
-    public IntermediacaoLaboralDashboardResponse buscarResumo(
+    public EmpregoApiResponse<IntermediacaoLaboralDashboardResponse> buscarResumo(
             @RequestParam(value = "entidadeId", required = false) Integer entidadeId
     ) {
-        return dashboardService.buscarResumo(entidadeId);
+        return EmpregoApiResponse.sucesso(
+                "Dashboard carregado com sucesso.",
+                dashboardService.buscarResumo(entidadeId)
+        );
     }
 }
