@@ -28,6 +28,8 @@ public class CoordenadorOrientadorRepository {
             nome,
             pessoa_id,
             cargo,
+            email,
+            telemovel,
             estado,
             date_create,
             user_create,
@@ -41,16 +43,22 @@ public class CoordenadorOrientadorRepository {
                 nome,
                 pessoa_id,
                 cargo,
+                email,
+                telemovel,
                 estado,
                 date_create,
                 user_create
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """;
 
     private static final String SQL_UPDATE = """
             UPDATE emprego_t_entidade_colaborador
             SET tipo = ?,
+                nome = ?,
+                pessoa_id = ?,
                 cargo = ?,
+                email = ?,
+                telemovel = ?,
                 date_update = ?,
                 user_update = ?
             WHERE id = ?
@@ -76,6 +84,8 @@ public class CoordenadorOrientadorRepository {
                     tipo,
                     nome,
                     pessoa_id,
+                    email,
+                    telemovel,
                     estado,
                     date_create,
                     user_create
@@ -85,14 +95,13 @@ public class CoordenadorOrientadorRepository {
                 """;
 
         return empregoJdbcTemplate.query(sql, (rs, rowNum) -> {
-            PessoaGlobalResponse pessoa = buscarPessoaPorId(rs.getObject("pessoa_id", Integer.class)).orElse(null);
             return new CoordenadorOrientadorListaResponse(
                     rs.getInt("id"),
                     rs.getString("tipo"),
                     rs.getString("tipo"),
                     rs.getString("nome"),
-                    pessoa == null ? null : pessoa.email(),
-                    pessoa == null ? null : pessoa.telemovel(),
+                    rs.getString("email"),
+                    rs.getString("telemovel"),
                     rs.getString("estado"),
                     rs.getString("estado"),
                     rs.getObject("date_create", java.time.LocalDateTime.class),
@@ -104,17 +113,15 @@ public class CoordenadorOrientadorRepository {
     public Optional<CoordenadorOrientadorResponse> buscarPorId(Integer id) {
         String sql = "SELECT " + CAMPOS_COLABORADOR + " FROM emprego_t_entidade_colaborador c WHERE c.id = ?";
         List<CoordenadorOrientadorResponse> resultados = empregoJdbcTemplate.query(sql, (rs, rowNum) -> {
-            Integer pessoaId = rs.getObject("pessoa_id", Integer.class);
-            PessoaGlobalResponse pessoa = buscarPessoaPorId(pessoaId).orElse(null);
             return new CoordenadorOrientadorResponse(
                     rs.getInt("id"),
                     rs.getString("tipo"),
                     rs.getString("tipo"),
                     rs.getString("nome"),
-                    pessoaId,
+                    getLong(rs, "pessoa_id"),
                     rs.getString("cargo"),
-                    pessoa == null ? null : pessoa.email(),
-                    pessoa == null ? null : pessoa.telemovel(),
+                    rs.getString("email"),
+                    rs.getString("telemovel"),
                     rs.getString("estado"),
                     rs.getString("estado"),
                     rs.getObject("date_create", java.time.LocalDateTime.class),
@@ -126,7 +133,7 @@ public class CoordenadorOrientadorRepository {
         return resultados.stream().findFirst();
     }
 
-    public Optional<PessoaGlobalResponse> buscarPessoaPorId(Integer id) {
+    public Optional<PessoaGlobalResponse> buscarPessoaPorId(Long id) {
         if (id == null) {
             return Optional.empty();
         }
@@ -137,7 +144,7 @@ public class CoordenadorOrientadorRepository {
                         WHERE id = ?
                         """,
                 (rs, rowNum) -> new PessoaGlobalResponse(
-                        getInteger(rs, "id"),
+                        getLong(rs, "id"),
                         rs.getString("nome"),
                         rs.getString("email"),
                         rs.getString("telemovel"),
@@ -161,7 +168,7 @@ public class CoordenadorOrientadorRepository {
                         FETCH FIRST 1 ROWS ONLY
                         """,
                 (rs, rowNum) -> new PessoaGlobalResponse(
-                        getInteger(rs, "id"),
+                        getLong(rs, "id"),
                         rs.getString("nome"),
                         rs.getString("email"),
                         rs.getString("telemovel"),
@@ -173,19 +180,21 @@ public class CoordenadorOrientadorRepository {
         return resultados.stream().findFirst();
     }
 
-    public Integer inserir(CoordenadorOrientadorRequest request, PessoaGlobalResponse pessoa, String estado, String utilizador) {
+    public Integer inserir(CoordenadorOrientadorRequest request, String estado, String utilizador) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         LocalDateTime agora = LocalDateTime.now();
 
         empregoJdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(SQL_INSERT, new String[]{"id"});
             ps.setString(1, request.tipo());
-            ps.setString(2, pessoa.nome());
-            setInteger(ps, 3, pessoa.id());
+            ps.setString(2, request.nome());
+            setLong(ps, 3, request.pessoaId());
             ps.setString(4, request.cargo());
-            ps.setString(5, estado);
-            ps.setTimestamp(6, Timestamp.valueOf(agora));
-            ps.setString(7, utilizador);
+            ps.setString(5, request.email());
+            ps.setString(6, request.telemovel());
+            ps.setString(7, estado);
+            ps.setTimestamp(8, Timestamp.valueOf(agora));
+            ps.setString(9, utilizador);
             return ps;
         }, keyHolder);
 
@@ -197,7 +206,11 @@ public class CoordenadorOrientadorRepository {
         empregoJdbcTemplate.update(
                 SQL_UPDATE,
                 request.tipo(),
+                request.nome(),
+                request.pessoaId(),
                 request.cargo(),
+                request.email(),
+                request.telemovel(),
                 Timestamp.valueOf(LocalDateTime.now()),
                 utilizador,
                 id
@@ -218,30 +231,6 @@ public class CoordenadorOrientadorRepository {
                 utilizador,
                 id
         );
-    }
-
-    public void atualizarContactosPessoa(Integer pessoaId, String email, String telemovel) {
-        List<Object> params = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("UPDATE ci_t_pessoa SET ");
-
-        if (temTexto(email)) {
-            sql.append("email = ?");
-            params.add(email.trim());
-        }
-        if (temTexto(telemovel)) {
-            if (!params.isEmpty()) {
-                sql.append(", ");
-            }
-            sql.append("telefone = ?");
-            params.add(telemovel.trim());
-        }
-        if (params.isEmpty()) {
-            return;
-        }
-
-        sql.append(" WHERE id = ?");
-        params.add(pessoaId);
-        globalJdbcTemplate.update(sql.toString(), params.toArray());
     }
 
     private String construirWhere(CoordenadorOrientadorFiltro filtro, List<Object> params) {
@@ -284,26 +273,27 @@ public class CoordenadorOrientadorRepository {
         params.add(valor);
     }
 
-    private void setInteger(PreparedStatement ps, int index, Integer value) throws java.sql.SQLException {
+    private void setLong(PreparedStatement ps, int index, Long value) throws java.sql.SQLException {
         if (value == null) {
-            ps.setNull(index, Types.INTEGER);
+            ps.setNull(index, Types.BIGINT);
             return;
         }
-        ps.setInt(index, value);
+        ps.setLong(index, value);
     }
 
-    private Integer getInteger(java.sql.ResultSet rs, String column) throws java.sql.SQLException {
+    private Long getLong(java.sql.ResultSet rs, String column) throws java.sql.SQLException {
         Object value = rs.getObject(column);
         if (value == null) {
             return null;
         }
         if (value instanceof Number number) {
-            return Math.toIntExact(number.longValue());
+            return number.longValue();
         }
-        return Integer.valueOf(value.toString());
+        return Long.valueOf(value.toString());
     }
 
     private boolean temTexto(String valor) {
         return valor != null && !valor.trim().isEmpty();
     }
+
 }

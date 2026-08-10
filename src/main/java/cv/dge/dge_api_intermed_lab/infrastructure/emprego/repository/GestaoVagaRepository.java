@@ -54,7 +54,8 @@ public class GestaoVagaRepository {
             orientador.nome AS orientador_denominacao,
             o.coordenador_id,
             coordenador.nome AS coordenador_denominacao,
-            coordenador.pessoa_id AS coordenador_pessoa_id,
+            coordenador.email AS coordenador_email,
+            coordenador.telemovel AS coordenador_telemovel,
             o.email_contacto,
             o.contacto,
             o.observacao,
@@ -139,16 +140,13 @@ public class GestaoVagaRepository {
             """;
 
     private final JdbcTemplate jdbcTemplate;
-    private final JdbcTemplate globalJdbcTemplate;
     private final ObjectMapper objectMapper;
 
     public GestaoVagaRepository(
             @Qualifier("primaryDataSource") DataSource dataSource,
-            @Qualifier("tertiaryDataSource") DataSource tertiaryDataSource,
             ObjectMapper objectMapper
     ) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
-        this.globalJdbcTemplate = new JdbcTemplate(tertiaryDataSource);
         this.objectMapper = objectMapper;
     }
 
@@ -169,7 +167,8 @@ public class GestaoVagaRepository {
                     orientador.nome AS orientador_denominacao,
                     o.coordenador_id,
                     coordenador.nome AS coordenador_denominacao,
-                    coordenador.pessoa_id AS coordenador_pessoa_id,
+                    coordenador.email AS coordenador_email,
+                    coordenador.telemovel AS coordenador_telemovel,
                     o.codigo_referencia,
                     o.estado,
                     o.data_fim_candidatura
@@ -194,22 +193,19 @@ public class GestaoVagaRepository {
     public List<VagaColaboradorSelectResponse> listarColaboradoresPorTipo(String tipo) {
         return jdbcTemplate.query(
                 """
-                        SELECT id, COALESCE(tipo, cargo) AS tipo, nome, pessoa_id
+                        SELECT id, COALESCE(tipo, cargo) AS tipo, nome, email, telemovel
                         FROM emprego_t_entidade_colaborador
                         WHERE UPPER(COALESCE(tipo, cargo, '')) = UPPER(?)
                           AND UPPER(COALESCE(estado, 'A')) IN ('A', 'ATIVO')
                         ORDER BY nome ASC NULLS LAST, id ASC
                         """,
-                (rs, rowNum) -> {
-                    PessoaContacto contacto = buscarContactoPessoa(getInteger(rs, "pessoa_id"));
-                    return new VagaColaboradorSelectResponse(
-                            rs.getInt("id"),
-                            rs.getString("tipo"),
-                            rs.getString("nome"),
-                            contacto.email(),
-                            contacto.telefone()
-                    );
-                },
+                (rs, rowNum) -> new VagaColaboradorSelectResponse(
+                        rs.getInt("id"),
+                        rs.getString("tipo"),
+                        rs.getString("nome"),
+                        rs.getString("email"),
+                        rs.getString("telemovel")
+                ),
                 tipo
         );
     }
@@ -371,25 +367,6 @@ public class GestaoVagaRepository {
         ps.setInt(index, value);
     }
 
-    private PessoaContacto buscarContactoPessoa(Integer pessoaId) {
-        if (pessoaId == null) {
-            return PessoaContacto.vazio();
-        }
-        List<PessoaContacto> resultados = globalJdbcTemplate.query(
-                """
-                        SELECT email, telefone
-                        FROM ci_t_pessoa
-                        WHERE id = ?
-                        """,
-                (rs, rowNum) -> new PessoaContacto(
-                        rs.getString("email"),
-                        rs.getString("telefone")
-                ),
-                pessoaId
-        );
-        return resultados.stream().findFirst().orElseGet(PessoaContacto::vazio);
-    }
-
     private Integer getInteger(java.sql.ResultSet rs, String column) throws java.sql.SQLException {
         Object value = rs.getObject(column);
         if (value == null) {
@@ -426,7 +403,6 @@ public class GestaoVagaRepository {
     }
 
     private VagaListaResponse mapLista(java.sql.ResultSet rs, int rowNum) throws java.sql.SQLException {
-        PessoaContacto coordenadorContacto = buscarContactoPessoa(getInteger(rs, "coordenador_pessoa_id"));
         return new VagaListaResponse(
                 rs.getInt("id"),
                 rs.getString("titulo"),
@@ -444,8 +420,8 @@ public class GestaoVagaRepository {
                 rs.getString("orientador_denominacao"),
                 rs.getObject("coordenador_id", Integer.class),
                 rs.getString("coordenador_denominacao"),
-                coordenadorContacto.email(),
-                coordenadorContacto.telefone(),
+                rs.getString("coordenador_email"),
+                rs.getString("coordenador_telemovel"),
                 rs.getString("codigo_referencia"),
                 rs.getString("estado"),
                 rs.getString("estado"),
@@ -457,7 +433,6 @@ public class GestaoVagaRepository {
         String estado = rs.getString("estado");
         String ilha = rs.getString("ilha");
         String concelho = rs.getString("concelho");
-        PessoaContacto coordenadorContacto = buscarContactoPessoa(getInteger(rs, "coordenador_pessoa_id"));
         return new VagaResponse(
                 rs.getInt("id"),
                 rs.getString("codigo_referencia"),
@@ -492,8 +467,8 @@ public class GestaoVagaRepository {
                 rs.getString("orientador_denominacao"),
                 rs.getObject("coordenador_id", Integer.class),
                 rs.getString("coordenador_denominacao"),
-                coordenadorContacto.email(),
-                coordenadorContacto.telefone(),
+                rs.getString("coordenador_email"),
+                rs.getString("coordenador_telemovel"),
                 rs.getString("email_contacto"),
                 rs.getString("contacto"),
                 rs.getString("observacao"),
@@ -519,12 +494,5 @@ public class GestaoVagaRepository {
 
     private boolean temTexto(String valor) {
         return valor != null && !valor.trim().isEmpty();
-    }
-
-    private record PessoaContacto(String email, String telefone) {
-
-        private static PessoaContacto vazio() {
-            return new PessoaContacto(null, null);
-        }
     }
 }

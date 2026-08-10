@@ -1,0 +1,337 @@
+{
+  "info": {
+    "_postman_id": "2b4516e3-cdc8-4e89-91b0-colocacao-candidato",
+    "name": "Colocacao do Candidato",
+    "description": "Collection para testar os endpoints de gestao de colocacao do candidato.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Colocacoes",
+      "item": [
+        {
+          "name": "Listar Colocacoes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/colocacoes-candidatos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "colocacoes-candidatos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Colocacoes com Filtros",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/colocacoes-candidatos?tipoOferta=OFERTA_EMPREGO&codigoReferencia={{codigoReferencia}}&pessoaId={{pessoaId}}&tipoContrato=CONTRATO_TERMO&dataInicioPrevisto=2026-09-15&dataRegistoInicio=2026-08-01&dataRegistoFim=2026-08-31&entidadeId={{entidadeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "colocacoes-candidatos"
+              ],
+              "query": [
+                {
+                  "key": "tipoOferta",
+                  "value": "OFERTA_EMPREGO"
+                },
+                {
+                  "key": "codigoReferencia",
+                  "value": "{{codigoReferencia}}"
+                },
+                {
+                  "key": "pessoaId",
+                  "value": "{{pessoaId}}"
+                },
+                {
+                  "key": "tipoContrato",
+                  "value": "CONTRATO_TERMO"
+                },
+                {
+                  "key": "dataInicioPrevisto",
+                  "value": "2026-09-15"
+                },
+                {
+                  "key": "dataRegistoInicio",
+                  "value": "2026-08-01"
+                },
+                {
+                  "key": "dataRegistoFim",
+                  "value": "2026-08-31"
+                },
+                {
+                  "key": "entidadeId",
+                  "value": "{{entidadeId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Select Ofertas por Tipo e Entidade",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.dados && json.dados.length > 0) {",
+                  "    pm.collectionVariables.set('ofertaId', json.dados[0].ofertaId);",
+                  "    pm.collectionVariables.set('codigoReferencia', json.dados[0].codigoReferencia);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/colocacoes-candidatos/ofertas?tipoOferta=OFERTA_EMPREGO&entidadeId={{entidadeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "colocacoes-candidatos",
+                "ofertas"
+              ],
+              "query": [
+                {
+                  "key": "tipoOferta",
+                  "value": "OFERTA_EMPREGO"
+                },
+                {
+                  "key": "entidadeId",
+                  "value": "{{entidadeId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Select Candidatos por Oferta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.dados && json.dados.length > 0) pm.collectionVariables.set('pessoaId', json.dados[0].pessoaId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/colocacoes-candidatos/candidatos?ofertaId={{ofertaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "colocacoes-candidatos",
+                "candidatos"
+              ],
+              "query": [
+                {
+                  "key": "ofertaId",
+                  "value": "{{ofertaId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Colocacao",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.dados && json.dados.id) pm.collectionVariables.set('colocacaoId', json.dados.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoOferta\": \"OFERTA_EMPREGO\",\n  \"ofertaId\": {{ofertaId}},\n  \"pessoaId\": {{pessoaId}},\n  \"tipoContrato\": \"CONTRATO_TERMO\",\n  \"duracaoContrato\": 12,\n  \"dataInicioPrevisto\": \"2026-09-15\",\n  \"dataFimPrevisto\": \"2027-09-14\",\n  \"descricao\": \"Colocacao criada para teste no Postman.\",\n  \"contratoPath\": \"contratos/contrato-postman.pdf\",\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/colocacoes-candidatos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "colocacoes-candidatos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Colocacao por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/colocacoes-candidatos/{{colocacaoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "colocacoes-candidatos",
+                "{{colocacaoId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Colocacao",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoOferta\": \"OFERTA_EMPREGO\",\n  \"ofertaId\": {{ofertaId}},\n  \"pessoaId\": {{pessoaId}},\n  \"tipoContrato\": \"CONTRATO_TERMO\",\n  \"duracaoContrato\": 12,\n  \"dataInicioPrevisto\": \"2026-09-20\",\n  \"dataFimPrevisto\": \"2027-09-19\",\n  \"descricao\": \"Colocacao atualizada para teste no Postman.\",\n  \"contratoPath\": \"contratos/contrato-postman-atualizado.pdf\",\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/colocacoes-candidatos/{{colocacaoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "colocacoes-candidatos",
+                "{{colocacaoId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Remover Colocacao",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/colocacoes-candidatos/{{colocacaoId}}/remover",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "colocacoes-candidatos",
+                "{{colocacaoId}}",
+                "remover"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:9001/api",
+      "type": "string"
+    },
+    {
+      "key": "codigoReferencia",
+      "value": "VG-POSTMAN-001",
+      "type": "string"
+    },
+    {
+      "key": "ofertaId",
+      "value": "91005",
+      "type": "string"
+    },
+    {
+      "key": "pessoaId",
+      "value": "2001101700869",
+      "type": "string"
+    },
+    {
+      "key": "entidadeId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "colocacaoId",
+      "value": "1",
+      "type": "string"
+    }
+  ]
+}

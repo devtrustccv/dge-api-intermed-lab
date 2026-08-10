@@ -116,7 +116,7 @@
           "response": []
         },
         {
-          "name": "Criar Orientador por Documento",
+          "name": "Criar Orientador",
           "event": [
             {
               "listen": "test",
@@ -142,7 +142,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipoDocumento\": \"BI\",\n  \"numeroDocumento\": \"{{numeroDocumento}}\",\n  \"tipo\": \"ORIENTADOR\",\n  \"cargo\": \"Tecnico de Emprego\",\n  \"email\": \"orientador.postman@teste.cv\",\n  \"telemovel\": \"9911111\",\n  \"utilizador\": \"postman\"\n}",
+              "raw": "{\n  \"pessoaId\": {{pessoaId}},\n  \"nome\": \"Orientador Postman\",\n  \"tipo\": \"ORIENTADOR\",\n  \"cargo\": \"Tecnico de Emprego\",\n  \"email\": \"orientador.postman@teste.cv\",\n  \"telemovel\": \"9911111\",\n  \"utilizador\": \"postman\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -163,7 +163,7 @@
           "response": []
         },
         {
-          "name": "Criar Coordenador por PessoaId",
+          "name": "Criar Coordenador",
           "event": [
             {
               "listen": "test",
@@ -189,7 +189,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"pessoaId\": {{pessoaId}},\n  \"tipo\": \"COORDENADOR\",\n  \"cargo\": \"Coordenador de Estagio\",\n  \"email\": \"coordenador.postman@teste.cv\",\n  \"telemovel\": \"9922222\",\n  \"utilizador\": \"postman\"\n}",
+              "raw": "{\n  \"pessoaId\": {{pessoaId}},\n  \"nome\": \"Coordenador Postman\",\n  \"tipo\": \"COORDENADOR\",\n  \"cargo\": \"Coordenador de Estagio\",\n  \"email\": \"coordenador.postman@teste.cv\",\n  \"telemovel\": \"9922222\",\n  \"utilizador\": \"postman\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -222,7 +222,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"ORIENTADOR\",\n  \"cargo\": \"Orientador Principal\",\n  \"email\": \"orientador.atualizado@teste.cv\",\n  \"telemovel\": \"9933333\",\n  \"utilizador\": \"postman\"\n}",
+              "raw": "{\n  \"pessoaId\": {{pessoaId}},\n  \"nome\": \"Orientador Postman Atualizado\",\n  \"tipo\": \"ORIENTADOR\",\n  \"cargo\": \"Orientador Principal\",\n  \"email\": \"orientador.atualizado@teste.cv\",\n  \"telemovel\": \"9933333\",\n  \"utilizador\": \"postman\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -314,7 +314,7 @@
     },
     {
       "key": "pessoaId",
-      "value": "1",
+      "value": "2001101700869",
       "type": "string"
     },
     {

@@ -71,14 +71,11 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
     @Override
     @Transactional
     public CoordenadorOrientadorResponse criar(CoordenadorOrientadorRequest request) {
-        validarRequest(request, true);
+        validarRequest(request);
         String utilizador = utilizadorObrigatorio(request.utilizador());
         String tipo = normalizarTipoObrigatorio(request.tipo());
-        PessoaGlobalResponse pessoa = resolverPessoaObrigatoria(request);
-
-        atualizarContactosPessoaSeNecessario(pessoa.id(), request.email(), request.telemovel());
         CoordenadorOrientadorRequest dados = normalizarRequest(request, tipo);
-        Integer id = coordenadorOrientadorRepository.inserir(dados, pessoa, ESTADO_ATIVO, utilizador);
+        Integer id = coordenadorOrientadorRepository.inserir(dados, ESTADO_ATIVO, utilizador);
         return buscarPorId(id);
     }
 
@@ -86,12 +83,11 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
     @Transactional
     public CoordenadorOrientadorResponse atualizar(Integer id, CoordenadorOrientadorRequest request) {
         validarId(id);
-        validarRequest(request, false);
+        validarRequest(request);
         String utilizador = utilizadorObrigatorio(request.utilizador());
         String tipo = normalizarTipoObrigatorio(request.tipo());
-        CoordenadorOrientadorResponse atual = buscarPorId(id);
+        buscarPorId(id);
 
-        atualizarContactosPessoaSeNecessario(atual.pessoaId(), request.email(), request.telemovel());
         coordenadorOrientadorRepository.atualizar(id, normalizarRequest(request, tipo), utilizador);
         return buscarPorId(id);
     }
@@ -148,54 +144,23 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
         );
     }
 
-    private void validarRequest(CoordenadorOrientadorRequest request, boolean criar) {
+    private void validarRequest(CoordenadorOrientadorRequest request) {
         if (request == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados do orientador/coordenador sao obrigatorios.");
         }
         utilizadorObrigatorio(request.utilizador());
         normalizarTipoObrigatorio(request.tipo());
 
-        if (criar && request.pessoaId() == null && !temTexto(request.numeroDocumento())) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Informe pessoaId ou numeroDocumento para localizar a pessoa na base global."
-            );
+        if (request.pessoaId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pessoaId e obrigatorio.");
         }
-    }
-
-    private PessoaGlobalResponse resolverPessoaObrigatoria(CoordenadorOrientadorRequest request) {
-        if (request.pessoaId() != null) {
-            return coordenadorOrientadorRepository.buscarPessoaPorId(request.pessoaId())
-                    .orElseThrow(() -> new ResponseStatusException(
-                            HttpStatus.NOT_FOUND,
-                            "Pessoa nao encontrada na base global pelo pessoaId informado."
-                    ));
+        if (!temTexto(request.nome())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "nome e obrigatorio.");
         }
-
-        return coordenadorOrientadorRepository.buscarPessoaPorNumeroDocumento(request.numeroDocumento())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Pessoa nao encontrada na base global pelo numeroDocumento informado."
-                ));
-    }
-
-    private void atualizarContactosPessoaSeNecessario(Integer pessoaId, String email, String telemovel) {
-        if (!temTexto(email) && !temTexto(telemovel)) {
-            return;
-        }
-        if (pessoaId == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "pessoaId e obrigatorio para atualizar email ou telemovel em ci_t_pessoa."
-            );
-        }
-        coordenadorOrientadorRepository.atualizarContactosPessoa(pessoaId, email, telemovel);
     }
 
     private CoordenadorOrientadorRequest normalizarRequest(CoordenadorOrientadorRequest request, String tipo) {
         return new CoordenadorOrientadorRequest(
-                texto(request.tipoDocumento()),
-                texto(request.numeroDocumento()),
                 request.pessoaId(),
                 texto(request.nome()),
                 tipo,

@@ -7,7 +7,7 @@ public record CoordenadorOrientadorResponse(
         String tipo,
         String tipoDesc,
         String nome,
-        Integer pessoaId,
+        Long pessoaId,
         String cargo,
         String email,
         String telemovel,
