@@ -16,7 +16,8 @@ import org.springframework.web.server.ResponseStatusException;
 @RestControllerAdvice(assignableTypes = {
         IntermediacaoLaboralDashboardController.class,
         GestaoVagaController.class,
-        CoordenadorOrientadorController.class
+        CoordenadorOrientadorController.class,
+        GestaoCandidaturaController.class
 })
 @Slf4j
 public class EmpregoApiExceptionHandler {

@@ -30,6 +30,8 @@ public record VagaRequest(
         String concelho,
         Integer orientadorId,
         Integer coordenadorId,
+        String orientadorDenominacao,
+        String coordenadorDenominacao,
         String emailContacto,
         String contacto,
         String observacao,

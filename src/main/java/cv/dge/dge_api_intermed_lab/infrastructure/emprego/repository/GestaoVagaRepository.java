@@ -3,6 +3,7 @@ package cv.dge.dge_api_intermed_lab.infrastructure.emprego.repository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.VagaFiltro;
+import cv.dge.dge_api_intermed_lab.application.emprego.dto.VagaColaboradorSelectResponse;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.VagaListaResponse;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.VagaRequest;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.VagaResponse;
@@ -24,41 +25,44 @@ import org.springframework.stereotype.Repository;
 public class GestaoVagaRepository {
 
     private static final String CAMPOS_DETALHE = """
-            id,
-            codigo_referencia,
-            tipo_oferta,
-            titulo,
-            descricao,
-            data_inicio_candidatura,
-            data_fim_candidatura,
-            data_inicio_previsto,
-            duracao_contrato,
-            regime_contrato,
-            entidade_id,
-            denominacao_entidade,
-            habilitacao_minima,
-            nivel_qualificacao,
-            num_vagas,
-            habilitacao_maxima,
-            conhecimento_linguistico,
-            competencias_valorizadas,
-            hora_inicio,
-            hora_fim,
-            dias_semana,
-            cursos_area_formacao,
-            experiencia_profissional,
-            ilha,
-            concelho,
-            orientador_id,
-            coordenador_id,
-            email_contacto,
-            contacto,
-            observacao,
-            estado,
-            date_create,
-            user_create,
-            date_update,
-            user_update
+            o.id,
+            o.codigo_referencia,
+            o.tipo_oferta,
+            o.titulo,
+            o.descricao,
+            o.data_inicio_candidatura,
+            o.data_fim_candidatura,
+            o.data_inicio_previsto,
+            o.duracao_contrato,
+            o.regime_contrato,
+            o.entidade_id,
+            o.denominacao_entidade,
+            o.habilitacao_minima,
+            o.nivel_qualificacao,
+            o.num_vagas,
+            o.habilitacao_maxima,
+            o.conhecimento_linguistico,
+            o.competencias_valorizadas,
+            o.hora_inicio,
+            o.hora_fim,
+            o.dias_semana,
+            o.cursos_area_formacao,
+            o.experiencia_profissional,
+            o.ilha,
+            o.concelho,
+            o.orientador_id,
+            orientador.nome AS orientador_denominacao,
+            o.coordenador_id,
+            coordenador.nome AS coordenador_denominacao,
+            coordenador.pessoa_id AS coordenador_pessoa_id,
+            o.email_contacto,
+            o.contacto,
+            o.observacao,
+            o.estado,
+            o.date_create,
+            o.user_create,
+            o.date_update,
+            o.user_update
             """;
 
     private static final String SQL_INSERT = """
@@ -135,13 +139,16 @@ public class GestaoVagaRepository {
             """;
 
     private final JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate globalJdbcTemplate;
     private final ObjectMapper objectMapper;
 
     public GestaoVagaRepository(
             @Qualifier("primaryDataSource") DataSource dataSource,
+            @Qualifier("tertiaryDataSource") DataSource tertiaryDataSource,
             ObjectMapper objectMapper
     ) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
+        this.globalJdbcTemplate = new JdbcTemplate(tertiaryDataSource);
         this.objectMapper = objectMapper;
     }
 
@@ -150,18 +157,25 @@ public class GestaoVagaRepository {
         String where = construirWhere(filtro, params);
         String sql = """
                 SELECT
-                    id,
-                    titulo,
-                    tipo_oferta,
-                    ilha,
-                    concelho,
-                    num_vagas,
-                    entidade_id,
-                    denominacao_entidade,
-                    codigo_referencia,
-                    estado,
-                    data_fim_candidatura
+                    o.id,
+                    o.titulo,
+                    o.tipo_oferta,
+                    o.ilha,
+                    o.concelho,
+                    o.num_vagas,
+                    o.entidade_id,
+                    o.denominacao_entidade,
+                    o.orientador_id,
+                    orientador.nome AS orientador_denominacao,
+                    o.coordenador_id,
+                    coordenador.nome AS coordenador_denominacao,
+                    coordenador.pessoa_id AS coordenador_pessoa_id,
+                    o.codigo_referencia,
+                    o.estado,
+                    o.data_fim_candidatura
                 FROM emprego_t_oferta o
+                LEFT JOIN emprego_t_entidade_colaborador orientador ON orientador.id = o.orientador_id
+                LEFT JOIN emprego_t_entidade_colaborador coordenador ON coordenador.id = o.coordenador_id
                 """ + where + """
                 ORDER BY o.date_create DESC NULLS LAST, o.id DESC
                 """;
@@ -177,8 +191,38 @@ public class GestaoVagaRepository {
         return total == null ? 0L : total;
     }
 
+    public List<VagaColaboradorSelectResponse> listarColaboradoresPorTipo(String tipo) {
+        return jdbcTemplate.query(
+                """
+                        SELECT id, COALESCE(tipo, cargo) AS tipo, nome, pessoa_id
+                        FROM emprego_t_entidade_colaborador
+                        WHERE UPPER(COALESCE(tipo, cargo, '')) = UPPER(?)
+                          AND UPPER(COALESCE(estado, 'A')) IN ('A', 'ATIVO')
+                        ORDER BY nome ASC NULLS LAST, id ASC
+                        """,
+                (rs, rowNum) -> {
+                    PessoaContacto contacto = buscarContactoPessoa(getInteger(rs, "pessoa_id"));
+                    return new VagaColaboradorSelectResponse(
+                            rs.getInt("id"),
+                            rs.getString("tipo"),
+                            rs.getString("nome"),
+                            contacto.email(),
+                            contacto.telefone()
+                    );
+                },
+                tipo
+        );
+    }
+
     public Optional<VagaResponse> buscarPorId(Integer id) {
-        String sql = "SELECT " + CAMPOS_DETALHE + " FROM emprego_t_oferta WHERE id = ?";
+        String sql = """
+                SELECT
+                """ + CAMPOS_DETALHE + """
+                FROM emprego_t_oferta o
+                LEFT JOIN emprego_t_entidade_colaborador orientador ON orientador.id = o.orientador_id
+                LEFT JOIN emprego_t_entidade_colaborador coordenador ON coordenador.id = o.coordenador_id
+                WHERE o.id = ?
+                """;
         List<VagaResponse> resultados = jdbcTemplate.query(sql, this::mapDetalhe, id);
         return resultados.stream().findFirst();
     }
@@ -327,6 +371,36 @@ public class GestaoVagaRepository {
         ps.setInt(index, value);
     }
 
+    private PessoaContacto buscarContactoPessoa(Integer pessoaId) {
+        if (pessoaId == null) {
+            return PessoaContacto.vazio();
+        }
+        List<PessoaContacto> resultados = globalJdbcTemplate.query(
+                """
+                        SELECT email, telefone
+                        FROM ci_t_pessoa
+                        WHERE id = ?
+                        """,
+                (rs, rowNum) -> new PessoaContacto(
+                        rs.getString("email"),
+                        rs.getString("telefone")
+                ),
+                pessoaId
+        );
+        return resultados.stream().findFirst().orElseGet(PessoaContacto::vazio);
+    }
+
+    private Integer getInteger(java.sql.ResultSet rs, String column) throws java.sql.SQLException {
+        Object value = rs.getObject(column);
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number number) {
+            return Math.toIntExact(number.longValue());
+        }
+        return Integer.valueOf(value.toString());
+    }
+
     private void setJsonb(PreparedStatement ps, int index, Object value) throws java.sql.SQLException {
         if (value == null) {
             ps.setNull(index, Types.OTHER);
@@ -352,6 +426,7 @@ public class GestaoVagaRepository {
     }
 
     private VagaListaResponse mapLista(java.sql.ResultSet rs, int rowNum) throws java.sql.SQLException {
+        PessoaContacto coordenadorContacto = buscarContactoPessoa(getInteger(rs, "coordenador_pessoa_id"));
         return new VagaListaResponse(
                 rs.getInt("id"),
                 rs.getString("titulo"),
@@ -365,6 +440,12 @@ public class GestaoVagaRepository {
                 rs.getObject("num_vagas", Integer.class),
                 rs.getObject("entidade_id", Integer.class),
                 rs.getString("denominacao_entidade"),
+                rs.getObject("orientador_id", Integer.class),
+                rs.getString("orientador_denominacao"),
+                rs.getObject("coordenador_id", Integer.class),
+                rs.getString("coordenador_denominacao"),
+                coordenadorContacto.email(),
+                coordenadorContacto.telefone(),
                 rs.getString("codigo_referencia"),
                 rs.getString("estado"),
                 rs.getString("estado"),
@@ -376,6 +457,7 @@ public class GestaoVagaRepository {
         String estado = rs.getString("estado");
         String ilha = rs.getString("ilha");
         String concelho = rs.getString("concelho");
+        PessoaContacto coordenadorContacto = buscarContactoPessoa(getInteger(rs, "coordenador_pessoa_id"));
         return new VagaResponse(
                 rs.getInt("id"),
                 rs.getString("codigo_referencia"),
@@ -407,7 +489,11 @@ public class GestaoVagaRepository {
                 concelho,
                 localOferta(ilha, concelho),
                 rs.getObject("orientador_id", Integer.class),
+                rs.getString("orientador_denominacao"),
                 rs.getObject("coordenador_id", Integer.class),
+                rs.getString("coordenador_denominacao"),
+                coordenadorContacto.email(),
+                coordenadorContacto.telefone(),
                 rs.getString("email_contacto"),
                 rs.getString("contacto"),
                 rs.getString("observacao"),
@@ -433,5 +519,12 @@ public class GestaoVagaRepository {
 
     private boolean temTexto(String valor) {
         return valor != null && !valor.trim().isEmpty();
+    }
+
+    private record PessoaContacto(String email, String telefone) {
+
+        private static PessoaContacto vazio() {
+            return new PessoaContacto(null, null);
+        }
     }
 }

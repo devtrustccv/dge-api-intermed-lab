@@ -264,7 +264,6 @@ public class CoordenadorOrientadorRepository {
             where.append(" AND c.date_create::date <= ?");
             params.add(filtro.dataFim());
         }
-
         return where + " ";
     }
 

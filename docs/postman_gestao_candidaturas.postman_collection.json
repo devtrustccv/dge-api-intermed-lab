@@ -1,0 +1,303 @@
+{
+  "info": {
+    "_postman_id": "9af8d6c1-7d7c-4b92-9b37-gestao-candidaturas",
+    "name": "Gestao de Candidaturas",
+    "description": "Collection para testar os endpoints de gestao de candidaturas, avaliacao e entrevistas.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Candidaturas",
+      "item": [
+        {
+          "name": "Listar Candidaturas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/candidaturas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "candidaturas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Candidaturas com Filtros",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/candidaturas?candidatoId={{pessoaId}}&estado=TRIAGEM&tipoOferta=OFERTA_EMPREGO&ofertaId={{ofertaId}}&canal=PORTAL&dataInicio=2026-08-01&dataFim=2026-08-31",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "candidaturas"
+              ],
+              "query": [
+                {
+                  "key": "candidatoId",
+                  "value": "{{pessoaId}}"
+                },
+                {
+                  "key": "estado",
+                  "value": "TRIAGEM"
+                },
+                {
+                  "key": "tipoOferta",
+                  "value": "OFERTA_EMPREGO"
+                },
+                {
+                  "key": "ofertaId",
+                  "value": "{{ofertaId}}"
+                },
+                {
+                  "key": "canal",
+                  "value": "PORTAL"
+                },
+                {
+                  "key": "dataInicio",
+                  "value": "2026-08-01"
+                },
+                {
+                  "key": "dataFim",
+                  "value": "2026-08-31"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Candidatura por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/candidaturas/{{candidaturaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "candidaturas",
+                "{{candidaturaId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Avaliar Candidatura - Aprovar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"parecer\": \"APROVADO\",\n  \"motivoRecusa\": null,\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/candidaturas/{{candidaturaId}}/avaliacao",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "candidaturas",
+                "{{candidaturaId}}",
+                "avaliacao"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Avaliar Candidatura - Recusar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"parecer\": \"RECUSADO\",\n  \"motivoRecusa\": \"Nao cumpre os requisitos minimos da oferta.\",\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/candidaturas/{{candidaturaId}}/avaliacao",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "candidaturas",
+                "{{candidaturaId}}",
+                "avaliacao"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Agendar Entrevista",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.dados && json.dados.id) pm.collectionVariables.set('entrevistaId', json.dados.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataEntrevista\": \"2026-08-20\",\n  \"horario\": \"09:30:00\",\n  \"canal\": \"PRESENCIAL\",\n  \"localEntrevista\": \"CEFP Praia\",\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/candidaturas/{{candidaturaId}}/entrevistas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "candidaturas",
+                "{{candidaturaId}}",
+                "entrevistas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Entrevistas da Candidatura",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/candidaturas/{{candidaturaId}}/entrevistas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "candidaturas",
+                "{{candidaturaId}}",
+                "entrevistas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Registar Resultado da Entrevista",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"parecer\": \"APROVAR\",\n  \"observacao\": \"Candidato demonstrou bom enquadramento para a vaga.\",\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/candidaturas/{{candidaturaId}}/entrevistas/{{entrevistaId}}/resultado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "candidaturas",
+                "{{candidaturaId}}",
+                "entrevistas",
+                "{{entrevistaId}}",
+                "resultado"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:9001/api",
+      "type": "string"
+    },
+    {
+      "key": "pessoaId",
+      "value": "2001101700869",
+      "type": "string"
+    },
+    {
+      "key": "ofertaId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "candidaturaId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "entrevistaId",
+      "value": "1",
+      "type": "string"
+    }
+  ]
+}

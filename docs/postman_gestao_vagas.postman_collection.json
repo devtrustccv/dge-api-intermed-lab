@@ -34,7 +34,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/v1/vagas?tipoOferta=EMPREGO&entidadeId={{entidadeId}}&estado=ATIVA",
+              "raw": "{{baseUrl}}/v1/vagas?tipoOferta=OFERTA_EMPREGO&entidadeId={{entidadeId}}&estado=ATIVA",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -45,7 +45,7 @@
               "query": [
                 {
                   "key": "tipoOferta",
-                  "value": "EMPREGO"
+                  "value": "OFERTA_EMPREGO"
                 },
                 {
                   "key": "entidadeId",
@@ -54,6 +54,32 @@
                 {
                   "key": "estado",
                   "value": "ATIVA"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Select Colaboradores por Tipo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/vagas/opcoes/colaboradores?tipo={{tipoColaborador}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "vagas",
+                "opcoes",
+                "colaboradores"
+              ],
+              "query": [
+                {
+                  "key": "tipo",
+                  "value": "{{tipoColaborador}}"
                 }
               ]
             }
@@ -73,7 +99,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"codigoReferencia\": \"VG-POSTMAN-001\",\n  \"tipoOferta\": \"EMPREGO\",\n  \"titulo\": \"Tecnico de Informatica\",\n  \"descricao\": \"Vaga de teste criada pelo Postman.\",\n  \"dataInicioCandidatura\": \"2026-08-03\",\n  \"dataFimCandidatura\": \"2026-08-31\",\n  \"dataInicioPrevisto\": \"2026-09-15\",\n  \"duracaoContrato\": 12,\n  \"regimeContrato\": \"TERMO\",\n  \"entidadeId\": {{entidadeId}},\n  \"denominacaoEntidade\": \"Empresa Teste A\",\n  \"habilitacaoMinima\": \"12_ANO\",\n  \"nivelQualificacao\": \"NIVEL_4\",\n  \"numVagas\": 2,\n  \"habilitacaoMaxima\": \"LICENCIATURA\",\n  \"conhecimentoLinguistico\": [\n    {\n      \"idioma\": \"INGLES\",\n      \"nivelEscrita\": \"BOM\",\n      \"nivelOralidade\": \"BOM\",\n      \"certificacao\": \"NAO\"\n    }\n  ],\n  \"competenciasValorizadas\": [\"Java\", \"SQL\", \"Suporte tecnico\"],\n  \"horaInicio\": \"08:00:00\",\n  \"horaFim\": \"16:00:00\",\n  \"diasSemana\": [\"SEGUNDA\", \"TERCA\", \"QUARTA\", \"QUINTA\", \"SEXTA\"],\n  \"cursosAreaFormacao\": [\"Informatica\", \"Redes\"],\n  \"experienciaProfissional\": [\"Suporte tecnico\", \"Administracao de sistemas\"],\n  \"ilha\": \"ST\",\n  \"concelho\": \"PR\",\n  \"orientadorId\": 1,\n  \"coordenadorId\": 2,\n  \"emailContacto\": \"rh@empresa.cv\",\n  \"contacto\": \"9912345\",\n  \"observacao\": \"Teste de criacao ativa.\",\n  \"utilizador\": \"postman\"\n}",
+              "raw": "{\n  \"codigoReferencia\": \"VG-POSTMAN-001\",\n  \"tipoOferta\": \"OFERTA_EMPREGO\",\n  \"titulo\": \"Tecnico de Informatica\",\n  \"descricao\": \"Vaga de teste criada pelo Postman.\",\n  \"dataInicioCandidatura\": \"2026-08-03\",\n  \"dataFimCandidatura\": \"2026-08-31\",\n  \"dataInicioPrevisto\": \"2026-09-15\",\n  \"duracaoContrato\": 12,\n  \"regimeContrato\": \"CONTRATO_TERMO\",\n  \"entidadeId\": {{entidadeId}},\n  \"denominacaoEntidade\": \"Empresa Teste A\",\n  \"habilitacaoMinima\": \"ENSINO_SECUNDARIO\",\n  \"nivelQualificacao\": \"4\",\n  \"numVagas\": 2,\n  \"habilitacaoMaxima\": \"LICENCIATURA\",\n  \"conhecimentoLinguistico\": [\n    {\n      \"idioma\": \"INGLES\",\n      \"nivelEscrita\": \"BOM\",\n      \"nivelOralidade\": \"BOM\",\n      \"certificacao\": \"N\"\n    }\n  ],\n  \"competenciasValorizadas\": [\"Java\", \"SQL\", \"Suporte tecnico\"],\n  \"horaInicio\": \"08:00:00\",\n  \"horaFim\": \"16:00:00\",\n  \"diasSemana\": [\"SEGUNDA\", \"TERCA\", \"QUARTA\", \"QUINTA\", \"SEXTA\"],\n  \"cursosAreaFormacao\": [\"Informatica\", \"Redes\"],\n  \"experienciaProfissional\": [\"Suporte tecnico\", \"Administracao de sistemas\"],\n  \"ilha\": \"ST\",\n  \"concelho\": \"PR\",\n  \"orientadorId\": 1,\n  \"coordenadorId\": 2,\n  \"emailContacto\": \"rh@empresa.cv\",\n  \"contacto\": \"9912345\",\n  \"observacao\": \"Teste de criacao ativa.\",\n  \"utilizador\": \"postman\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -97,7 +123,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"codigoReferencia\": \"VG-RASC-001\",\n  \"tipoOferta\": \"ESTAGIO\",\n  \"titulo\": \"Estagio Profissional\",\n  \"numVagas\": 3,\n  \"entidadeId\": {{entidadeId}},\n  \"denominacaoEntidade\": \"Empresa Teste A\",\n  \"ilha\": \"ST\",\n  \"concelho\": \"PR\",\n  \"utilizador\": \"postman\"\n}",
+              "raw": "{\n  \"codigoReferencia\": \"VG-RASC-001\",\n  \"tipoOferta\": \"OFERTA_ESTAGIO\",\n  \"titulo\": \"Estagio Profissional\",\n  \"numVagas\": 3,\n  \"entidadeId\": {{entidadeId}},\n  \"denominacaoEntidade\": \"Empresa Teste A\",\n  \"ilha\": \"ST\",\n  \"concelho\": \"PR\",\n  \"utilizador\": \"postman\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -130,7 +156,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"codigoReferencia\": \"VG-POSTMAN-001\",\n  \"tipoOferta\": \"EMPREGO\",\n  \"titulo\": \"Tecnico de Informatica Senior\",\n  \"descricao\": \"Vaga atualizada pelo Postman.\",\n  \"dataInicioCandidatura\": \"2026-08-03\",\n  \"dataFimCandidatura\": \"2026-09-05\",\n  \"dataInicioPrevisto\": \"2026-09-15\",\n  \"duracaoContrato\": 12,\n  \"regimeContrato\": \"TERMO\",\n  \"entidadeId\": {{entidadeId}},\n  \"denominacaoEntidade\": \"Empresa Teste A\",\n  \"habilitacaoMinima\": \"12_ANO\",\n  \"nivelQualificacao\": \"NIVEL_4\",\n  \"numVagas\": 2,\n  \"habilitacaoMaxima\": \"LICENCIATURA\",\n  \"conhecimentoLinguistico\": [],\n  \"competenciasValorizadas\": [\"Java\", \"SQL\", \"Spring Boot\"],\n  \"horaInicio\": \"08:00:00\",\n  \"horaFim\": \"16:00:00\",\n  \"diasSemana\": [\"SEGUNDA\", \"TERCA\", \"QUARTA\", \"QUINTA\", \"SEXTA\"],\n  \"cursosAreaFormacao\": [\"Informatica\"],\n  \"experienciaProfissional\": [\"Desenvolvimento backend\"],\n  \"ilha\": \"ST\",\n  \"concelho\": \"PR\",\n  \"orientadorId\": 1,\n  \"coordenadorId\": 2,\n  \"emailContacto\": \"rh@empresa.cv\",\n  \"contacto\": \"9912345\",\n  \"observacao\": \"Teste de atualizacao.\",\n  \"utilizador\": \"postman\"\n}",
+              "raw": "{\n  \"codigoReferencia\": \"VG-POSTMAN-001\",\n  \"tipoOferta\": \"OFERTA_EMPREGO\",\n  \"titulo\": \"Tecnico de Informatica Senior\",\n  \"descricao\": \"Vaga atualizada pelo Postman.\",\n  \"dataInicioCandidatura\": \"2026-08-03\",\n  \"dataFimCandidatura\": \"2026-09-05\",\n  \"dataInicioPrevisto\": \"2026-09-15\",\n  \"duracaoContrato\": 12,\n  \"regimeContrato\": \"CONTRATO_TERMO\",\n  \"entidadeId\": {{entidadeId}},\n  \"denominacaoEntidade\": \"Empresa Teste A\",\n  \"habilitacaoMinima\": \"ENSINO_SECUNDARIO\",\n  \"nivelQualificacao\": \"4\",\n  \"numVagas\": 2,\n  \"habilitacaoMaxima\": \"LICENCIATURA\",\n  \"conhecimentoLinguistico\": [],\n  \"competenciasValorizadas\": [\"Java\", \"SQL\", \"Spring Boot\"],\n  \"horaInicio\": \"08:00:00\",\n  \"horaFim\": \"16:00:00\",\n  \"diasSemana\": [\"SEGUNDA\", \"TERCA\", \"QUARTA\", \"QUINTA\", \"SEXTA\"],\n  \"cursosAreaFormacao\": [\"Informatica\"],\n  \"experienciaProfissional\": [\"Desenvolvimento backend\"],\n  \"ilha\": \"ST\",\n  \"concelho\": \"PR\",\n  \"orientadorId\": 1,\n  \"coordenadorId\": 2,\n  \"emailContacto\": \"rh@empresa.cv\",\n  \"contacto\": \"9912345\",\n  \"observacao\": \"Teste de atualizacao.\",\n  \"utilizador\": \"postman\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -209,6 +235,10 @@
     {
       "key": "entidadeId",
       "value": "1"
+    },
+    {
+      "key": "tipoColaborador",
+      "value": "COORDENADOR"
     },
     {
       "key": "vagaId",

@@ -3,10 +3,12 @@ package cv.dge.dge_api_intermed_lab.application.emprego.service;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.VagaDuplicacaoResponse;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.VagaEstadoRequest;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.VagaFiltro;
+import cv.dge.dge_api_intermed_lab.application.emprego.dto.VagaColaboradorSelectResponse;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.VagaListaResponse;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.VagaRequest;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.VagaResponse;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.VagaValidacaoRequest;
+import cv.dge.dge_api_intermed_lab.application.emprego.enums.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
 import cv.dge.dge_api_intermed_lab.infrastructure.emprego.repository.GestaoVagaRepository;
 import java.time.LocalDate;
@@ -24,9 +26,8 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
     private static final String ESTADO_ATIVA = "ATIVA";
     private static final String ESTADO_RASCUNHO = "RASCUNHO";
     private static final String ESTADO_FECHADA = "FECHADA";
-    private static final String ESTADO_EM_APROVACAO = "EM_APROVACAO";
-    private static final String ESTADO_CANCELADA = "CANCELADA";
-    private static final String ESTADO_INATIVA = "INATIVA";
+    private static final String TIPO_ORIENTADOR = "ORIENTADOR";
+    private static final String TIPO_COORDENADOR = "COORDENADOR";
 
     private final GestaoVagaRepository vagaRepository;
     private final GlobalGeografiaService globalGeografiaService;
@@ -37,6 +38,24 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
         return vagaRepository.listar(normalizarFiltro(filtro)).stream()
                 .map(this::enriquecerLista)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<VagaColaboradorSelectResponse> listarColaboradores(String tipo) {
+        return vagaRepository.listarColaboradoresPorTipo(normalizarTipoColaboradorObrigatorio(tipo));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<VagaColaboradorSelectResponse> listarOrientadores() {
+        return listarColaboradores(TIPO_ORIENTADOR);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<VagaColaboradorSelectResponse> listarCoordenadores() {
+        return listarColaboradores(TIPO_COORDENADOR);
     }
 
     @Override
@@ -52,8 +71,9 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
     @Transactional
     public VagaResponse criar(VagaRequest request) {
         validarRequest(request, false);
-        String utilizador = utilizadorObrigatorio(request.utilizador());
-        Integer id = vagaRepository.inserir(request, ESTADO_ATIVA, utilizador);
+        VagaRequest dados = normalizarRequest(request);
+        String utilizador = utilizadorObrigatorio(dados.utilizador());
+        Integer id = vagaRepository.inserir(dados, ESTADO_ATIVA, utilizador);
         return buscarPorId(id);
     }
 
@@ -61,8 +81,9 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
     @Transactional
     public VagaResponse criarRascunho(VagaRequest request) {
         validarRequest(request, true);
-        String utilizador = utilizadorObrigatorio(request.utilizador());
-        Integer id = vagaRepository.inserir(request, ESTADO_RASCUNHO, utilizador);
+        VagaRequest dados = normalizarRequest(request);
+        String utilizador = utilizadorObrigatorio(dados.utilizador());
+        Integer id = vagaRepository.inserir(dados, ESTADO_RASCUNHO, utilizador);
         return buscarPorId(id);
     }
 
@@ -73,8 +94,9 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
         validarRequest(request, false);
         VagaResponse atual = buscarPorId(id);
         garantirEditavel(atual);
-        String utilizador = utilizadorObrigatorio(request.utilizador());
-        vagaRepository.atualizar(id, request, utilizador);
+        VagaRequest dados = normalizarRequest(request);
+        String utilizador = utilizadorObrigatorio(dados.utilizador());
+        vagaRepository.atualizar(id, dados, utilizador);
         return buscarPorId(id);
     }
 
@@ -139,6 +161,8 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
                 origem.concelho(),
                 origem.orientadorId(),
                 origem.coordenadorId(),
+                origem.orientadorDenominacao(),
+                origem.coordenadorDenominacao(),
                 origem.emailContacto(),
                 origem.contacto(),
                 origem.observacao(),
@@ -149,7 +173,7 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
 
     private VagaFiltro normalizarFiltro(VagaFiltro filtro) {
         return new VagaFiltro(
-                filtro.tipoOferta(),
+                normalizarDominioOpcional(EmpregoDominio.DOMINIO_TIPO_OFERTA, filtro.tipoOferta()),
                 filtro.entidadeId(),
                 filtro.ilha(),
                 filtro.concelho(),
@@ -224,8 +248,8 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
         return new VagaListaResponse(
                 vaga.id(),
                 vaga.titulo(),
-                vaga.tipoOferta(),
-                descricaoPadrao(vaga.tipoOfertaDesc(), vaga.tipoOferta()),
+                valorDominio(EmpregoDominio.DOMINIO_TIPO_OFERTA, vaga.tipoOferta()),
+                descricaoDominio(EmpregoDominio.DOMINIO_TIPO_OFERTA, vaga.tipoOferta()),
                 vaga.ilha(),
                 ilhaDesc,
                 vaga.concelho(),
@@ -234,9 +258,15 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
                 vaga.numVagas(),
                 vaga.entidadeId(),
                 vaga.denominacaoEntidade(),
+                vaga.orientadorId(),
+                vaga.orientadorDenominacao(),
+                vaga.coordenadorId(),
+                vaga.coordenadorDenominacao(),
+                vaga.coordenadorEmail(),
+                vaga.coordenadorTelefone(),
                 vaga.codigoReferencia(),
-                vaga.estado(),
-                descricaoEstadoOferta(vaga.estado()),
+                valorDominio(EmpregoDominio.DOMINIO_ESTADO_OFERTA, vaga.estado()),
+                descricaoDominio(EmpregoDominio.DOMINIO_ESTADO_OFERTA, vaga.estado()),
                 vaga.dataFimCandidatura()
         );
     }
@@ -247,8 +277,8 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
         return new VagaResponse(
                 vaga.id(),
                 vaga.codigoReferencia(),
-                vaga.tipoOferta(),
-                descricaoPadrao(vaga.tipoOfertaDesc(), vaga.tipoOferta()),
+                valorDominio(EmpregoDominio.DOMINIO_TIPO_OFERTA, vaga.tipoOferta()),
+                descricaoDominio(EmpregoDominio.DOMINIO_TIPO_OFERTA, vaga.tipoOferta()),
                 vaga.titulo(),
                 vaga.descricao(),
                 vaga.dataInicioCandidatura(),
@@ -275,12 +305,16 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
                 concelhoDesc,
                 localOferta(ilhaDesc, concelhoDesc),
                 vaga.orientadorId(),
+                vaga.orientadorDenominacao(),
                 vaga.coordenadorId(),
+                vaga.coordenadorDenominacao(),
+                vaga.coordenadorEmail(),
+                vaga.coordenadorTelefone(),
                 vaga.emailContacto(),
                 vaga.contacto(),
                 vaga.observacao(),
-                vaga.estado(),
-                descricaoEstadoOferta(vaga.estado()),
+                valorDominio(EmpregoDominio.DOMINIO_ESTADO_OFERTA, vaga.estado()),
+                descricaoDominio(EmpregoDominio.DOMINIO_ESTADO_OFERTA, vaga.estado()),
                 vaga.editavel(),
                 vaga.dateCreate(),
                 vaga.userCreate(),
@@ -301,13 +335,6 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
         }
     }
 
-    private String descricaoPadrao(String descricao, String codigo) {
-        if (descricao != null && !descricao.trim().isEmpty()) {
-            return descricao;
-        }
-        return codigo;
-    }
-
     private String normalizarEstadoOfertaObrigatorio(String estado) {
         String normalizado = normalizarEstadoOfertaOpcional(estado);
         if (normalizado == null) {
@@ -316,41 +343,73 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
         return normalizado;
     }
 
-    private String normalizarEstadoOfertaOpcional(String estado) {
-        if (estado == null || estado.trim().isEmpty()) {
-            return null;
+    private String normalizarTipoColaboradorObrigatorio(String tipo) {
+        String normalizado = normalizarDominioOpcional(EmpregoDominio.DOMINIO_TIPO_COLABORADOR, tipo);
+        if (normalizado == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "tipo e obrigatorio.");
         }
-
-        String valor = estado.trim().toUpperCase().replace(" ", "_");
-        return switch (valor) {
-            case ESTADO_RASCUNHO -> ESTADO_RASCUNHO;
-            case ESTADO_EM_APROVACAO -> ESTADO_EM_APROVACAO;
-            case ESTADO_ATIVA -> ESTADO_ATIVA;
-            case ESTADO_FECHADA -> ESTADO_FECHADA;
-            case ESTADO_CANCELADA -> ESTADO_CANCELADA;
-            case ESTADO_INATIVA -> ESTADO_INATIVA;
-            default -> throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Estado de oferta invalido. Use RASCUNHO, EM_APROVACAO, ATIVA, FECHADA, CANCELADA ou INATIVA."
-            );
-        };
+        return normalizado;
     }
 
-    private String descricaoEstadoOferta(String estado) {
-        if (estado == null || estado.trim().isEmpty()) {
-            return estado;
-        }
+    private String normalizarEstadoOfertaOpcional(String estado) {
+        return normalizarDominioOpcional(EmpregoDominio.DOMINIO_ESTADO_OFERTA, estado);
+    }
 
-        String valor = estado.trim().toUpperCase();
-        return switch (valor) {
-            case ESTADO_RASCUNHO -> "Rascunho";
-            case ESTADO_EM_APROVACAO -> "Em aprovacao";
-            case ESTADO_ATIVA -> "Ativa";
-            case ESTADO_FECHADA -> "Fechada";
-            case ESTADO_CANCELADA -> "Cancelada";
-            case ESTADO_INATIVA -> "Inativa";
-            default -> estado;
-        };
+    private VagaRequest normalizarRequest(VagaRequest request) {
+        return new VagaRequest(
+                texto(request.codigoReferencia()),
+                normalizarDominioOpcional(EmpregoDominio.DOMINIO_TIPO_OFERTA, request.tipoOferta()),
+                texto(request.titulo()),
+                texto(request.descricao()),
+                request.dataInicioCandidatura(),
+                request.dataFimCandidatura(),
+                request.dataInicioPrevisto(),
+                request.duracaoContrato(),
+                normalizarDominioOpcional(EmpregoDominio.DOMINIO_REGIME_CONTRATO, request.regimeContrato()),
+                request.entidadeId(),
+                texto(request.denominacaoEntidade()),
+                normalizarDominioOpcional(EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA, request.habilitacaoMinima()),
+                normalizarDominioOpcional(EmpregoDominio.DOMINIO_NIVEL_QUALIFICACAO, request.nivelQualificacao()),
+                request.numVagas(),
+                normalizarDominioOpcional(EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA, request.habilitacaoMaxima()),
+                request.conhecimentoLinguistico(),
+                request.competenciasValorizadas(),
+                request.horaInicio(),
+                request.horaFim(),
+                request.diasSemana(),
+                request.cursosAreaFormacao(),
+                request.experienciaProfissional(),
+                texto(request.ilha()),
+                texto(request.concelho()),
+                request.orientadorId(),
+                request.coordenadorId(),
+                texto(request.orientadorDenominacao()),
+                texto(request.coordenadorDenominacao()),
+                texto(request.emailContacto()),
+                texto(request.contacto()),
+                texto(request.observacao()),
+                texto(request.utilizador())
+        );
+    }
+
+    private String normalizarDominioOpcional(String dominio, String valor) {
+        String texto = texto(valor);
+        if (texto == null) {
+            return null;
+        }
+        return EmpregoDominio.valorOficial(dominio, texto)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        dominio + " invalido: " + texto + "."
+                ));
+    }
+
+    private String valorDominio(String dominio, String valor) {
+        return EmpregoDominio.valorOficial(dominio, valor).orElse(valor);
+    }
+
+    private String descricaoDominio(String dominio, String valor) {
+        return EmpregoDominio.descricao(dominio, valor);
     }
 
     private String localOferta(String ilha, String concelho) {
@@ -361,5 +420,12 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
             return ilha;
         }
         return ilha + " - " + concelho;
+    }
+
+    private String texto(String valor) {
+        if (valor == null || valor.trim().isEmpty()) {
+            return null;
+        }
+        return valor.trim();
     }
 }

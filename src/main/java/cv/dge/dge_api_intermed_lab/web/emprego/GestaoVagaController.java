@@ -1,6 +1,7 @@
 package cv.dge.dge_api_intermed_lab.web.emprego;
 
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.EmpregoApiResponse;
+import cv.dge.dge_api_intermed_lab.application.emprego.dto.VagaColaboradorSelectResponse;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.VagaDuplicacaoResponse;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.VagaEstadoRequest;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.VagaFiltro;
@@ -31,6 +32,32 @@ import org.springframework.web.bind.annotation.RestController;
 public class GestaoVagaController {
 
     private final GestaoVagaService gestaoVagaService;
+
+    @GetMapping("opcoes/colaboradores")
+    public EmpregoApiResponse<List<VagaColaboradorSelectResponse>> listarColaboradores(
+            @RequestParam("tipo") String tipo
+    ) {
+        return EmpregoApiResponse.sucesso(
+                "Colaboradores listados com sucesso.",
+                gestaoVagaService.listarColaboradores(tipo)
+        );
+    }
+
+    @GetMapping("opcoes/orientadores")
+    public EmpregoApiResponse<List<VagaColaboradorSelectResponse>> listarOrientadores() {
+        return EmpregoApiResponse.sucesso(
+                "Orientadores listados com sucesso.",
+                gestaoVagaService.listarOrientadores()
+        );
+    }
+
+    @GetMapping("opcoes/coordenadores")
+    public EmpregoApiResponse<List<VagaColaboradorSelectResponse>> listarCoordenadores() {
+        return EmpregoApiResponse.sucesso(
+                "Coordenadores listados com sucesso.",
+                gestaoVagaService.listarCoordenadores()
+        );
+    }
 
     @GetMapping
     public EmpregoApiResponse<List<VagaListaResponse>> listar(

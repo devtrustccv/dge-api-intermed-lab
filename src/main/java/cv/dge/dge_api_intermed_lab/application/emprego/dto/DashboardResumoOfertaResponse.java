@@ -4,6 +4,7 @@ public record DashboardResumoOfertaResponse(
         Integer idOferta,
         String oferta,
         String tipo,
+        String tipoDesc,
         Integer totalVagas,
         Long totalCandidaturas,
         Long totalCandidaturasAprovadas,

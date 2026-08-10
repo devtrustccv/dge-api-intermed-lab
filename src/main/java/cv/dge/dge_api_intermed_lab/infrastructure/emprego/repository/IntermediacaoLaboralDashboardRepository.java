@@ -192,6 +192,7 @@ public class IntermediacaoLaboralDashboardRepository {
                 sql,
                 (rs, rowNum) -> new DashboardGrupoResponse(
                         rs.getString("valor"),
+                        rs.getString("valor"),
                         rs.getLong("total")
                 ),
                 params
@@ -204,6 +205,7 @@ public class IntermediacaoLaboralDashboardRepository {
                 (rs, rowNum) -> new DashboardResumoOfertaResponse(
                         rs.getInt("id_oferta"),
                         rs.getString("oferta"),
+                        rs.getString("tipo"),
                         rs.getString("tipo"),
                         rs.getObject("total_vagas", Integer.class),
                         rs.getLong("total_candidaturas"),

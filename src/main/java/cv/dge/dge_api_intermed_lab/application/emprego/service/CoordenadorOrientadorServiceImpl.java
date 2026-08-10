@@ -8,6 +8,7 @@ import cv.dge.dge_api_intermed_lab.application.emprego.dto.CoordenadorOrientador
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.PessoaGlobalResponse;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.VagaFiltro;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.VagaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.emprego.enums.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.emprego.repository.CoordenadorOrientadorRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -232,49 +233,23 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
     }
 
     private String normalizarTipoOpcional(String tipo) {
-        String valor = texto(tipo);
-        if (valor == null) {
-            return null;
-        }
-
-        String normalizado = valor.toUpperCase().replace(" ", "_");
-        return switch (normalizado) {
-            case TIPO_ORIENTADOR -> TIPO_ORIENTADOR;
-            case TIPO_COORDENADOR -> TIPO_COORDENADOR;
-            default -> throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "tipo invalido. Use ORIENTADOR ou COORDENADOR."
-            );
-        };
+        return normalizarDominioOpcional(EmpregoDominio.DOMINIO_TIPO_COLABORADOR, tipo);
     }
 
     private String normalizarEstadoOpcional(String estado) {
-        String valor = texto(estado);
-        if (valor == null) {
-            return null;
-        }
-
-        String normalizado = valor.toUpperCase();
-        return switch (normalizado) {
-            case "A", "ATIVO" -> ESTADO_ATIVO;
-            case "I", "INATIVO", "INACTIVO" -> ESTADO_INATIVO;
-            default -> throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "estado invalido. Use A/ATIVO ou I/INATIVO."
-            );
-        };
+        return normalizarDominioOpcional(EmpregoDominio.DOMINIO_ESTADO, estado);
     }
 
     private CoordenadorOrientadorListaResponse enriquecerLista(CoordenadorOrientadorListaResponse item) {
         return new CoordenadorOrientadorListaResponse(
                 item.id(),
-                item.tipo(),
-                descricaoTipo(item.tipo()),
+                valorDominio(EmpregoDominio.DOMINIO_TIPO_COLABORADOR, item.tipo()),
+                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_COLABORADOR, item.tipo()),
                 item.nome(),
                 item.email(),
                 item.telemovel(),
-                item.estado(),
-                descricaoEstado(item.estado()),
+                valorDominio(EmpregoDominio.DOMINIO_ESTADO, item.estado()),
+                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO, item.estado()),
                 item.dateCreate(),
                 item.userCreate()
         );
@@ -283,15 +258,15 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
     private CoordenadorOrientadorResponse enriquecerDetalhe(CoordenadorOrientadorResponse item) {
         return new CoordenadorOrientadorResponse(
                 item.id(),
-                item.tipo(),
-                descricaoTipo(item.tipo()),
+                valorDominio(EmpregoDominio.DOMINIO_TIPO_COLABORADOR, item.tipo()),
+                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_COLABORADOR, item.tipo()),
                 item.nome(),
                 item.pessoaId(),
                 item.cargo(),
                 item.email(),
                 item.telemovel(),
-                item.estado(),
-                descricaoEstado(item.estado()),
+                valorDominio(EmpregoDominio.DOMINIO_ESTADO, item.estado()),
+                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO, item.estado()),
                 item.dateCreate(),
                 item.userCreate(),
                 item.dateUpdate(),
@@ -299,26 +274,20 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
         );
     }
 
-    private String descricaoTipo(String tipo) {
-        if (tipo == null) {
+    private String normalizarDominioOpcional(String dominio, String valor) {
+        String texto = texto(valor);
+        if (texto == null) {
             return null;
         }
-        return switch (tipo.trim().toUpperCase()) {
-            case TIPO_ORIENTADOR -> "Orientador";
-            case TIPO_COORDENADOR -> "Coordenador";
-            default -> tipo;
-        };
+        return EmpregoDominio.valorOficial(dominio, texto)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        dominio + " invalido: " + texto + "."
+                ));
     }
 
-    private String descricaoEstado(String estado) {
-        if (estado == null) {
-            return null;
-        }
-        return switch (estado.trim().toUpperCase()) {
-            case "A", "ATIVO" -> "Ativo";
-            case "I", "INATIVO", "INACTIVO" -> "Inativo";
-            default -> estado;
-        };
+    private String valorDominio(String dominio, String valor) {
+        return EmpregoDominio.valorOficial(dominio, valor).orElse(valor);
     }
 
     private String texto(String valor) {
