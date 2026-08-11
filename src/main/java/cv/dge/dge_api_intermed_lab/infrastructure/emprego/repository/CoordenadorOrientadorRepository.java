@@ -180,7 +180,7 @@ public class CoordenadorOrientadorRepository {
         return resultados.stream().findFirst();
     }
 
-    public Integer inserir(CoordenadorOrientadorRequest request, String estado, String utilizador) {
+    public Integer inserir(CoordenadorOrientadorRequest request, Long pessoaId, String estado, String utilizador) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         LocalDateTime agora = LocalDateTime.now();
 
@@ -188,7 +188,7 @@ public class CoordenadorOrientadorRepository {
             PreparedStatement ps = con.prepareStatement(SQL_INSERT, new String[]{"id"});
             ps.setString(1, request.tipo());
             ps.setString(2, request.nome());
-            setLong(ps, 3, request.pessoaId());
+            setLong(ps, 3, pessoaId);
             ps.setString(4, request.cargo());
             ps.setString(5, request.email());
             ps.setString(6, request.telemovel());
@@ -202,12 +202,12 @@ public class CoordenadorOrientadorRepository {
         return id == null ? null : id.intValue();
     }
 
-    public void atualizar(Integer id, CoordenadorOrientadorRequest request, String utilizador) {
+    public void atualizar(Integer id, CoordenadorOrientadorRequest request, Long pessoaId, String utilizador) {
         empregoJdbcTemplate.update(
                 SQL_UPDATE,
                 request.tipo(),
                 request.nome(),
-                request.pessoaId(),
+                pessoaId,
                 request.cargo(),
                 request.email(),
                 request.telemovel(),

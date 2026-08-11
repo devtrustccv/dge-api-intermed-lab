@@ -74,8 +74,9 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
         validarRequest(request);
         String utilizador = utilizadorObrigatorio(request.utilizador());
         String tipo = normalizarTipoObrigatorio(request.tipo());
+        Long pessoaId = resolverPessoaIdPorDocumento(request.numeroDocumento());
         CoordenadorOrientadorRequest dados = normalizarRequest(request, tipo);
-        Integer id = coordenadorOrientadorRepository.inserir(dados, ESTADO_ATIVO, utilizador);
+        Integer id = coordenadorOrientadorRepository.inserir(dados, pessoaId, ESTADO_ATIVO, utilizador);
         return buscarPorId(id);
     }
 
@@ -86,9 +87,10 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
         validarRequest(request);
         String utilizador = utilizadorObrigatorio(request.utilizador());
         String tipo = normalizarTipoObrigatorio(request.tipo());
+        Long pessoaId = resolverPessoaIdPorDocumento(request.numeroDocumento());
         buscarPorId(id);
 
-        coordenadorOrientadorRepository.atualizar(id, normalizarRequest(request, tipo), utilizador);
+        coordenadorOrientadorRepository.atualizar(id, normalizarRequest(request, tipo), pessoaId, utilizador);
         return buscarPorId(id);
     }
 
@@ -151,17 +153,25 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
         utilizadorObrigatorio(request.utilizador());
         normalizarTipoObrigatorio(request.tipo());
 
-        if (request.pessoaId() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pessoaId e obrigatorio.");
-        }
+        textoObrigatorio(request.numeroDocumento(), "numeroDocumento e obrigatorio.");
         if (!temTexto(request.nome())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "nome e obrigatorio.");
         }
     }
 
+    private Long resolverPessoaIdPorDocumento(String numeroDocumento) {
+        String numero = textoObrigatorio(numeroDocumento, "numeroDocumento e obrigatorio.");
+        return coordenadorOrientadorRepository.buscarPessoaPorNumeroDocumento(numero)
+                .map(PessoaGlobalResponse::id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Pessoa nao encontrada na base global pelo numeroDocumento informado."
+                ));
+    }
+
     private CoordenadorOrientadorRequest normalizarRequest(CoordenadorOrientadorRequest request, String tipo) {
         return new CoordenadorOrientadorRequest(
-                request.pessoaId(),
+                texto(request.numeroDocumento()),
                 texto(request.nome()),
                 tipo,
                 texto(request.cargo()),
