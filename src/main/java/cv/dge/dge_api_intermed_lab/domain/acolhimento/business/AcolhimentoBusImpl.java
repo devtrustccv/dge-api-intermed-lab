@@ -95,6 +95,49 @@ public class AcolhimentoBusImpl implements AcolhimentoBus {
     }
 
     @Override
+    public List<Utente> findUtentesByCefpIdAndDenominacao(Integer cefpId, String denominacao) {
+        if (cefpId == null) {
+            return utenteRepository.findAll();
+        }
+        
+        List<DetalhesAcolhimento> acolhimentos = detalhesAcolhimentoRepository.findAllByCefpIdOrderByDateCreateDescIdDesc(cefpId);
+        
+        if (acolhimentos.isEmpty()) {
+            return List.of();
+        }
+        
+        List<Integer> utenteIds = acolhimentos.stream()
+                .map(DetalhesAcolhimento::getIdUtente)
+                .filter(id -> id != null)
+                .distinct()
+                .toList();
+        
+        if (utenteIds.isEmpty()) {
+            return List.of();
+        }
+        
+        List<Utente> utentes = utenteRepository.findAllById(utenteIds);
+        
+        if (denominacao == null || denominacao.isBlank()) {
+            return utentes;
+        }
+        
+        return utentes.stream()
+                .filter(utente -> denominacao.equalsIgnoreCase(utente.getNome()))
+                .toList();
+    }
+
+    @Override
+    public List<DetalhesAcolhimento> findAllDetalhesAcolhimento() {
+        return detalhesAcolhimentoRepository.findAllByOrderByDateCreateDescIdDesc();
+    }
+
+    @Override
+    public Optional<DetalhesAcolhimento> findPrimeiroAcolhimentoByUtente(Integer idUtente) {
+        return detalhesAcolhimentoRepository.findFirstByIdUtenteOrderByDateCreateAscIdAsc(idUtente);
+    }
+
+    @Override
     public Utente saveUtente(Utente utente) {
         return utenteRepository.save(utente);
     }

@@ -4,6 +4,7 @@ import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoComple
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoDadosEmpregoResponse;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoEntidadeResponse;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoPessoaResponse;
+import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.PacCandidaturaResponse;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.UtenteResponse;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.mapper.AcolhimentoMapper;
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
@@ -60,6 +61,80 @@ public class AcolhimentoConsultaServiceImpl implements AcolhimentoConsultaServic
     public List<UtenteResponse> listarUtentes() {
         return acolhimentoBus.findAllUtentes().stream()
                 .map(acolhimentoMapper::toUtenteResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UtenteResponse> listarUtentes(Integer cefpId, String denominacao) {
+        return acolhimentoBus.findUtentesByCefpIdAndDenominacao(cefpId, denominacao).stream()
+                .map(acolhimentoMapper::toUtenteResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PacCandidaturaResponse> listarCandidaturas() {
+        List<Utente> utentes = acolhimentoBus.findAllUtentes();
+        return utentes.stream()
+                .map(utente -> {
+                    DetalhesAcolhimento detalhe = acolhimentoBus
+                            .findPrimeiroAcolhimentoByUtente(utente.getId())
+                            .orElse(null);
+                    Cefp cefp = detalhe != null && detalhe.getCefpId() != null
+                            ? acolhimentoBus.findCefpById(detalhe.getCefpId()).orElse(null)
+                            : null;
+                    return new PacCandidaturaResponse(
+                            utente.getId(),
+                            utente.getPessoaId(),
+                            utente.getNome(),
+                            utente.getDataNascimento(),
+                            utente.getTipoDocumento(),
+                            utente.getNumDocumento(),
+                            utente.getSexo(),
+                            utente.getNif(),
+                            utente.getHabilitacaoLiteraria(),
+                            detalhe != null ? detalhe.getCefpId() : null,
+                            cefp != null ? cefp.getDenominacao() : null,
+                            utente.getDateCreate(),
+                            utente.getUserCreate(),
+                            utente.getDateUpdate(),
+                            utente.getUserUpdate()
+                    );
+                })
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PacCandidaturaResponse> listarCandidaturas(Integer cefpId, String denominacao) {
+        List<Utente> utentes = acolhimentoBus.findUtentesByCefpIdAndDenominacao(cefpId, denominacao);
+        return utentes.stream()
+                .map(utente -> {
+                    DetalhesAcolhimento detalhe = acolhimentoBus
+                            .findPrimeiroAcolhimentoByUtente(utente.getId())
+                            .orElse(null);
+                    Cefp cefp = detalhe != null && detalhe.getCefpId() != null
+                            ? acolhimentoBus.findCefpById(detalhe.getCefpId()).orElse(null)
+                            : null;
+                    return new PacCandidaturaResponse(
+                            utente.getId(),
+                            utente.getPessoaId(),
+                            utente.getNome(),
+                            utente.getDataNascimento(),
+                            utente.getTipoDocumento(),
+                            utente.getNumDocumento(),
+                            utente.getSexo(),
+                            utente.getNif(),
+                            utente.getHabilitacaoLiteraria(),
+                            detalhe != null ? detalhe.getCefpId() : null,
+                            cefp != null ? cefp.getDenominacao() : null,
+                            utente.getDateCreate(),
+                            utente.getUserCreate(),
+                            utente.getDateUpdate(),
+                            utente.getUserUpdate()
+                    );
+                })
                 .toList();
     }
 

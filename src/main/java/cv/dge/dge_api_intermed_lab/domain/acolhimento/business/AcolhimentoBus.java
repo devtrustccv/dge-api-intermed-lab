@@ -37,6 +37,12 @@ public interface AcolhimentoBus {
 
     List<Utente> findAllUtentes();
 
+    List<Utente> findUtentesByCefpIdAndDenominacao(Integer cefpId, String denominacao);
+
+    List<DetalhesAcolhimento> findAllDetalhesAcolhimento();
+
+    Optional<DetalhesAcolhimento> findPrimeiroAcolhimentoByUtente(Integer idUtente);
+
     Utente saveUtente(Utente utente);
 
     Optional<Cefp> findCefpById(Integer id);
