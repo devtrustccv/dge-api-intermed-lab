@@ -1,0 +1,150 @@
+{
+  "info": {
+    "_postman_id": "2bdfdd84-2501-4ea0-bb0a-gestao-acompanhamento",
+    "name": "Gestao de Acompanhamento",
+    "description": "Collection para testar os endpoints da pagina Lista de Estagiarios selecionados.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Lista de Estagiarios Selecionados",
+      "item": [
+        {
+          "name": "Listar Estagiarios Selecionados",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/acompanhamentos/estagiarios-selecionados",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "acompanhamentos",
+                "estagiarios-selecionados"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar com Filtros",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/acompanhamentos/estagiarios-selecionados?estagiarioId={{estagiarioId}}&ofertaId={{ofertaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "acompanhamentos",
+                "estagiarios-selecionados"
+              ],
+              "query": [
+                {
+                  "key": "estagiarioId",
+                  "value": "{{estagiarioId}}"
+                },
+                {
+                  "key": "ofertaId",
+                  "value": "{{ofertaId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Select Estagiarios",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.dados && json.dados.length > 0) pm.collectionVariables.set('estagiarioId', json.dados[0].estagiarioId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/acompanhamentos/estagiarios-selecionados/opcoes/estagiarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "acompanhamentos",
+                "estagiarios-selecionados",
+                "opcoes",
+                "estagiarios"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Select Ofertas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.dados && json.dados.length > 0) pm.collectionVariables.set('ofertaId', json.dados[0].ofertaId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/acompanhamentos/estagiarios-selecionados/opcoes/ofertas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "acompanhamentos",
+                "estagiarios-selecionados",
+                "opcoes",
+                "ofertas"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:9001/api",
+      "type": "string"
+    },
+    {
+      "key": "estagiarioId",
+      "value": "2001101700869",
+      "type": "string"
+    },
+    {
+      "key": "ofertaId",
+      "value": "1",
+      "type": "string"
+    }
+  ]
+}

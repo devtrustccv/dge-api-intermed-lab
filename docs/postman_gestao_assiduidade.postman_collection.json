@@ -1,0 +1,320 @@
+{
+  "info": {
+    "_postman_id": "3fd111f0-7163-46e5-9c6c-gestao-assiduidade",
+    "name": "Gestao de Assiduidade",
+    "description": "Collection para testar os endpoints de gestao de assiduidade de estagiario.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Assiduidade Estagiario",
+      "item": [
+        {
+          "name": "Listar Assiduidades",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/assiduidades?entidadeId={{entidadeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "assiduidades"
+              ],
+              "query": [
+                {
+                  "key": "entidadeId",
+                  "value": "{{entidadeId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Assiduidades com Filtros",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/assiduidades?entidadeId={{entidadeId}}&estagiarioId={{estagiarioId}}&ofertaId={{ofertaId}}&tipoAssiduidade=FALTA&estado=PENDENTE",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "assiduidades"
+              ],
+              "query": [
+                {
+                  "key": "entidadeId",
+                  "value": "{{entidadeId}}"
+                },
+                {
+                  "key": "estagiarioId",
+                  "value": "{{estagiarioId}}"
+                },
+                {
+                  "key": "ofertaId",
+                  "value": "{{ofertaId}}"
+                },
+                {
+                  "key": "tipoAssiduidade",
+                  "value": "FALTA"
+                },
+                {
+                  "key": "estado",
+                  "value": "PENDENTE"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Assiduidade por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/assiduidades/{{assiduidadeId}}?entidadeId={{entidadeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "assiduidades",
+                "{{assiduidadeId}}"
+              ],
+              "query": [
+                {
+                  "key": "entidadeId",
+                  "value": "{{entidadeId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validar Assiduidade - Aprovar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decisao\": \"APROVAR\",\n  \"observacao\": \"Registo validado.\",\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/assiduidades/{{assiduidadeId}}/validacao?entidadeId={{entidadeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "assiduidades",
+                "{{assiduidadeId}}",
+                "validacao"
+              ],
+              "query": [
+                {
+                  "key": "entidadeId",
+                  "value": "{{entidadeId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validar Assiduidade - Indeferir",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decisao\": \"INDEFER\",\n  \"motivoIndeferimento\": \"Comprovativo insuficiente.\",\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/assiduidades/{{assiduidadeId}}/validacao?entidadeId={{entidadeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "assiduidades",
+                "{{assiduidadeId}}",
+                "validacao"
+              ],
+              "query": [
+                {
+                  "key": "entidadeId",
+                  "value": "{{entidadeId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Select Estagiarios",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.dados && json.dados.length > 0) pm.collectionVariables.set('estagiarioId', json.dados[0].estagiarioId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/assiduidades/opcoes/estagiarios?entidadeId={{entidadeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "assiduidades",
+                "opcoes",
+                "estagiarios"
+              ],
+              "query": [
+                {
+                  "key": "entidadeId",
+                  "value": "{{entidadeId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Select Ofertas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.dados && json.dados.length > 0) pm.collectionVariables.set('ofertaId', json.dados[0].ofertaId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/assiduidades/opcoes/ofertas?entidadeId={{entidadeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "assiduidades",
+                "opcoes",
+                "ofertas"
+              ],
+              "query": [
+                {
+                  "key": "entidadeId",
+                  "value": "{{entidadeId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Select Tipos Assiduidade",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/v1/assiduidades/opcoes/tipos"
+          },
+          "response": []
+        },
+        {
+          "name": "Select Estados Assiduidade",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/v1/assiduidades/opcoes/estados"
+          },
+          "response": []
+        },
+        {
+          "name": "Select Decisoes Validacao",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/v1/assiduidades/opcoes/decisoes"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:9001/api",
+      "type": "string"
+    },
+    {
+      "key": "entidadeId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "estagiarioId",
+      "value": "2001101700869",
+      "type": "string"
+    },
+    {
+      "key": "ofertaId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "assiduidadeId",
+      "value": "1",
+      "type": "string"
+    }
+  ]
+}

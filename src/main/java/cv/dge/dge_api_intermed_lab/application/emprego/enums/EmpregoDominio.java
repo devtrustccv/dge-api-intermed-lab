@@ -241,6 +241,11 @@ public enum EmpregoDominio {
                 case "RECUSADO", "RECUSADA", "DESFAVORAVEL" -> "RECUSAR";
                 default -> valor;
             };
+            case DOMINIO_DECISAO_ASSIDUIDADE -> switch (valor) {
+                case "APROVADO", "APROVADA" -> "APROVAR";
+                case "INDEFERIR", "INDEFERIDO", "INDEFERIDA" -> "INDEFER";
+                default -> valor;
+            };
             default -> valor;
         };
     }
