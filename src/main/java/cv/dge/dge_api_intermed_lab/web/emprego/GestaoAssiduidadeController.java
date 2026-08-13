@@ -7,7 +7,6 @@ import cv.dge.dge_api_intermed_lab.application.emprego.dto.AssiduidadeEstagiario
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.AssiduidadeOfertaSelectResponse;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.AssiduidadeValidacaoRequest;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.EmpregoApiResponse;
-import cv.dge.dge_api_intermed_lab.application.emprego.dto.EmpregoDominioOpcaoResponse;
 import cv.dge.dge_api_intermed_lab.application.emprego.service.GestaoAssiduidadeService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -86,30 +85,6 @@ public class GestaoAssiduidadeController {
         return EmpregoApiResponse.sucesso(
                 "Ofertas listadas com sucesso.",
                 gestaoAssiduidadeService.listarOfertasParaFiltro(entidadeId)
-        );
-    }
-
-    @GetMapping("opcoes/tipos")
-    public EmpregoApiResponse<List<EmpregoDominioOpcaoResponse>> listarTiposAssiduidade() {
-        return EmpregoApiResponse.sucesso(
-                "Tipos de assiduidade listados com sucesso.",
-                gestaoAssiduidadeService.listarTiposAssiduidade()
-        );
-    }
-
-    @GetMapping("opcoes/estados")
-    public EmpregoApiResponse<List<EmpregoDominioOpcaoResponse>> listarEstadosAssiduidade() {
-        return EmpregoApiResponse.sucesso(
-                "Estados de assiduidade listados com sucesso.",
-                gestaoAssiduidadeService.listarEstadosAssiduidade()
-        );
-    }
-
-    @GetMapping("opcoes/decisoes")
-    public EmpregoApiResponse<List<EmpregoDominioOpcaoResponse>> listarDecisoesAssiduidade() {
-        return EmpregoApiResponse.sucesso(
-                "Decisoes de assiduidade listadas com sucesso.",
-                gestaoAssiduidadeService.listarDecisoesAssiduidade()
         );
     }
 }

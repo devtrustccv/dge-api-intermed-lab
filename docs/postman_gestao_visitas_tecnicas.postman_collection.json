@@ -1,0 +1,393 @@
+{
+  "info": {
+    "_postman_id": "8a6df8ac-5d2d-4df4-9e3a-gestao-visitas-tecnicas",
+    "name": "Gestao de Visitas Tecnicas",
+    "description": "Collection para testar os endpoints de gestao de visitas tecnicas.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Visitas Tecnicas",
+      "item": [
+        {
+          "name": "Listar Visitas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/visitas-tecnicas?entidadeId={{entidadeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "visitas-tecnicas"
+              ],
+              "query": [
+                {
+                  "key": "entidadeId",
+                  "value": "{{entidadeId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Visitas com Filtros",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/visitas-tecnicas?entidadeId={{entidadeId}}&estado=PENDENTE&agendadoPor=ENTIDADE_ACOLHEDORA&cefpId={{cefpId}}&dataVisita=2026-09-15&dataInicio=2026-08-01&dataFim=2026-08-31",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "visitas-tecnicas"
+              ],
+              "query": [
+                {
+                  "key": "entidadeId",
+                  "value": "{{entidadeId}}"
+                },
+                {
+                  "key": "estado",
+                  "value": "PENDENTE"
+                },
+                {
+                  "key": "agendadoPor",
+                  "value": "ENTIDADE_ACOLHEDORA"
+                },
+                {
+                  "key": "cefpId",
+                  "value": "{{cefpId}}"
+                },
+                {
+                  "key": "dataVisita",
+                  "value": "2026-09-15"
+                },
+                {
+                  "key": "dataInicio",
+                  "value": "2026-08-01"
+                },
+                {
+                  "key": "dataFim",
+                  "value": "2026-08-31"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Visita por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/visitas-tecnicas/{{visitaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "visitas-tecnicas",
+                "{{visitaId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Visita",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entidadeId\": {{entidadeId}},\n  \"dataVisita\": \"2026-09-15\",\n  \"visitante\": \"Tecnico IEFP\",\n  \"candidatos\": [\n    {\n      \"pessoaId\": {{pessoaId}},\n      \"nome\": \"Candidato de teste\"\n    }\n  ],\n  \"horaInicio\": \"09:00:00\",\n  \"horaFim\": \"11:00:00\",\n  \"objetivos\": \"Acompanhar integracao e condicoes de trabalho.\",\n  \"cefpId\": {{cefpId}},\n  \"cefp\": \"CEFP de teste\",\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/visitas-tecnicas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "visitas-tecnicas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Detalhes da Visita",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataVisita\": \"2026-09-15\",\n  \"visitante\": \"Tecnico IEFP\",\n  \"horaInicio\": \"09:00:00\",\n  \"horaFim\": \"11:00:00\",\n  \"objetivos\": \"Validar condicoes e acompanhar candidatos.\",\n  \"candidatos\": [\n    {\n      \"pessoaId\": {{pessoaId}},\n      \"nome\": \"Candidato de teste\"\n    }\n  ],\n  \"observacoesEntidade\": \"A visita decorreu normalmente.\",\n  \"supervisorParticipante\": \"Supervisor de teste\",\n  \"observacoesIefp\": \"Sem pendencias.\",\n  \"detalhesAvaliacao\": [\n    {\n      \"candidatos\": [\n        {\n          \"pessoaId\": {{pessoaId}},\n          \"nome\": \"Candidato de teste\"\n        }\n      ],\n      \"criterio\": \"COMP_TECNICA\",\n      \"avaliacao\": \"3\",\n      \"observacao\": \"Bom desempenho.\"\n    }\n  ],\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/visitas-tecnicas/{{visitaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "visitas-tecnicas",
+                "{{visitaId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validar Agendamento - Deferir",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"parecer\": \"DEFERIR\",\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/visitas-tecnicas/{{visitaId}}/validacao",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "visitas-tecnicas",
+                "{{visitaId}}",
+                "validacao"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validar Agendamento - Indeferir",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"parecer\": \"INDEFERIR\",\n  \"motivoIndeferimento\": \"Agenda indisponivel.\",\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/visitas-tecnicas/{{visitaId}}/validacao",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "visitas-tecnicas",
+                "{{visitaId}}",
+                "validacao"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validar Agendamento - Proposta Nova Data",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"parecer\": \"PROPOSTA_NOVA_DATA\",\n  \"novaData\": \"2026-09-20\",\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/visitas-tecnicas/{{visitaId}}/validacao",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "visitas-tecnicas",
+                "{{visitaId}}",
+                "validacao"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Marcar como Executado",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/visitas-tecnicas/{{visitaId}}/executado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "visitas-tecnicas",
+                "{{visitaId}}",
+                "executado"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Registar Observacoes",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"observacoesEntidade\": \"Observacao registada pela entidade.\",\n  \"supervisorParticipante\": \"Supervisor de teste\",\n  \"utilizador\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/visitas-tecnicas/{{visitaId}}/observacoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "visitas-tecnicas",
+                "{{visitaId}}",
+                "observacoes"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Opcoes",
+      "item": [
+        {
+          "name": "Select Candidatos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/v1/visitas-tecnicas/opcoes/candidatos?entidadeId={{entidadeId}}"
+          },
+          "response": []
+        },
+        {
+          "name": "Select CEFPs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/v1/visitas-tecnicas/opcoes/cefps"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:9001/api"
+    },
+    {
+      "key": "entidadeId",
+      "value": "1"
+    },
+    {
+      "key": "visitaId",
+      "value": "1"
+    },
+    {
+      "key": "pessoaId",
+      "value": "1"
+    },
+    {
+      "key": "cefpId",
+      "value": "1"
+    }
+  ]
+}

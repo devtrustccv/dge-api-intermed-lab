@@ -259,33 +259,6 @@
             }
           },
           "response": []
-        },
-        {
-          "name": "Select Tipos Assiduidade",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/v1/assiduidades/opcoes/tipos"
-          },
-          "response": []
-        },
-        {
-          "name": "Select Estados Assiduidade",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/v1/assiduidades/opcoes/estados"
-          },
-          "response": []
-        },
-        {
-          "name": "Select Decisoes Validacao",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/v1/assiduidades/opcoes/decisoes"
-          },
-          "response": []
         }
       ]
     }

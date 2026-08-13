@@ -6,7 +6,6 @@ import cv.dge.dge_api_intermed_lab.application.emprego.dto.AssiduidadeEstagiario
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.AssiduidadeEstagiarioSelectResponse;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.AssiduidadeOfertaSelectResponse;
 import cv.dge.dge_api_intermed_lab.application.emprego.dto.AssiduidadeValidacaoRequest;
-import cv.dge.dge_api_intermed_lab.application.emprego.dto.EmpregoDominioOpcaoResponse;
 import cv.dge.dge_api_intermed_lab.application.emprego.enums.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.emprego.repository.GestaoAssiduidadeRepository;
 import java.util.List;
@@ -98,21 +97,6 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
         return assiduidadeRepository.listarOfertasParaFiltro(entidadeId);
     }
 
-    @Override
-    public List<EmpregoDominioOpcaoResponse> listarTiposAssiduidade() {
-        return listarOpcoes(EmpregoDominio.DOMINIO_TIPO_ASSIDUIDADE);
-    }
-
-    @Override
-    public List<EmpregoDominioOpcaoResponse> listarEstadosAssiduidade() {
-        return listarOpcoes(EmpregoDominio.DOMINIO_ESTADO_ASSIDUIDADE);
-    }
-
-    @Override
-    public List<EmpregoDominioOpcaoResponse> listarDecisoesAssiduidade() {
-        return listarOpcoes(EmpregoDominio.DOMINIO_DECISAO_ASSIDUIDADE);
-    }
-
     private AssiduidadeEstagiarioFiltro normalizarFiltro(AssiduidadeEstagiarioFiltro filtro) {
         if (filtro == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Filtros de assiduidade sao obrigatorios.");
@@ -202,16 +186,6 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
             return ESTADO_INDEFERIDO;
         }
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "decisao invalida.");
-    }
-
-    private List<EmpregoDominioOpcaoResponse> listarOpcoes(String dominio) {
-        return EmpregoDominio.listarPorDominio(dominio).stream()
-                .map(item -> new EmpregoDominioOpcaoResponse(
-                        item.getDominio(),
-                        item.getValor(),
-                        item.getDescricao()
-                ))
-                .toList();
     }
 
     private String normalizarDominioOpcional(String dominio, String valor) {

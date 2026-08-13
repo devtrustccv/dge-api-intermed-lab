@@ -95,8 +95,8 @@ public enum EmpregoDominio {
     DECISAO_ASSIDUIDADE_APROVAR("DECISAO_ASSIDUIDADE", "APROVAR", "Aprovar"),
     DECISAO_ASSIDUIDADE_INDEFER("DECISAO_ASSIDUIDADE", "INDEFER", "Indeferir"),
 
-    AGENDAMENTO_POR_CEFP("AGENDAMENTO_POR", "CEFP", "CEFP"),
-    AGENDAMENTO_POR_ENTIDADE_ACOLHEDORA("AGENDAMENTO_POR", "ENTIDADE_ACOLHEDORA", "Entidade Acolhedora"),
+    AGENDADO_POR_CEFP("AGENDADO_POR", "CEFP", "CEFP"),
+    AGENDADO_POR_ENTIDADE_ACOLHEDORA("AGENDADO_POR", "ENTIDADE_ACOLHEDORA", "Entidade Acolhedora"),
 
     ESTADO_VISITA_TECNICA_PENDENTE("ESTADO_VISITA_TECNICA", "PENDENTE", "Pendente"),
     ESTADO_VISITA_TECNICA_AGENDADO("ESTADO_VISITA_TECNICA", "AGENDADO", "Agendado"),
@@ -104,7 +104,13 @@ public enum EmpregoDominio {
     ESTADO_VISITA_TECNICA_REALIZADO("ESTADO_VISITA_TECNICA", "REALIZADO", "Realizado"),
 
     PARECER_VISITA_DEFERIR("PARECER_VISITA", "DEFERIR", "Deferir"),
-    PARECER_VISITA_INDEFERIR("PARECER_VISITA", "INDEFERIR", "Indeferir");
+    PARECER_VISITA_INDEFERIR("PARECER_VISITA", "INDEFERIR", "Indeferir"),
+    PARECER_VISITA_PROPOSTA_NOVA_DATA("PARECER_VISITA", "PROPOSTA_NOVA_DATA", "Proposta nova data"),
+
+    CRITERIO_AVALIACAO_TECNICA("CRITERIO_AVALIACAO", "COMP_TECNICA", "Competencia tecnica"),
+    CRITERIO_AVALIACAO_COMPORTAMENTAL("CRITERIO_AVALIACAO", "COMP_COMPORTAMENTAL", "Competencia comportamental"),
+    CRITERIO_AVALIACAO_ASSIDUIDADE("CRITERIO_AVALIACAO", "ASSIDUIDADE", "Assiduidade"),
+    CRITERIO_AVALIACAO_PONTUALIDADE("CRITERIO_AVALIACAO", "PONTUALIDADE", "Pontualidade");
 
     public static final String DOMINIO_ESTADO_OFERTA = "ESTADO_OFERTA";
     public static final String DOMINIO_TIPO_OFERTA = "TIPO_OFERTA";
@@ -127,9 +133,11 @@ public enum EmpregoDominio {
     public static final String DOMINIO_TIPO_ASSIDUIDADE = "TIPO_ASSIDUIDADE";
     public static final String DOMINIO_ESTADO_ASSIDUIDADE = "ESTADO_ASSIDUIDADE";
     public static final String DOMINIO_DECISAO_ASSIDUIDADE = "DECISAO_ASSIDUIDADE";
-    public static final String DOMINIO_AGENDAMENTO_POR = "AGENDAMENTO_POR";
+    public static final String DOMINIO_AGENDADO_POR = "AGENDADO_POR";
+    public static final String DOMINIO_AGENDAMENTO_POR = DOMINIO_AGENDADO_POR;
     public static final String DOMINIO_ESTADO_VISITA_TECNICA = "ESTADO_VISITA_TECNICA";
     public static final String DOMINIO_PARECER_VISITA = "PARECER_VISITA";
+    public static final String DOMINIO_CRITERIO_AVALIACAO = "CRITERIO_AVALIACAO";
 
     private final String dominio;
     private final String valor;
@@ -244,6 +252,16 @@ public enum EmpregoDominio {
             case DOMINIO_DECISAO_ASSIDUIDADE -> switch (valor) {
                 case "APROVADO", "APROVADA" -> "APROVAR";
                 case "INDEFERIR", "INDEFERIDO", "INDEFERIDA" -> "INDEFER";
+                default -> valor;
+            };
+            case DOMINIO_AGENDADO_POR -> switch (valor) {
+                case "ENTIDADE", "ENTIDADE_ACOLHIMENTO" -> "ENTIDADE_ACOLHEDORA";
+                default -> valor;
+            };
+            case DOMINIO_PARECER_VISITA -> switch (valor) {
+                case "DEFERIDO", "APROVAR", "APROVADO" -> "DEFERIR";
+                case "INDEFERIDO", "RECUSAR", "RECUSADO" -> "INDEFERIR";
+                case "NOVA_DATA", "PROPOR_NOVA_DATA" -> "PROPOSTA_NOVA_DATA";
                 default -> valor;
             };
             default -> valor;
