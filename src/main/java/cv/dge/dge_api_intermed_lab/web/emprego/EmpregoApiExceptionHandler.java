@@ -21,7 +21,8 @@ import org.springframework.web.server.ResponseStatusException;
         ColocacaoCandidatoController.class,
         GestaoAcompanhamentoController.class,
         GestaoAssiduidadeController.class,
-        GestaoVisitaTecnicaController.class
+        GestaoVisitaTecnicaController.class,
+        GestaoAvaliacaoEstagiarioController.class
 })
 @Slf4j
 public class EmpregoApiExceptionHandler {

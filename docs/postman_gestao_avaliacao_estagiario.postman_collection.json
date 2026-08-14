@@ -1,0 +1,60 @@
+{
+  "info": {
+    "name": "Gestao de Avaliacao de Estagiario",
+    "description": "Operacoes de avaliacao de estagiarios. Os valores de dominio sao geridos internamente e nao possuem endpoints dedicados.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:9001/api" },
+    { "key": "entidadeId", "value": "1" },
+    { "key": "pessoaId", "value": "2001101700869" },
+    { "key": "avaliacaoId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Listar avaliacoes",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/v1/avaliacoes-estagiarios?entidadeId={{entidadeId}}&pessoaId={{pessoaId}}&tipoAvaliacao=MENSAL&periodoReferencia=Agosto&dataInicio=2026-08-01&dataFim=2026-08-31"
+      }
+    },
+    {
+      "name": "Detalhar avaliacao",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/v1/avaliacoes-estagiarios/{{avaliacaoId}}?entidadeId={{entidadeId}}"
+      }
+    },
+    {
+      "name": "Listar estagiarios elegiveis",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/v1/avaliacoes-estagiarios/opcoes/estagiarios?entidadeId={{entidadeId}}"
+      }
+    },
+    {
+      "name": "Criar avaliacao",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pessoaId\": {{pessoaId}},\n  \"tipoAvaliacao\": \"MENSAL\",\n  \"periodoReferencia\": \"Agosto 2026\",\n  \"avaliacaoDesempenho\": [\n    { \"tipoCompetencia\": \"COMP_TECNICA\", \"avaliacao\": \"4\" },\n    { \"tipoCompetencia\": \"COMP_COMPORTAMENTAL\", \"avaliacao\": \"5\" }\n  ],\n  \"grauSatisfacao\": \"3\",\n  \"interesseContratacao\": \"A entidade manifestou interesse.\",\n  \"classificacao\": 17.5,\n  \"observacao\": \"Bom desempenho global.\",\n  \"utilizador\": \"utilizador.teste\"\n}"
+        },
+        "url": "{{baseUrl}}/v1/avaliacoes-estagiarios?entidadeId={{entidadeId}}"
+      }
+    },
+    {
+      "name": "Atualizar avaliacao",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pessoaId\": {{pessoaId}},\n  \"tipoAvaliacao\": \"FINAL\",\n  \"periodoReferencia\": \"Estagio 2026\",\n  \"avaliacaoDesempenho\": [\n    { \"tipoCompetencia\": \"COMP_TECNICA\", \"avaliacao\": \"5\" },\n    { \"tipoCompetencia\": \"COMP_COMPORTAMENTAL\", \"avaliacao\": \"5\" }\n  ],\n  \"grauSatisfacao\": \"3\",\n  \"interesseContratacao\": \"Contratacao recomendada.\",\n  \"classificacao\": 18,\n  \"observacao\": \"Avaliacao final atualizada.\",\n  \"utilizador\": \"utilizador.teste\"\n}"
+        },
+        "url": "{{baseUrl}}/v1/avaliacoes-estagiarios/{{avaliacaoId}}?entidadeId={{entidadeId}}"
+      }
+    }
+  ]
+}
