@@ -43,8 +43,7 @@ public class GestaoAvaliacaoEstagiarioRepository {
                 FROM emprego_t_avaliacao_estagiario a
                 WHERE EXISTS (
                     SELECT 1 FROM emprego_t_colocacao_candidato c
-                    WHERE c.id_candidatura = a.candidatura_id
-                      AND c.pessoa_id = a.pessoa_id AND c.entidade_id = ? AND
+                    WHERE c.pessoa_id = a.pessoa_id AND c.entidade_id = ? AND
                 """ + CONDICAO_OFERTA_ESTAGIO + ")");
         params.add(filtro.entidadeId());
         if (filtro.pessoaId() != null) { sql.append(" AND a.pessoa_id = ?"); params.add(filtro.pessoaId()); }
@@ -64,8 +63,7 @@ public class GestaoAvaliacaoEstagiarioRepository {
                 SELECT a.* FROM emprego_t_avaliacao_estagiario a
                 WHERE a.id = ? AND EXISTS (
                     SELECT 1 FROM emprego_t_colocacao_candidato c
-                    WHERE c.id_candidatura = a.candidatura_id
-                      AND c.pessoa_id = a.pessoa_id AND c.entidade_id = ? AND
+                    WHERE c.pessoa_id = a.pessoa_id AND c.entidade_id = ? AND
                 """ + CONDICAO_OFERTA_ESTAGIO + ")";
         return jdbcTemplate.query(sql, (rs, n) -> new AvaliacaoEstagiarioDetalheResponse(
                 rs.getInt("id"), getLong(rs, "pessoa_id"), rs.getString("nome"), getInteger(rs, "candidatura_id"),
