@@ -177,7 +177,7 @@ public class GestaoVisitaTecnicaRepository {
     public void validar(
             Integer id,
             String estado,
-            java.time.LocalDate novaData,
+            java.time.LocalDateTime novaData,
             String motivoIndeferimento,
             String utilizador
     ) {
@@ -341,15 +341,28 @@ public class GestaoVisitaTecnicaRepository {
                 rs.getObject("hora_fim", java.time.LocalTime.class),
                 null,
                 rs.getString("visitante"),
+                rs.getString("objetivos"),
                 rs.getString("agendado_por"),
                 rs.getString("agendado_por"),
                 getInteger(rs, "cefp_id"),
                 rs.getString("cefp"),
                 rs.getString("estado"),
                 rs.getString("estado"),
+                readJson(rs.getObject("candidatos")),
+                rs.getObject("nova_data", java.time.LocalDateTime.class),
+                rs.getString("motivo_indeferimento"),
+                rs.getString("observacoes_entidade"),
+                rs.getString("supervisor_participante"),
+                rs.getString("observacoes_iefp"),
+                readJson(rs.getObject("detalhes_avaliacao")),
+                rs.getString("conteudo_reuniao"),
                 null,
                 null,
-                null
+                null,
+                rs.getObject("date_create", java.time.LocalDateTime.class),
+                rs.getString("user_create"),
+                rs.getObject("date_update", java.time.LocalDateTime.class),
+                rs.getString("user_update")
         );
     }
 
@@ -373,7 +386,7 @@ public class GestaoVisitaTecnicaRepository {
                 rs.getString("estado"),
                 rs.getString("estado"),
                 readJson(rs.getObject("candidatos")),
-                rs.getObject("nova_data", java.time.LocalDate.class),
+                rs.getObject("nova_data", java.time.LocalDateTime.class),
                 rs.getString("motivo_indeferimento"),
                 rs.getString("observacoes_entidade"),
                 rs.getString("supervisor_participante"),

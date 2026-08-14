@@ -1,10 +1,10 @@
 package cv.dge.dge_api_intermed_lab.application.emprego.dto;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record VisitaTecnicaValidacaoRequest(
         String parecer,
-        LocalDate novaData,
+        LocalDateTime novaData,
         String motivoIndeferimento,
         String utilizador
 ) {

@@ -250,7 +250,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"parecer\": \"PROPOSTA_NOVA_DATA\",\n  \"novaData\": \"2026-09-20\",\n  \"utilizador\": \"postman\"\n}",
+              "raw": "{\n  \"parecer\": \"PROPOSTA_NOVA_DATA\",\n  \"novaData\": \"2026-09-20T14:30:00\",\n  \"utilizador\": \"postman\"\n}",
               "options": {
                 "raw": {
                   "language": "json"

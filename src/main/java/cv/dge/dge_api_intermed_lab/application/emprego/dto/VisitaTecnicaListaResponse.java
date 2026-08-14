@@ -1,6 +1,7 @@
 package cv.dge.dge_api_intermed_lab.application.emprego.dto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 public record VisitaTecnicaListaResponse(
@@ -11,14 +12,27 @@ public record VisitaTecnicaListaResponse(
         LocalTime horaFim,
         String horario,
         String visitante,
+        String objetivos,
         String agendadoPor,
         String agendadoPorDesc,
         Integer cefpId,
         String cefp,
         String estado,
         String estadoDesc,
+        Object candidatos,
+        LocalDateTime novaData,
+        String motivoIndeferimento,
+        String observacoesEntidade,
+        String supervisorParticipante,
+        String observacoesIefp,
+        Object detalhesAvaliacao,
+        String conteudoReuniao,
         Boolean podeValidar,
         Boolean podeMarcarComoExecutado,
-        Boolean podeRegistarObservacoes
+        Boolean podeRegistarObservacoes,
+        LocalDateTime dateCreate,
+        String userCreate,
+        LocalDateTime dateUpdate,
+        String userUpdate
 ) {
 }

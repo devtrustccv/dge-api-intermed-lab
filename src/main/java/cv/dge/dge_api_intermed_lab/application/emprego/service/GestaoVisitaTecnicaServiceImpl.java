@@ -15,6 +15,7 @@ import cv.dge.dge_api_intermed_lab.application.emprego.dto.VisitaTecnicaValidaca
 import cv.dge.dge_api_intermed_lab.application.emprego.enums.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.emprego.repository.GestaoVisitaTecnicaRepository;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
@@ -107,7 +108,7 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
         String parecer = normalizarParecerObrigatorio(request.parecer());
         String utilizador = utilizadorObrigatorio(request.utilizador());
         String novoEstado = estadoPorParecer(parecer);
-        LocalDate novaData = null;
+        LocalDateTime novaData = null;
         String motivoIndeferimento = null;
 
         if (PARECER_INDEFERIR.equals(parecer)) {
@@ -355,15 +356,28 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
                 item.horaFim(),
                 formatarHorario(item.horaInicio(), item.horaFim()),
                 item.visitante(),
+                item.objetivos(),
                 agendadoPor,
                 EmpregoDominio.descricao(EmpregoDominio.DOMINIO_AGENDADO_POR, agendadoPor),
                 item.cefpId(),
                 item.cefp(),
                 estado,
                 EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO_VISITA_TECNICA, estado),
+                item.candidatos(),
+                item.novaData(),
+                item.motivoIndeferimento(),
+                item.observacoesEntidade(),
+                item.supervisorParticipante(),
+                item.observacoesIefp(),
+                item.detalhesAvaliacao(),
+                item.conteudoReuniao(),
                 podeValidar(estado, agendadoPor),
                 !ESTADO_REALIZADO.equals(estado),
-                ESTADO_REALIZADO.equals(estado)
+                ESTADO_REALIZADO.equals(estado),
+                item.dateCreate(),
+                item.userCreate(),
+                item.dateUpdate(),
+                item.userUpdate()
         );
     }
 

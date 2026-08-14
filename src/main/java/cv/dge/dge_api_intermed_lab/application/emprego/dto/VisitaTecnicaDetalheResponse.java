@@ -20,7 +20,7 @@ public record VisitaTecnicaDetalheResponse(
         String estado,
         String estadoDesc,
         Object candidatos,
-        LocalDate novaData,
+        LocalDateTime novaData,
         String motivoIndeferimento,
         String observacoesEntidade,
         String supervisorParticipante,
