@@ -42,7 +42,8 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
         validarEntidadeId(entidadeId);
         return assiduidadeRepository.buscarPorId(id, entidadeId)
                 .map(this::enriquecerDetalhe)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assiduidade nao encontrada."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "O registo de assiduidade selecionado não foi encontrado. Atualize a página e tente novamente."));
     }
 
     @Override
@@ -55,12 +56,14 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
         validarId(id);
         validarEntidadeId(entidadeId);
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados da validacao sao obrigatorios.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Selecione uma decisão antes de confirmar a validação.");
         }
 
         AssiduidadeEstagiarioDetalheResponse atual = buscarPorId(id, entidadeId);
         if (ESTADO_APROVADO.equals(valorDominio(EmpregoDominio.DOMINIO_ESTADO_ASSIDUIDADE, atual.estado()))) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Assiduidade APROVADA nao pode ser validada.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Este registo de assiduidade já foi aprovado e não pode ser validado novamente.");
         }
 
         String decisao = normalizarDecisaoObrigatoria(request.decisao());
@@ -73,7 +76,7 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
             if (motivo == null) {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        "motivoIndeferimento e obrigatorio quando a decisao for INDEFER."
+                    "Informe o motivo do indeferimento."
                 );
             }
             observacao = motivo;
@@ -99,7 +102,9 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
 
     private AssiduidadeEstagiarioFiltro normalizarFiltro(AssiduidadeEstagiarioFiltro filtro) {
         if (filtro == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Filtros de assiduidade sao obrigatorios.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Não foi possível identificar os dados necessários para consultar a assiduidade."
+                            + " Atualize a página e tente novamente.");
         }
         validarEntidadeId(filtro.entidadeId());
         return new AssiduidadeEstagiarioFiltro(
@@ -162,7 +167,7 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
     private String normalizarDecisaoObrigatoria(String decisao) {
         String texto = texto(decisao);
         if (texto == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "decisao e obrigatoria.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione uma decisão.");
         }
         String normalizado = EmpregoDominio.normalizar(texto);
         if ("INDEFERIR".equals(normalizado) || "INDEFERIDO".equals(normalizado)) {
@@ -174,7 +179,7 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
         return EmpregoDominio.valorOficial(EmpregoDominio.DOMINIO_DECISAO_ASSIDUIDADE, normalizado)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        "DECISAO_ASSIDUIDADE invalido: " + texto + "."
+                    "A decisão selecionada não é válida. Atualize a página e tente novamente."
                 ));
     }
 
@@ -185,7 +190,8 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
         if (DECISAO_INDEFER.equals(decisao)) {
             return ESTADO_INDEFERIDO;
         }
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "decisao invalida.");
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "A decisão selecionada não é válida. Atualize a página e tente novamente.");
     }
 
     private String normalizarDominioOpcional(String dominio, String valor) {
@@ -196,7 +202,7 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
         return EmpregoDominio.valorOficial(dominio, texto)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        dominio + " invalido: " + texto + "."
+                        "Uma das opções selecionadas não é válida. Atualize a página e tente novamente."
                 ));
     }
 
@@ -219,18 +225,21 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
 
     private void validarId(Integer id) {
         if (id == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "id e obrigatorio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Não foi possível identificar o registo de assiduidade. Atualize a página e tente novamente.");
         }
     }
 
     private void validarEntidadeId(Integer entidadeId) {
         if (entidadeId == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "entidadeId e obrigatorio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Não foi possível identificar a entidade selecionada. Selecione uma entidade e tente novamente.");
         }
     }
 
     private String utilizadorObrigatorio(String utilizador) {
-        return textoObrigatorio(utilizador, "utilizador e obrigatorio para auditoria.");
+        return textoObrigatorio(utilizador,
+                "Não foi possível identificar o utilizador. Inicie sessão novamente e repita a operação.");
     }
 
     private String textoObrigatorio(String valor, String mensagem) {

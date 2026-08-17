@@ -39,29 +39,31 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
     @Override
     @Transactional(readOnly = true)
     public CandidaturaDetalheResponse buscarPorId(Integer id) {
-        validarId(id, "id da candidatura e obrigatorio.");
+        validarId(id, "Não foi possível identificar a candidatura selecionada. Atualize a página e tente novamente.");
         return candidaturaRepository.buscarPorId(id)
                 .map(this::enriquecerDetalhe)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Candidatura nao encontrada."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "A candidatura selecionada não foi encontrada. Atualize a página e tente novamente."));
     }
 
     @Override
     @Transactional
     public CandidaturaDetalheResponse avaliar(Integer id, CandidaturaAvaliacaoRequest request) {
-        validarId(id, "id da candidatura e obrigatorio.");
+        validarId(id, "Não foi possível identificar a candidatura selecionada. Atualize a página e tente novamente.");
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados da avaliacao sao obrigatorios.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Selecione o resultado da avaliação antes de gravar.");
         }
         String utilizador = utilizadorObrigatorio(request.utilizador());
         String parecer = normalizarDominioObrigatorio(
                 EmpregoDominio.DOMINIO_STATUS_CANDIDATURA,
                 request.parecer(),
-                "parecer e obrigatorio."
+                "Selecione o parecer da candidatura."
         );
         if (STATUS_TRIAGEM.equals(parecer)) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "parecer nao pode ser TRIAGEM na avaliacao da candidatura."
+                    "Selecione um parecer final para a candidatura."
             );
         }
 
@@ -69,7 +71,7 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
         if (!Boolean.TRUE.equals(atual.selecaoIefp())) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "Apenas candidaturas selecionadas pelo IEFP podem ser avaliadas."
+                    "Esta candidatura ainda não está disponível para avaliação."
             );
         }
 
@@ -77,7 +79,7 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
         if (isRecusa(parecer) && !temTexto(motivoRecusa)) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "motivoRecusa e obrigatorio quando o parecer for RECUSADO."
+                    "Informe o motivo da recusa da candidatura."
             );
         }
 
@@ -88,13 +90,14 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
     @Override
     @Transactional
     public EntrevistaResponse agendarEntrevista(Integer candidaturaId, EntrevistaAgendamentoRequest request) {
-        validarId(candidaturaId, "id da candidatura e obrigatorio.");
+        validarId(candidaturaId,
+                "Não foi possível identificar a candidatura selecionada. Atualize a página e tente novamente.");
         validarAgendamento(request);
         CandidaturaDetalheResponse candidatura = buscarPorId(candidaturaId);
         if (!podeAgendarEntrevista(candidatura.statusCandidatura())) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "A entrevista so pode ser agendada para candidaturas aprovadas."
+                    "A entrevista só pode ser agendada depois de a candidatura ser aprovada."
             );
         }
 
@@ -104,9 +107,9 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
                 normalizarDominioObrigatorio(
                         EmpregoDominio.DOMINIO_CANAL_ENTREVISTA,
                         request.canal(),
-                        "canal e obrigatorio."
+                        "Selecione a modalidade da entrevista."
                 ),
-                textoObrigatorio(request.localEntrevista(), "localEntrevista e obrigatorio."),
+                textoObrigatorio(request.localEntrevista(), "Informe o local ou o acesso da entrevista."),
                 utilizadorObrigatorio(request.utilizador())
         );
         Integer entrevistaId = candidaturaRepository.inserirEntrevista(
@@ -121,7 +124,8 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
     @Override
     @Transactional(readOnly = true)
     public List<EntrevistaResponse> listarEntrevistas(Integer candidaturaId) {
-        validarId(candidaturaId, "id da candidatura e obrigatorio.");
+        validarId(candidaturaId,
+                "Não foi possível identificar a candidatura selecionada. Atualize a página e tente novamente.");
         buscarPorId(candidaturaId);
         return candidaturaRepository.listarEntrevistas(candidaturaId).stream()
                 .map(this::enriquecerEntrevista)
@@ -135,15 +139,18 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
             Integer entrevistaId,
             EntrevistaResultadoRequest request
     ) {
-        validarId(candidaturaId, "id da candidatura e obrigatorio.");
-        validarId(entrevistaId, "id da entrevista e obrigatorio.");
+        validarId(candidaturaId,
+                "Não foi possível identificar a candidatura selecionada. Atualize a página e tente novamente.");
+        validarId(entrevistaId,
+                "Não foi possível identificar a entrevista selecionada. Atualize a página e tente novamente.");
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados do resultado da entrevista sao obrigatorios.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Preencha o resultado da entrevista antes de gravar.");
         }
         String parecer = normalizarDominioObrigatorio(
                 EmpregoDominio.DOMINIO_PARECER_ENTREVISTA,
                 request.parecer(),
-                "parecer e obrigatorio."
+                "Selecione o parecer da entrevista."
         );
         String utilizador = utilizadorObrigatorio(request.utilizador());
         buscarPorId(candidaturaId);
@@ -163,7 +170,8 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
     private EntrevistaResponse buscarEntrevistaObrigatoria(Integer candidaturaId, Integer entrevistaId) {
         return candidaturaRepository.buscarEntrevista(candidaturaId, entrevistaId)
                 .map(this::enriquecerEntrevista)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Entrevista nao encontrada."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "A entrevista selecionada não foi encontrada. Atualize a página e tente novamente."));
     }
 
     private CandidaturaFiltro normalizarFiltro(CandidaturaFiltro filtro) {
@@ -180,20 +188,21 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
 
     private void validarAgendamento(EntrevistaAgendamentoRequest request) {
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados do agendamento sao obrigatorios.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Preencha os dados do agendamento antes de gravar.");
         }
         if (request.dataEntrevista() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "dataEntrevista e obrigatorio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe a data da entrevista.");
         }
         if (request.horario() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "horario e obrigatorio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe o horário da entrevista.");
         }
-        textoObrigatorio(request.localEntrevista(), "localEntrevista e obrigatorio.");
+        textoObrigatorio(request.localEntrevista(), "Informe o local ou o acesso da entrevista.");
         utilizadorObrigatorio(request.utilizador());
         normalizarDominioObrigatorio(
                 EmpregoDominio.DOMINIO_CANAL_ENTREVISTA,
                 request.canal(),
-                "canal e obrigatorio."
+                "Selecione a modalidade da entrevista."
         );
     }
 
@@ -283,7 +292,8 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
     }
 
     private String utilizadorObrigatorio(String utilizador) {
-        return textoObrigatorio(utilizador, "utilizador e obrigatorio para auditoria.");
+        return textoObrigatorio(utilizador,
+                "Não foi possível identificar o utilizador. Inicie sessão novamente e repita a operação.");
     }
 
     private String textoObrigatorio(String valor, String mensagem) {
@@ -310,7 +320,7 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
         return EmpregoDominio.valorOficial(dominio, texto)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        dominio + " invalido: " + texto + "."
+                        "Uma das opções selecionadas não é válida. Atualize a página e tente novamente."
                 ));
     }
 

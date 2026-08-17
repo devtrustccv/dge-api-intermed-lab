@@ -58,7 +58,8 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
         validarId(id);
         return visitaRepository.buscarPorId(id)
                 .map(this::enriquecerDetalhe)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Visita tecnica nao encontrada."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "A visita técnica selecionada não foi encontrada. Atualize a página e tente novamente."));
     }
 
     @Override
@@ -75,7 +76,8 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
     public VisitaTecnicaDetalheResponse atualizar(Integer id, VisitaTecnicaAtualizacaoRequest request) {
         validarId(id);
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados da visita tecnica sao obrigatorios.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Preencha os dados da visita técnica antes de gravar.");
         }
         buscarPorId(id);
         VisitaTecnicaAtualizacaoRequest dados = validarENormalizarAtualizacao(request);
@@ -89,19 +91,21 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
     public VisitaTecnicaDetalheResponse validar(Integer id, VisitaTecnicaValidacaoRequest request) {
         validarId(id);
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados da validacao sao obrigatorios.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Selecione um parecer antes de confirmar a validação.");
         }
 
         VisitaTecnicaDetalheResponse atual = buscarPorId(id);
         String estadoAtual = valorDominio(EmpregoDominio.DOMINIO_ESTADO_VISITA_TECNICA, atual.estado());
         String agendadoPor = valorDominio(EmpregoDominio.DOMINIO_AGENDADO_POR, atual.agendadoPor());
         if (ESTADO_REALIZADO.equals(estadoAtual)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Visita tecnica REALIZADA nao pode ser validada.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Esta visita já foi realizada e não pode ser validada novamente.");
         }
         if (!AGENDADO_POR_CEFP.equals(agendadoPor)) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "Apenas visitas tecnicas agendadas pelo CEFP podem ser validadas."
+                    "Esta visita não pode ser validada porque não foi agendada pelo Centro de Emprego e Formação Profissional."
             );
         }
 
@@ -114,14 +118,14 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
         if (PARECER_INDEFERIR.equals(parecer)) {
             motivoIndeferimento = textoObrigatorio(
                     request.motivoIndeferimento(),
-                    "motivoIndeferimento e obrigatorio quando o parecer for INDEFERIR."
+                    "Informe o motivo do indeferimento da visita."
             );
         }
         if (PARECER_PROPOSTA_NOVA_DATA.equals(parecer)) {
             if (request.novaData() == null) {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        "novaData e obrigatoria quando o parecer for PROPOSTA_NOVA_DATA."
+                        "Informe a nova data e hora propostas para a visita."
                 );
             }
             novaData = request.novaData();
@@ -136,13 +140,14 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
     public VisitaTecnicaDetalheResponse marcarComoExecutado(Integer id, VisitaTecnicaExecutadoRequest request) {
         validarId(id);
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados de execucao sao obrigatorios.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Não foi possível confirmar a realização da visita. Tente novamente.");
         }
         String utilizador = utilizadorObrigatorio(request.utilizador());
         VisitaTecnicaDetalheResponse atual = buscarPorId(id);
         String estadoAtual = valorDominio(EmpregoDominio.DOMINIO_ESTADO_VISITA_TECNICA, atual.estado());
         if (ESTADO_REALIZADO.equals(estadoAtual)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Visita tecnica ja esta REALIZADA.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Esta visita já está marcada como realizada.");
         }
         visitaRepository.alterarEstado(id, ESTADO_REALIZADO, utilizador);
         return buscarPorId(id);
@@ -153,7 +158,8 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
     public VisitaTecnicaDetalheResponse registarObservacoes(Integer id, VisitaTecnicaObservacaoRequest request) {
         validarId(id);
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados de observacao sao obrigatorios.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Preencha as observações antes de gravar.");
         }
         String utilizador = utilizadorObrigatorio(request.utilizador());
         VisitaTecnicaDetalheResponse atual = buscarPorId(id);
@@ -161,7 +167,7 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
         if (!ESTADO_REALIZADO.equals(estadoAtual)) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "Observacoes da entidade so podem ser registadas em visitas REALIZADAS."
+                    "As observações só podem ser registadas depois de a visita ser marcada como realizada."
             );
         }
         visitaRepository.registarObservacoes(
@@ -191,7 +197,8 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
             return new VisitaTecnicaFiltro(null, null, null, null, null, null, null);
         }
         if (filtro.dataInicio() != null && filtro.dataFim() != null && filtro.dataFim().isBefore(filtro.dataInicio())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "dataFim nao pode ser anterior a dataInicio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "A data final da pesquisa não pode ser anterior à data inicial.");
         }
         return new VisitaTecnicaFiltro(
                 filtro.entidadeId(),
@@ -206,23 +213,25 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
 
     private VisitaTecnicaRequest validarENormalizarCriacao(VisitaTecnicaRequest request) {
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados da visita tecnica sao obrigatorios.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Preencha os dados da visita técnica antes de gravar.");
         }
         validarEntidadeId(request.entidadeId());
         if (request.dataVisita() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "dataVisita e obrigatoria.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe a data da visita.");
         }
-        textoObrigatorio(request.visitante(), "visitante e obrigatorio.");
+        textoObrigatorio(request.visitante(), "Informe o nome do visitante.");
         if (request.horaInicio() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "horaInicio e obrigatoria.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe a hora de início da visita.");
         }
         if (request.horaFim() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "horaFim e obrigatoria.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe a hora de fim da visita.");
         }
         validarIntervaloHoras(request.horaInicio(), request.horaFim());
-        textoObrigatorio(request.objetivos(), "objetivos e obrigatorio.");
+        textoObrigatorio(request.objetivos(), "Informe os objetivos da visita.");
         if (request.cefpId() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "cefpId e obrigatorio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Selecione o Centro de Emprego e Formação Profissional responsável.");
         }
         List<VisitaTecnicaCandidatoRequest> candidatos = normalizarCandidatosObrigatorios(
                 request.entidadeId(),
@@ -270,7 +279,7 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
     ) {
         List<VisitaTecnicaCandidatoRequest> normalizados = normalizarCandidatosOpcionais(candidatos);
         if (normalizados.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "candidatos e obrigatorio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione pelo menos um candidato.");
         }
 
         Map<Long, VisitaTecnicaCandidatoSelectResponse> candidatosDisponiveis = visitaRepository.listarCandidatos(entidadeId)
@@ -285,7 +294,7 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
             if (disponivel == null) {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        "Candidato nao encontrado para a entidade informada: " + candidato.pessoaId() + "."
+                        "Um dos candidatos selecionados não está associado à entidade. Reveja a seleção."
                 );
             }
         }
@@ -309,7 +318,8 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
         return candidatos.stream()
                 .map(candidato -> {
                     if (candidato == null || candidato.pessoaId() == null) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pessoaId do candidato e obrigatorio.");
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                "Existe um candidato incompleto na seleção. Remova-o e selecione novamente.");
                     }
                     return new VisitaTecnicaCandidatoRequest(candidato.pessoaId(), texto(candidato.nome()));
                 })
@@ -325,19 +335,20 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
         return detalhes.stream()
                 .map(item -> {
                     if (item == null) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Item de avaliacao invalido.");
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                "Existe uma avaliação incompleta. Reveja os dados antes de gravar.");
                     }
                     return new VisitaTecnicaAvaliacaoItemRequest(
                             normalizarCandidatosOpcionais(item.candidatos()),
                             normalizarDominioObrigatorio(
                                     EmpregoDominio.DOMINIO_CRITERIO_AVALIACAO,
                                     item.criterio(),
-                                    "criterio e obrigatorio na avaliacao."
+                                    "Selecione o critério da avaliação."
                             ),
                             normalizarDominioObrigatorio(
                                     EmpregoDominio.DOMINIO_AVALIACAO,
                                     item.avaliacao(),
-                                    "avaliacao e obrigatoria na avaliacao."
+                                    "Selecione a classificação da avaliação."
                             ),
                             texto(item.observacao())
                     );
@@ -431,14 +442,15 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
         if (PARECER_PROPOSTA_NOVA_DATA.equals(parecer)) {
             return ESTADO_PENDENTE;
         }
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "parecer invalido.");
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "O parecer selecionado não é válido. Atualize a página e tente novamente.");
     }
 
     private String normalizarParecerObrigatorio(String parecer) {
         return normalizarDominioObrigatorio(
                 EmpregoDominio.DOMINIO_PARECER_VISITA,
                 parecer,
-                "parecer e obrigatorio."
+                "Selecione o parecer da visita."
         );
     }
 
@@ -450,7 +462,7 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
         return EmpregoDominio.valorOficial(dominio, texto)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        dominio + " invalido: " + texto + "."
+                        "Uma das opções selecionadas não é válida. Atualize a página e tente novamente."
                 ));
     }
 
@@ -462,7 +474,7 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
         return EmpregoDominio.valorOficial(dominio, texto)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        dominio + " invalido: " + texto + "."
+                        "Uma das opções de pesquisa selecionadas não é válida. Atualize a página e tente novamente."
                 ));
     }
 
@@ -472,7 +484,8 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
 
     private void validarIntervaloHoras(LocalTime horaInicio, LocalTime horaFim) {
         if (horaInicio != null && horaFim != null && horaFim.isBefore(horaInicio)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "horaFim nao pode ser anterior a horaInicio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "A hora de fim não pode ser anterior à hora de início da visita.");
         }
     }
 
@@ -491,18 +504,21 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
 
     private void validarId(Integer id) {
         if (id == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "id da visita tecnica e obrigatorio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Não foi possível identificar a visita selecionada. Atualize a página e tente novamente.");
         }
     }
 
     private void validarEntidadeId(Integer entidadeId) {
         if (entidadeId == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "entidadeId e obrigatorio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Não foi possível identificar a entidade selecionada. Selecione uma entidade e tente novamente.");
         }
     }
 
     private String utilizadorObrigatorio(String utilizador) {
-        return textoObrigatorio(utilizador, "utilizador e obrigatorio para auditoria.");
+        return textoObrigatorio(utilizador,
+                "Não foi possível identificar o utilizador. Inicie sessão novamente e repita a operação.");
     }
 
     private String textoObrigatorio(String valor, String mensagem) {

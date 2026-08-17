@@ -21,7 +21,7 @@ public class GestaoAvaliacaoEstagiarioServiceImpl implements GestaoAvaliacaoEsta
     public List<AvaliacaoEstagiarioListaResponse> listar(AvaliacaoEstagiarioFiltro filtro) {
         validarEntidade(filtro == null ? null : filtro.entidadeId());
         if (filtro.dataInicio() != null && filtro.dataFim() != null && filtro.dataFim().isBefore(filtro.dataInicio())) {
-            throw erro("dataFim nao pode ser anterior a dataInicio.");
+            throw erro("A data final da pesquisa não pode ser anterior à data inicial.");
         }
         AvaliacaoEstagiarioFiltro dados = new AvaliacaoEstagiarioFiltro(
                 filtro.entidadeId(), filtro.pessoaId(), dominioOpcional(EmpregoDominio.DOMINIO_TIPO_AVALIACAO,
@@ -34,7 +34,8 @@ public class GestaoAvaliacaoEstagiarioServiceImpl implements GestaoAvaliacaoEsta
     public AvaliacaoEstagiarioDetalheResponse buscarPorId(Integer id, Integer entidadeId) {
         validarId(id); validarEntidade(entidadeId);
         return repository.buscarPorId(id, entidadeId).map(this::enriquecerDetalhe)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Avaliacao de estagiario nao encontrada."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "A avaliação selecionada não foi encontrada. Atualize a página e tente novamente."));
     }
 
     @Override
@@ -44,7 +45,8 @@ public class GestaoAvaliacaoEstagiarioServiceImpl implements GestaoAvaliacaoEsta
         AvaliacaoEstagiarioRequest dados = validarRequest(request);
         AvaliacaoEstagiarioVinculo vinculo = repository.buscarEstagiarioElegivel(entidadeId, dados.pessoaId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Estagiario nao encontrado numa colocacao ativa de oferta de estagio para a entidade."));
+                        "Não foi encontrada uma colocação ativa para o estagiário selecionado. "
+                                + "Confirme a seleção e tente novamente."));
         Integer id = repository.inserir(vinculo, dados, dados.utilizador());
         return buscarPorId(id, entidadeId);
     }
@@ -56,7 +58,8 @@ public class GestaoAvaliacaoEstagiarioServiceImpl implements GestaoAvaliacaoEsta
         AvaliacaoEstagiarioRequest dados = validarRequest(request);
         AvaliacaoEstagiarioVinculo vinculo = repository.buscarEstagiarioElegivel(entidadeId, dados.pessoaId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Estagiario nao encontrado numa colocacao ativa de oferta de estagio para a entidade."));
+                        "Não foi encontrada uma colocação ativa para o estagiário selecionado. "
+                                + "Confirme a seleção e tente novamente."));
         repository.atualizar(id, vinculo, dados, dados.utilizador());
         return buscarPorId(id, entidadeId);
     }
@@ -69,17 +72,18 @@ public class GestaoAvaliacaoEstagiarioServiceImpl implements GestaoAvaliacaoEsta
     }
 
     private AvaliacaoEstagiarioRequest validarRequest(AvaliacaoEstagiarioRequest request) {
-        if (request == null) throw erro("Dados da avaliacao sao obrigatorios.");
-        if (request.pessoaId() == null) throw erro("pessoaId e obrigatorio.");
+        if (request == null) throw erro("Preencha os dados da avaliação antes de gravar.");
+        if (request.pessoaId() == null) throw erro("Selecione o estagiário.");
         String tipo = dominioObrigatorio(EmpregoDominio.DOMINIO_TIPO_AVALIACAO, request.tipoAvaliacao());
-        String periodo = obrigatorio(request.periodoReferencia(), "periodoReferencia e obrigatorio.");
+        String periodo = obrigatorio(request.periodoReferencia(), "Informe o período a que a avaliação se refere.");
         String grau = dominioObrigatorio(EmpregoDominio.DOMINIO_GRAU_SATISFACAO, request.grauSatisfacao());
-        String utilizador = obrigatorio(request.utilizador(), "utilizador e obrigatorio para auditoria.");
-        if (request.classificacao() == null) throw erro("classificacao e obrigatoria.");
+        String utilizador = obrigatorio(request.utilizador(),
+                "Não foi possível identificar o utilizador. Inicie sessão novamente e repita a operação.");
+        if (request.classificacao() == null) throw erro("Informe a classificação do estagiário.");
         if (request.avaliacaoDesempenho() == null || request.avaliacaoDesempenho().isEmpty())
-            throw erro("avaliacaoDesempenho deve conter pelo menos um item.");
+            throw erro("Adicione pelo menos uma avaliação de desempenho.");
         List<AvaliacaoDesempenhoRequest> desempenho = request.avaliacaoDesempenho().stream().map(item -> {
-            if (item == null) throw erro("Item de avaliacaoDesempenho invalido.");
+            if (item == null) throw erro("Existe uma avaliação de desempenho incompleta. Reveja os dados.");
             return new AvaliacaoDesempenhoRequest(
                     dominioObrigatorio(EmpregoDominio.DOMINIO_TIPO_COMPETENCIA, item.tipoCompetencia()),
                     dominioObrigatorio(EmpregoDominio.DOMINIO_AVALIACAO, item.avaliacao()));
@@ -110,16 +114,19 @@ public class GestaoAvaliacaoEstagiarioServiceImpl implements GestaoAvaliacaoEsta
 
     private String dominioObrigatorio(String dominio, String valor) {
         String resultado = dominioOpcional(dominio, valor);
-        if (resultado == null) throw erro(dominio + " e obrigatorio.");
+        if (resultado == null) throw erro("Preencha todas as opções obrigatórias da avaliação.");
         return resultado;
     }
     private String dominioOpcional(String dominio, String valor) {
         String v = texto(valor); if (v == null) return null;
         return EmpregoDominio.valorOficial(dominio, v)
-                .orElseThrow(() -> erro(dominio + " invalido: " + v + "."));
+                .orElseThrow(() -> erro(
+                        "Uma das opções selecionadas não é válida. Atualize a página e tente novamente."));
     }
-    private void validarId(Integer id) { if (id == null || id <= 0) throw erro("id e obrigatorio."); }
-    private void validarEntidade(Integer id) { if (id == null || id <= 0) throw erro("entidadeId e obrigatorio."); }
+    private void validarId(Integer id) { if (id == null || id <= 0) throw erro(
+            "Não foi possível identificar a avaliação selecionada. Atualize a página e tente novamente."); }
+    private void validarEntidade(Integer id) { if (id == null || id <= 0) throw erro(
+            "Não foi possível identificar a entidade selecionada. Selecione uma entidade e tente novamente."); }
     private String obrigatorio(String v, String m) { String t = texto(v); if (t == null) throw erro(m); return t; }
     private String texto(String v) { return v == null || v.trim().isEmpty() ? null : v.trim(); }
     private ResponseStatusException erro(String m) { return new ResponseStatusException(HttpStatus.BAD_REQUEST, m); }

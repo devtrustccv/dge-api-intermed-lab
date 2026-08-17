@@ -65,7 +65,11 @@ public class OrientacaoServicoController {
         try {
             return objectMapper.readValue(dadosJson, OrientacaoServicoRequest.class);
         } catch (Exception ex) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "JSON invalido na parte 'dados'.", ex);
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Não foi possível interpretar os dados enviados. Atualize a página e tente novamente.",
+                    ex
+            );
         }
     }
 

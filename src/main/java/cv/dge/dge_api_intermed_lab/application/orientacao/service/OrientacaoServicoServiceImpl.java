@@ -27,12 +27,17 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class OrientacaoServicoServiceImpl implements OrientacaoServicoService {
 
-    private static final String MSG_PEDIDO_OBRIGATORIO = "Corpo do pedido e obrigatorio.";
-    private static final String MSG_ENTREVISTA_OBRIGATORIA = "idEntrevista e obrigatorio.";
-    private static final String MSG_DETALHES_OBRIGATORIO = "detalhesServico e obrigatorio.";
-    private static final String MSG_ENTREVISTA_NAO_ENCONTRADA = "Entrevista nao encontrada.";
-    private static final String MSG_ACOLHIMENTO_NAO_ENCONTRADO = "Acolhimento da entrevista nao encontrado.";
-    private static final String MSG_SERVICO_NAO_ENCONTRADO = "Servico de acolhimento nao encontrado.";
+    private static final String MSG_PEDIDO_OBRIGATORIO =
+            "Preencha os dados do serviço antes de gravar.";
+    private static final String MSG_ENTREVISTA_OBRIGATORIA =
+            "Não foi possível identificar a entrevista selecionada. Atualize a página e tente novamente.";
+    private static final String MSG_DETALHES_OBRIGATORIO = "Preencha os detalhes do serviço.";
+    private static final String MSG_ENTREVISTA_NAO_ENCONTRADA =
+            "A entrevista selecionada não foi encontrada. Atualize a página e tente novamente.";
+    private static final String MSG_ACOLHIMENTO_NAO_ENCONTRADO =
+            "Não foi encontrado um acolhimento associado à entrevista selecionada.";
+    private static final String MSG_SERVICO_NAO_ENCONTRADO =
+            "O serviço selecionado não foi encontrado. Atualize a página e tente novamente.";
     private static final String TIPO_RELACAO_SUB_DESEMP = "SUB_DESEMP";
     private static final String ESTADO_ATIVO = "A";
 

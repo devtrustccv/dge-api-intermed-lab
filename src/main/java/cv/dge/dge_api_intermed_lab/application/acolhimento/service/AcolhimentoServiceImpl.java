@@ -39,10 +39,12 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 @RequiredArgsConstructor
 public class AcolhimentoServiceImpl implements AcolhimentoService {
-    private static final String MSG_PEDIDO_OBRIGATORIO = "Corpo do pedido e obrigatorio.";
-    private static final String MSG_TIPO_SERVICO_OBRIGATORIO = "tipoServico e obrigatorio.";
-    private static final String MSG_ACOLHIMENTO_NAO_ENCONTRADO = "Acolhimento nao encontrado.";
-    private static final String MSG_ERRO_UPLOAD = "Erro ao enviar ficheiro do acolhimento.";
+    private static final String MSG_PEDIDO_OBRIGATORIO =
+            "Preencha os dados do acolhimento antes de gravar.";
+    private static final String MSG_TIPO_SERVICO_OBRIGATORIO = "Selecione o tipo de serviço.";
+    private static final String MSG_ACOLHIMENTO_NAO_ENCONTRADO =
+            "O acolhimento selecionado não foi encontrado. Atualize a página e tente novamente.";
+    private static final String MSG_ERRO_UPLOAD = "Não foi possível enviar o ficheiro do acolhimento.";
 
     private final AcolhimentoBus acolhimentoBus;
     private final AcolhimentoMapper acolhimentoMapper;
@@ -130,8 +132,7 @@ public class AcolhimentoServiceImpl implements AcolhimentoService {
         );
         if (configEmail == null) {
             throw new IllegalArgumentException(
-                    "Configuracao de email com o codigo [acolhimento_utente_cidadao] nao existe em "
-                            + appCodeDocumentoAcolhimento
+                        "Não foi possível enviar a notificação do acolhimento neste momento."
                             + "."
             );
         }
@@ -240,7 +241,8 @@ public class AcolhimentoServiceImpl implements AcolhimentoService {
             Map<String, Object> metadados = anexoNoIndice(anexos, request, indice);
             String tipoDocumento = texto(valor(metadados, "tipo_documento_anexo", "tipo_documento", "documento", "idTpDoc", "id_tp_doc"));
             if (emBranco(tipoDocumento)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "tipo_documento_anexo e obrigatorio para cada ficheiro.");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Selecione o tipo de documento para cada ficheiro anexado.");
             }
 
             String nomeOriginal = nomeOriginal(ficheiro, indice);
@@ -265,7 +267,7 @@ public class AcolhimentoServiceImpl implements AcolhimentoService {
             } catch (RuntimeException ex) {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_GATEWAY,
-                        MSG_ERRO_UPLOAD + " Verifique se o servico de documentos/MinIO esta disponivel.",
+                        MSG_ERRO_UPLOAD + " Tente novamente mais tarde.",
                         ex
                 );
             }

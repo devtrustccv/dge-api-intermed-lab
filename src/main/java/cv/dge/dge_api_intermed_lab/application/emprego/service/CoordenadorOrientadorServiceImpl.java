@@ -45,14 +45,14 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
                 .map(this::enriquecerDetalhe)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Orientador/coordenador nao encontrado."
+                        "O colaborador selecionado não foi encontrado. Atualize a página e tente novamente."
                 ));
     }
 
     @Override
     @Transactional(readOnly = true)
     public PessoaGlobalResponse buscarPessoa(String tipoDocumento, String numeroDocumento) {
-        String numero = textoObrigatorio(numeroDocumento, "numeroDocumento e obrigatorio.");
+        String numero = textoObrigatorio(numeroDocumento, "Informe o número do documento.");
         return coordenadorOrientadorRepository.buscarPessoaPorNumeroDocumento(numero)
                 .map(pessoa -> new PessoaGlobalResponse(
                         pessoa.id(),
@@ -64,7 +64,7 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
                 ))
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Pessoa nao encontrada na base global pelo numeroDocumento informado."
+                        "Não foi encontrada nenhuma pessoa com o número de documento informado."
                 ));
     }
 
@@ -99,7 +99,8 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
     public CoordenadorOrientadorResponse remover(Integer id, CoordenadorOrientadorRemoverRequest request) {
         validarId(id);
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados da remocao sao obrigatorios.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Não foi possível confirmar a eliminação do colaborador. Tente novamente.");
         }
         String utilizador = utilizadorObrigatorio(request.utilizador());
         buscarPorId(id);
@@ -117,7 +118,7 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
         if (orientadorId == null && coordenadorId == null) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "O colaborador nao possui tipo ORIENTADOR ou COORDENADOR."
+                    "O colaborador selecionado não está associado como orientador ou coordenador."
             );
         }
 
@@ -148,24 +149,25 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
 
     private void validarRequest(CoordenadorOrientadorRequest request) {
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados do orientador/coordenador sao obrigatorios.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Preencha os dados do colaborador antes de gravar.");
         }
         utilizadorObrigatorio(request.utilizador());
         normalizarTipoObrigatorio(request.tipo());
 
-        textoObrigatorio(request.numeroDocumento(), "numeroDocumento e obrigatorio.");
+        textoObrigatorio(request.numeroDocumento(), "Informe o número do documento.");
         if (!temTexto(request.nome())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "nome e obrigatorio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe o nome do colaborador.");
         }
     }
 
     private Long resolverPessoaIdPorDocumento(String numeroDocumento) {
-        String numero = textoObrigatorio(numeroDocumento, "numeroDocumento e obrigatorio.");
+        String numero = textoObrigatorio(numeroDocumento, "Informe o número do documento.");
         return coordenadorOrientadorRepository.buscarPessoaPorNumeroDocumento(numero)
                 .map(PessoaGlobalResponse::id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Pessoa nao encontrada na base global pelo numeroDocumento informado."
+                        "Não foi encontrada nenhuma pessoa com o número de documento informado."
                 ));
     }
 
@@ -183,12 +185,14 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
 
     private void validarId(Integer id) {
         if (id == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "id e obrigatorio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Não foi possível identificar o colaborador selecionado. Atualize a página e tente novamente.");
         }
     }
 
     private String utilizadorObrigatorio(String utilizador) {
-        return textoObrigatorio(utilizador, "utilizador e obrigatorio para auditoria.");
+        return textoObrigatorio(utilizador,
+                "Não foi possível identificar o utilizador. Inicie sessão novamente e repita a operação.");
     }
 
     private String textoObrigatorio(String valor, String mensagem) {
@@ -202,7 +206,8 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
     private String normalizarTipoObrigatorio(String tipo) {
         String normalizado = normalizarTipoOpcional(tipo);
         if (normalizado == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "tipo e obrigatorio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Selecione se o colaborador é orientador ou coordenador.");
         }
         return normalizado;
     }
@@ -257,7 +262,7 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
         return EmpregoDominio.valorOficial(dominio, texto)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        dominio + " invalido: " + texto + "."
+                        "Uma das opções selecionadas não é válida. Atualize a página e tente novamente."
                 ));
     }
 

@@ -22,7 +22,8 @@ public class OrientacaoEntrevistaServiceImpl implements OrientacaoEntrevistaServ
     @Transactional(readOnly = true)
     public OrientacaoEntrevistaResponse buscarPorId(Integer id) {
         AgendamentoEntrevista entrevista = orientacaoBus.findEntrevistaById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Entrevista nao encontrada."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "A entrevista selecionada não foi encontrada. Atualize a página e tente novamente."));
 
         DetalhesAcolhimento acolhimento = entrevista.getIdAcolhimento() == null
                 ? null

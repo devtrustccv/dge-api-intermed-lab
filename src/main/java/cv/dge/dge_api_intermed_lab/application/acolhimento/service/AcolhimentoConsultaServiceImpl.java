@@ -39,10 +39,14 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class AcolhimentoConsultaServiceImpl implements AcolhimentoConsultaService {
 
-    private static final String MSG_ID_PESSOA_OBRIGATORIO = "idPessoa e obrigatorio.";
-    private static final String MSG_ID_ENTIDADE_OBRIGATORIO = "globalIdEntidade e obrigatorio.";
-    private static final String MSG_ACOLHIMENTO_NAO_ENCONTRADO = "Nenhum acolhimento encontrado para o idPessoa informado.";
-    private static final String MSG_ACOLHIMENTO_ENTIDADE_NAO_ENCONTRADO = "Nenhum acolhimento encontrado para o globalIdEntidade informado.";
+    private static final String MSG_ID_PESSOA_OBRIGATORIO =
+            "Não foi possível identificar o utente selecionado. Atualize a página e tente novamente.";
+    private static final String MSG_ID_ENTIDADE_OBRIGATORIO =
+            "Não foi possível identificar a entidade selecionada. Atualize a página e tente novamente.";
+    private static final String MSG_ACOLHIMENTO_NAO_ENCONTRADO =
+            "Não foi encontrado nenhum acolhimento para o utente selecionado.";
+    private static final String MSG_ACOLHIMENTO_ENTIDADE_NAO_ENCONTRADO =
+            "Não foi encontrado nenhum acolhimento para a entidade selecionada.";
 
     private final AcolhimentoBus acolhimentoBus;
     private final AcolhimentoMapper acolhimentoMapper;

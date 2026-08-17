@@ -133,7 +133,7 @@ public class DocumentServiceImpl implements DocumentService {
                 }
             };
         } catch (IOException e) {
-            throw new RuntimeException("Erro ao processar o arquivo", e);
+            throw new RuntimeException("Não foi possível processar o ficheiro.", e);
         }
     }
 

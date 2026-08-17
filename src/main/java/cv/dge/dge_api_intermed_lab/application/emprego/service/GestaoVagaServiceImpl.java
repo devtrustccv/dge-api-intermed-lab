@@ -64,7 +64,8 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
         validarId(id);
         return vagaRepository.buscarPorId(id)
                 .map(this::enriquecerDetalhe)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaga nao encontrada."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "A oferta selecionada não foi encontrada. Atualize a página e tente novamente."));
     }
 
     @Override
@@ -105,7 +106,8 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
     public VagaResponse alterarEstado(Integer id, VagaEstadoRequest request) {
         validarId(id);
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados da alteracao de estado sao obrigatorios.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Selecione o novo estado da oferta antes de confirmar.");
         }
         String novoEstado = normalizarEstadoOfertaObrigatorio(request.novoEstado());
         String utilizador = utilizadorObrigatorio(request.utilizador());
@@ -119,12 +121,14 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
     public VagaResponse validar(Integer id, VagaValidacaoRequest request) {
         validarId(id);
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados da validacao sao obrigatorios.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Não foi possível confirmar a validação da oferta. Tente novamente.");
         }
         String utilizador = utilizadorObrigatorio(request.utilizador());
         VagaResponse atual = buscarPorId(id);
         if (!ESTADO_RASCUNHO.equalsIgnoreCase(String.valueOf(atual.estado()))) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Apenas vagas em RASCUNHO podem ser validadas.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Apenas ofertas que ainda estejam em rascunho podem ser enviadas para validação.");
         }
         vagaRepository.alterarEstado(id, ESTADO_ATIVA, atual.observacao(), utilizador);
         return buscarPorId(id);
@@ -189,23 +193,26 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
 
     private void validarRequest(VagaRequest request, boolean rascunho) {
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados da vaga sao obrigatorios.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Preencha os dados da oferta antes de gravar.");
         }
         utilizadorObrigatorio(request.utilizador());
 
         if (!rascunho) {
-            textoObrigatorio(request.tipoOferta(), "tipoOferta e obrigatorio.");
-            textoObrigatorio(request.titulo(), "titulo e obrigatorio.");
+        textoObrigatorio(request.tipoOferta(), "Selecione o tipo de oferta.");
+        textoObrigatorio(request.titulo(), "Informe o título da oferta.");
             if (request.numVagas() == null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "numVagas e obrigatorio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe o número de vagas disponíveis.");
             }
         }
 
         if (request.numVagas() != null && request.numVagas() < 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "numVagas nao pode ser negativo.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "O número de vagas deve ser igual ou superior a zero.");
         }
         if (request.duracaoContrato() != null && request.duracaoContrato() < 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "duracaoContrato nao pode ser negativo.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "A duração do contrato deve ser igual ou superior a zero.");
         }
         validarIntervaloDatas(request.dataInicioCandidatura(), request.dataFimCandidatura());
     }
@@ -214,25 +221,28 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
         if (dataInicio != null && dataFim != null && dataFim.isBefore(dataInicio)) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "dataFimCandidatura nao pode ser anterior a dataInicioCandidatura."
+                    "A data de fim das candidaturas não pode ser anterior à data de início."
             );
         }
     }
 
     private void garantirEditavel(VagaResponse vaga) {
         if (ESTADO_FECHADA.equalsIgnoreCase(String.valueOf(vaga.estado()))) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Vagas FECHADAS nao podem ser alteradas.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Esta oferta já está fechada e não pode ser alterada.");
         }
     }
 
     private void validarId(Integer id) {
         if (id == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "id da vaga e obrigatorio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Não foi possível identificar a oferta selecionada. Atualize a página e tente novamente.");
         }
     }
 
     private String utilizadorObrigatorio(String utilizador) {
-        return textoObrigatorio(utilizador, "utilizador e obrigatorio para auditoria.");
+        return textoObrigatorio(utilizador,
+                "Não foi possível identificar o utilizador. Inicie sessão novamente e repita a operação.");
     }
 
     private String textoObrigatorio(String valor, String mensagem) {
@@ -338,7 +348,7 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
     private String normalizarEstadoOfertaObrigatorio(String estado) {
         String normalizado = normalizarEstadoOfertaOpcional(estado);
         if (normalizado == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "novoEstado e obrigatorio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione o novo estado da oferta.");
         }
         return normalizado;
     }
@@ -346,7 +356,7 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
     private String normalizarTipoColaboradorObrigatorio(String tipo) {
         String normalizado = normalizarDominioOpcional(EmpregoDominio.DOMINIO_TIPO_COLABORADOR, tipo);
         if (normalizado == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "tipo e obrigatorio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione o tipo de colaborador.");
         }
         return normalizado;
     }
@@ -400,7 +410,7 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
         return EmpregoDominio.valorOficial(dominio, texto)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        dominio + " invalido: " + texto + "."
+                        "Uma das opções selecionadas não é válida. Atualize a página e tente novamente."
                 ));
     }
 

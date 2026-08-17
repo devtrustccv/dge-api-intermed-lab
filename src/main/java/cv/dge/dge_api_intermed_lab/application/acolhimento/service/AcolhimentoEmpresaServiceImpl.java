@@ -34,7 +34,8 @@ public class AcolhimentoEmpresaServiceImpl implements AcolhimentoEmpresaService 
     private static final String TIPO_UTENTE_EMPRESA = "ENTIDADE";
     private static final String CANAL_CEFP = "CEFP";
     private static final String ESTADO_ATIVO = "A";
-    private static final String MSG_ERRO_UPLOAD = "Erro ao enviar ficheiro do acolhimento de empresa.";
+    private static final String MSG_ERRO_UPLOAD =
+            "Não foi possível enviar o ficheiro do acolhimento da entidade.";
     private static final DateTimeFormatter INSCRICAO_DATE = DateTimeFormatter.BASIC_ISO_DATE;
 
     private final AcolhimentoBus acolhimentoBus;
@@ -106,8 +107,7 @@ public class AcolhimentoEmpresaServiceImpl implements AcolhimentoEmpresaService 
         );
         if (configEmail == null) {
             throw new IllegalArgumentException(
-                    "Configuracao de email com o codigo [acolhimento_entidade] nao existe em "
-                            + appCodeDocumentoEmpresa
+                "Não foi possível enviar a notificação do acolhimento neste momento."
                             + "."
             );
         }
@@ -117,11 +117,12 @@ public class AcolhimentoEmpresaServiceImpl implements AcolhimentoEmpresaService 
 
     private void validar(AcolhimentoEmpresaRequest request) {
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Corpo do pedido e obrigatorio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Preencha os dados do acolhimento da entidade antes de gravar.");
         }
         String nif = texto(campo(request, request.getNif(), "nif"));
         if (nif == null || nif.length() != 9) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "O NIF deve ter 9 digitos.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "O NIF deve conter 9 dígitos.");
         }
         if (texto(campo(request, request.getNomeDaEntidade(), "nome_da_entidade", "denominacao", "denominacao_utente")) == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe o nome da entidade.");
@@ -168,7 +169,8 @@ public class AcolhimentoEmpresaServiceImpl implements AcolhimentoEmpresaService 
             return new DetalhesAcolhimento();
         }
         return acolhimentoBus.findAcolhimentoById(request.getId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Acolhimento nao encontrado."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "O acolhimento selecionado não foi encontrado. Atualize a página e tente novamente."));
     }
 
     private Map<String, Object> montarDetalhes(AcolhimentoEmpresaRequest request) {
@@ -243,7 +245,8 @@ public class AcolhimentoEmpresaServiceImpl implements AcolhimentoEmpresaService 
             Map<String, Object> anexo = anexoNoIndice(anexos, indice);
             String tipoDocumento = texto(anexo.get("tipo_documento_anexo"));
             if (tipoDocumento == null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "tipo_documento_anexo e obrigatorio para cada ficheiro.");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Selecione o tipo de documento para cada ficheiro anexado.");
             }
             String nomeOriginal = nomeOriginal(ficheiro, indice);
             String nomeBase = sanitizar(textoOuPadrao(anexo.get("fileName"), removerExtensao(nomeOriginal)));
@@ -264,7 +267,7 @@ public class AcolhimentoEmpresaServiceImpl implements AcolhimentoEmpresaService 
             } catch (RuntimeException ex) {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_GATEWAY,
-                        MSG_ERRO_UPLOAD + " Verifique se o servico de documentos/MinIO esta disponivel.",
+                    MSG_ERRO_UPLOAD + " Tente novamente mais tarde.",
                         ex
                 );
             }

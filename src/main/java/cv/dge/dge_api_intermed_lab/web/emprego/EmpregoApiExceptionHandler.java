@@ -22,14 +22,17 @@ import org.springframework.web.server.ResponseStatusException;
         GestaoAcompanhamentoController.class,
         GestaoAssiduidadeController.class,
         GestaoVisitaTecnicaController.class,
-        GestaoAvaliacaoEstagiarioController.class
+        GestaoAvaliacaoEstagiarioController.class,
+        GestaoRelatorioAcompanhamentoController.class
 })
 @Slf4j
 public class EmpregoApiExceptionHandler {
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<EmpregoApiResponse<Void>> tratarResponseStatus(ResponseStatusException ex) {
-        String mensagem = ex.getReason() == null ? "Pedido invalido." : ex.getReason();
+        String mensagem = ex.getReason() == null
+                ? "Não foi possível concluir a operação. Reveja os dados e tente novamente."
+                : ex.getReason();
         return ResponseEntity
                 .status(ex.getStatusCode())
                 .body(EmpregoApiResponse.erro(mensagem, List.of(mensagem)));
@@ -39,7 +42,8 @@ public class EmpregoApiExceptionHandler {
     public ResponseEntity<EmpregoApiResponse<Void>> tratarParametroObrigatorio(
             MissingServletRequestParameterException ex
     ) {
-        String mensagem = "Parametro obrigatorio nao informado: " + ex.getParameterName() + ".";
+        String mensagem = "Falta informação necessária para concluir a operação. "
+                + "Atualize a página, preencha os campos obrigatórios e tente novamente.";
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(EmpregoApiResponse.erro(mensagem, List.of(mensagem)));
@@ -47,7 +51,8 @@ public class EmpregoApiExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<EmpregoApiResponse<Void>> tratarTipoParametro(MethodArgumentTypeMismatchException ex) {
-        String mensagem = "Parametro invalido: " + ex.getName() + ".";
+        String mensagem = "Um dos dados informados não está no formato esperado. "
+                + "Reveja os valores e tente novamente.";
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(EmpregoApiResponse.erro(mensagem, List.of(mensagem)));
@@ -55,7 +60,8 @@ public class EmpregoApiExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<EmpregoApiResponse<Void>> tratarJsonInvalido(HttpMessageNotReadableException ex) {
-        String mensagem = "JSON do pedido invalido.";
+        String mensagem = "Não foi possível interpretar os dados enviados. "
+                + "Atualize a página e tente novamente.";
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(EmpregoApiResponse.erro(mensagem, List.of(mensagem)));
@@ -64,7 +70,8 @@ public class EmpregoApiExceptionHandler {
     @ExceptionHandler(DataAccessException.class)
     public ResponseEntity<EmpregoApiResponse<Void>> tratarErroBaseDados(DataAccessException ex) {
         log.error("Erro de base de dados nos endpoints de emprego.", ex);
-        String mensagem = "Erro ao consultar ou gravar dados.";
+        String mensagem = "Não foi possível consultar ou guardar as informações neste momento. "
+                + "Tente novamente mais tarde.";
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(EmpregoApiResponse.erro(mensagem, List.of(mensagem)));
@@ -73,7 +80,8 @@ public class EmpregoApiExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<EmpregoApiResponse<Void>> tratarErroNaoMapeado(Exception ex) {
         log.error("Erro inesperado nos endpoints de emprego.", ex);
-        String mensagem = "Erro inesperado ao processar o pedido.";
+        String mensagem = "Ocorreu um problema inesperado ao concluir a operação. "
+                + "Tente novamente mais tarde.";
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(EmpregoApiResponse.erro(mensagem, List.of(mensagem)));

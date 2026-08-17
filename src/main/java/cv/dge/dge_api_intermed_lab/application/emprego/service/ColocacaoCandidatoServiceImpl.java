@@ -41,7 +41,8 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
         validarId(id);
         return colocacaoRepository.buscarPorId(id)
                 .map(this::enriquecerDetalhe)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Colocacao nao encontrada."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "A colocação selecionada não foi encontrada. Atualize a página e tente novamente."));
     }
 
     @Override
@@ -50,10 +51,11 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
         String tipo = normalizarDominioObrigatorio(
                 EmpregoDominio.DOMINIO_TIPO_OFERTA,
                 tipoOferta,
-                "tipoOferta e obrigatorio."
+                "Selecione o tipo de oferta."
         );
         if (entidadeId == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "entidadeId e obrigatorio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Não foi possível identificar a entidade selecionada. Selecione uma entidade e tente novamente.");
         }
         return colocacaoRepository.listarOfertasPorTipoEEntidade(tipo, entidadeId).stream()
                 .map(item -> new ColocacaoOfertaSelectResponse(
@@ -73,7 +75,7 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
     @Transactional(readOnly = true)
     public List<ColocacaoCandidatoSelectResponse> listarCandidatosPorOferta(Integer ofertaId) {
         if (ofertaId == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ofertaId e obrigatorio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione uma oferta.");
         }
         return colocacaoRepository.listarCandidatosPorOferta(ofertaId);
     }
@@ -111,7 +113,8 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
     public ColocacaoCandidatoResponse remover(Integer id, ColocacaoCandidatoRemoverRequest request) {
         validarId(id);
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados da remocao sao obrigatorios.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Não foi possível confirmar a eliminação da colocação. Tente novamente.");
         }
         String utilizador = utilizadorObrigatorio(request.utilizador());
         buscarPorId(id);
@@ -134,27 +137,28 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
 
     private ColocacaoCandidatoRequest validarENormalizarRequest(ColocacaoCandidatoRequest request) {
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados da colocacao sao obrigatorios.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Preencha os dados da colocação antes de gravar.");
         }
         String tipoOferta = normalizarDominioObrigatorio(
                 EmpregoDominio.DOMINIO_TIPO_OFERTA,
                 request.tipoOferta(),
-                "tipoOferta e obrigatorio."
+                "Selecione o tipo de oferta."
         );
         if (request.ofertaId() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ofertaId e obrigatorio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione uma oferta.");
         }
         String codigoReferencia = texto(request.codigoReferencia());
         if (request.pessoaId() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pessoaId e obrigatorio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione o candidato.");
         }
         String tipoContrato = normalizarDominioObrigatorio(
                 EmpregoDominio.DOMINIO_REGIME_CONTRATO,
                 request.tipoContrato(),
-                "tipoContrato e obrigatorio."
+                "Selecione o tipo de contrato."
         );
         if (request.dataInicioPrevisto() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "dataInicioPrevisto e obrigatorio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe a data prevista para o início.");
         }
         utilizadorObrigatorio(request.utilizador());
         validarNumeros(request.duracaoContrato());
@@ -179,7 +183,8 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
         return colocacaoRepository.buscarVinculoCandidatura(request.ofertaId(), request.pessoaId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Candidatura nao encontrada para o ofertaId e pessoaId informados."
+                        "Não foi encontrada uma candidatura para o candidato e a oferta selecionados. "
+                                + "Confirme os dados e tente novamente."
                 ));
     }
 
@@ -188,7 +193,7 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
         if (!String.valueOf(tipoOfertaRequest).equals(tipoOferta)) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "tipoOferta nao corresponde ao tipo da oferta informada pelo ofertaId."
+                    "O tipo de oferta selecionado não corresponde à oferta escolhida."
             );
         }
     }
@@ -196,13 +201,15 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
     private void garantirAtivo(ColocacaoCandidatoResponse colocacao) {
         String estado = valorDominio(EmpregoDominio.DOMINIO_ESTADO, colocacao.estado());
         if (ESTADO_INATIVO.equals(estado)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Colocacoes inativas nao podem ser atualizadas.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Esta colocação já foi eliminada e não pode ser alterada.");
         }
     }
 
     private void validarNumeros(Integer duracaoContrato) {
         if (duracaoContrato != null && duracaoContrato < 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "duracaoContrato nao pode ser negativo.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "A duração do contrato deve ser igual ou superior a zero.");
         }
     }
 
@@ -210,7 +217,7 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
         if (dataInicio != null && dataFim != null && dataFim.isBefore(dataInicio)) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "dataFimPrevisto nao pode ser anterior a dataInicioPrevisto."
+                    "A data prevista para o fim não pode ser anterior à data de início."
             );
         }
     }
@@ -261,12 +268,14 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
 
     private void validarId(Integer id) {
         if (id == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "id e obrigatorio.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Não foi possível identificar a colocação selecionada. Atualize a página e tente novamente.");
         }
     }
 
     private String utilizadorObrigatorio(String utilizador) {
-        return textoObrigatorio(utilizador, "utilizador e obrigatorio para auditoria.");
+        return textoObrigatorio(utilizador,
+                "Não foi possível identificar o utilizador. Inicie sessão novamente e repita a operação.");
     }
 
     private String textoObrigatorio(String valor, String mensagem) {
@@ -293,7 +302,7 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
         return EmpregoDominio.valorOficial(dominio, texto)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        dominio + " invalido: " + texto + "."
+                        "Uma das opções selecionadas não é válida. Atualize a página e tente novamente."
                 ));
     }
 

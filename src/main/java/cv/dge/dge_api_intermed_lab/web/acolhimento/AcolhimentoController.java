@@ -43,9 +43,11 @@ public class AcolhimentoController {
     private static final Pattern CAMPO_TOKEN_PATTERN = Pattern.compile("([^.\\[\\]]+)|\\[(\\d+|[^\\]]+)\\]");
     private static final String PARTE_DADOS = "dados";
     private static final String MSG_DADOS_OBRIGATORIOS =
-            "Envie a parte 'dados' em JSON ou os campos individuais em multipart/form-data.";
-    private static final String MSG_JSON_INVALIDO = "JSON invalido na parte 'dados'.";
-    private static final String MSG_MULTIPART_INVALIDO = "Campos multipart invalidos.";
+            "Preencha os dados do acolhimento antes de gravar.";
+    private static final String MSG_JSON_INVALIDO =
+            "Não foi possível interpretar os dados enviados. Atualize a página e tente novamente.";
+    private static final String MSG_MULTIPART_INVALIDO =
+            "Um dos dados ou ficheiros enviados não está no formato esperado. Reveja os dados e tente novamente.";
 
     private final AcolhimentoService acolhimentoService;
     private final AcolhimentoEmpresaService acolhimentoEmpresaService;
