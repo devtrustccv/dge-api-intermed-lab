@@ -1,0 +1,277 @@
+{
+  "info": {
+    "_postman_id": "7be809fe-6cca-45d1-9d4a-dashboard-perfil-candidato",
+    "name": "Perfil Candidato",
+    "description": "Coleção das APIs do Perfil Candidato, incluindo dashboard, adesão e certificado de estágio.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Carregar dashboard - ano corrente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/perfil-candidato/dashboard?pessoaId={{pessoaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "perfil-candidato",
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "pessoaId",
+                  "value": "{{pessoaId}}",
+                  "description": "Identificador da pessoa associada ao candidato com sessão ativa no portal."
+                }
+              ]
+            },
+            "description": "Carrega o dashboard do candidato. Quando o ano não é enviado, a evolução das candidaturas considera automaticamente o ano corrente."
+          },
+          "response": []
+        },
+        {
+          "name": "Carregar dashboard - filtrar por ano",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/perfil-candidato/dashboard?pessoaId={{pessoaId}}&ano={{ano}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "perfil-candidato",
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "pessoaId",
+                  "value": "{{pessoaId}}",
+                  "description": "Identificador da pessoa associada ao candidato com sessão ativa no portal."
+                },
+                {
+                  "key": "ano",
+                  "value": "{{ano}}",
+                  "description": "Ano utilizado apenas no gráfico de evolução mensal das candidaturas."
+                }
+              ]
+            },
+            "description": "Carrega o dashboard e aplica o ano selecionado ao gráfico de evolução das candidaturas. Os restantes indicadores seguem as regras gerais definidas no documento funcional."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Adesão do jovem",
+      "item": [
+        {
+          "name": "Carregar formulário de adesão",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/perfil-candidato/adesao?pessoaId={{pessoaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "perfil-candidato",
+                "adesao"
+              ],
+              "query": [
+                {
+                  "key": "pessoaId",
+                  "value": "{{pessoaId}}",
+                  "description": "Identificador da pessoa com sessão ativa no portal."
+                }
+              ]
+            },
+            "description": "Carrega fotografia, NIF, nacionalidade, nascimento, sexo, documento, emissão, validade, estado civil e eventual adesão já registada."
+          },
+          "response": []
+        },
+        {
+          "name": "Confirmar adesão",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"situacaoProfissional\": \"{{situacaoProfissional}}\",\n  \"utilizador\": \"{{utilizador}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/perfil-candidato/adesao?pessoaId={{pessoaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "perfil-candidato",
+                "adesao"
+              ],
+              "query": [
+                {
+                  "key": "pessoaId",
+                  "value": "{{pessoaId}}",
+                  "description": "Identificador da pessoa com sessão ativa no portal."
+                }
+              ]
+            },
+            "description": "Regista a situação profissional, resolve o id do utente no backend e grava a data atual e o utilizador da submissão."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Certificado de estágio",
+      "item": [
+        {
+          "name": "Consultar dados e substituições do certificado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/perfil-candidato/certificados/estagio?colocacaoId={{colocacaoId}}&pessoaId={{pessoaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "perfil-candidato",
+                "certificados",
+                "estagio"
+              ],
+              "query": [
+                {
+                  "key": "colocacaoId",
+                  "value": "{{colocacaoId}}",
+                  "description": "Estágio selecionado no perfil do candidato."
+                },
+                {
+                  "key": "pessoaId",
+                  "value": "{{pessoaId}}",
+                  "description": "Pessoa com sessão ativa no portal."
+                }
+              ]
+            },
+            "description": "Carrega os dados do certificado e o mapa substituicoes. Se o certificado já tiver sido emitido, devolve o snapshot guardado; caso contrário, devolve uma pré-visualização com os dados atuais."
+          },
+          "response": []
+        },
+        {
+          "name": "Emitir certificado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assinatura\": \"{{assinatura}}\",\n  \"utilizador\": \"{{utilizador}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/perfil-candidato/certificados/estagio?colocacaoId={{colocacaoId}}&pessoaId={{pessoaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "perfil-candidato",
+                "certificados",
+                "estagio"
+              ],
+              "query": [
+                {
+                  "key": "colocacaoId",
+                  "value": "{{colocacaoId}}"
+                },
+                {
+                  "key": "pessoaId",
+                  "value": "{{pessoaId}}"
+                }
+              ]
+            },
+            "description": "Guarda a data de emissão, assinatura, utilizador emissor e um snapshot dos dados. Gera automaticamente o código de contraprova."
+          },
+          "response": []
+        },
+        {
+          "name": "Validar código de contraprova",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/perfil-candidato/certificados/estagio/validar/{{codigoContraprova}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "perfil-candidato",
+                "certificados",
+                "estagio",
+                "validar",
+                "{{codigoContraprova}}"
+              ]
+            },
+            "description": "Confirma a autenticidade do certificado através do código de contraprova impresso no documento."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:9001/api"
+    },
+    {
+      "key": "pessoaId",
+      "value": "2001101700869"
+    },
+    {
+      "key": "ano",
+      "value": "2026"
+    },
+    {
+      "key": "situacaoProfissional",
+      "value": "DESEMPREGADO"
+    },
+    {
+      "key": "colocacaoId",
+      "value": "1"
+    },
+    {
+      "key": "assinatura",
+      "value": "Diretor do Centro de Emprego"
+    },
+    {
+      "key": "codigoContraprova",
+      "value": "CERT-COLOQUE-O-CODIGO-DEVOLVIDO-NA-EMISSAO"
+    },
+    {
+      "key": "utilizador",
+      "value": "candidato.teste@dge.cv"
+    }
+  ]
+}
