@@ -1,0 +1,88 @@
+{
+  "info": {
+    "_postman_id": "7be809fe-6cca-45d1-9d4a-dashboard-perfil-candidato",
+    "name": "Perfil Candidato - Dashboard",
+    "description": "Coleção para testar o dashboard inicial do Perfil Candidato. O endpoint devolve os quatro KPI, a evolução mensal das candidaturas, candidaturas por tipo, as cinco áreas geográficas com mais ofertas e as cinco colocações mais recentes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Carregar dashboard - ano corrente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/perfil-candidato/dashboard?pessoaId={{pessoaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "perfil-candidato",
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "pessoaId",
+                  "value": "{{pessoaId}}",
+                  "description": "Identificador da pessoa associada ao candidato com sessão ativa no portal."
+                }
+              ]
+            },
+            "description": "Carrega o dashboard do candidato. Quando o ano não é enviado, a evolução das candidaturas considera automaticamente o ano corrente."
+          },
+          "response": []
+        },
+        {
+          "name": "Carregar dashboard - filtrar por ano",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/perfil-candidato/dashboard?pessoaId={{pessoaId}}&ano={{ano}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "perfil-candidato",
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "pessoaId",
+                  "value": "{{pessoaId}}",
+                  "description": "Identificador da pessoa associada ao candidato com sessão ativa no portal."
+                },
+                {
+                  "key": "ano",
+                  "value": "{{ano}}",
+                  "description": "Ano utilizado apenas no gráfico de evolução mensal das candidaturas."
+                }
+              ]
+            },
+            "description": "Carrega o dashboard e aplica o ano selecionado ao gráfico de evolução das candidaturas. Os restantes indicadores seguem as regras gerais definidas no documento funcional."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:9001/api"
+    },
+    {
+      "key": "pessoaId",
+      "value": "2001101700869"
+    },
+    {
+      "key": "ano",
+      "value": "2026"
+    }
+  ]
+}
