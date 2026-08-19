@@ -17,6 +17,8 @@ public record CandidaturaListaResponse(
         Boolean selecaoIefp,
         Boolean podeAvaliar,
         Boolean podeAgendarEntrevista,
+        Integer entrevistaId,
+        Boolean podeRegistarResultadoEntrevista,
         LocalDateTime dataCandidatura
 ) {
 }

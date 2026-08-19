@@ -23,7 +23,8 @@
                 "v1",
                 "candidaturas"
               ]
-            }
+            },
+            "description": "Lista as candidaturas. Cada candidatura pode possuir apenas uma entrevista. entrevistaId identifica essa entrevista, podeAgendarEntrevista indica se ainda pode ser criada e podeRegistarResultadoEntrevista indica se o resultado pendente pode ser registado diretamente na grelha."
           },
           "response": []
         },
