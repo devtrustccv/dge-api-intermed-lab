@@ -1,0 +1,18 @@
+ALTER TABLE emprego_t_oferta
+    ALTER COLUMN codigo_referencia TYPE VARCHAR,
+    ALTER COLUMN tipo_oferta TYPE VARCHAR,
+    ALTER COLUMN titulo TYPE VARCHAR,
+    ALTER COLUMN descricao TYPE VARCHAR,
+    ALTER COLUMN regime_contrato TYPE VARCHAR,
+    ALTER COLUMN denominacao_entidade TYPE VARCHAR,
+    ALTER COLUMN habilitacao_minima TYPE VARCHAR,
+    ALTER COLUMN nivel_qualificacao TYPE VARCHAR,
+    ALTER COLUMN habilitacao_maxima TYPE VARCHAR,
+    ALTER COLUMN ilha TYPE VARCHAR,
+    ALTER COLUMN concelho TYPE VARCHAR,
+    ALTER COLUMN email_contacto TYPE VARCHAR,
+    ALTER COLUMN contacto TYPE VARCHAR,
+    ALTER COLUMN observacao TYPE VARCHAR,
+    ALTER COLUMN estado TYPE VARCHAR,
+    ALTER COLUMN user_create TYPE VARCHAR,
+    ALTER COLUMN user_update TYPE VARCHAR;
