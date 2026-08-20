@@ -78,17 +78,14 @@ public class GestaoCandidaturaRepository {
                     c.selecao_iefp,
                     c.date_create,
                     o.titulo,
-                    entrevista.id AS entrevista_id,
-                    CASE
-                        WHEN entrevista.id IS NULL THEN FALSE
-                        ELSE UPPER(TRIM(COALESCE(entrevista.estado, 'PENDENTE'))) = 'PENDENTE'
-                    END AS pode_registar_resultado_entrevista
+                    entrevista.id AS entrevista_id
                 FROM emprego_t_candidatura_oferta c
                 LEFT JOIN emprego_t_oferta o ON o.id = c.id_oferta
                 LEFT JOIN LATERAL (
-                    SELECT e.id, e.estado
+                    SELECT e.id
                     FROM emprego_t_entrevista_oferta e
                     WHERE e.id_candidatura = c.id
+                      AND UPPER(TRIM(COALESCE(e.estado, 'PENDENTE'))) = 'PENDENTE'
                     ORDER BY e.date_create DESC NULLS LAST, e.id DESC
                     FETCH FIRST 1 ROWS ONLY
                 ) entrevista ON TRUE
@@ -112,18 +109,9 @@ public class GestaoCandidaturaRepository {
                 null,
                 null,
                 rs.getObject("entrevista_id", Integer.class),
-                rs.getBoolean("pode_registar_resultado_entrevista"),
+                rs.getObject("entrevista_id") != null,
                 rs.getObject("date_create", LocalDateTime.class)
         ), params.toArray());
-    }
-
-    public boolean existeEntrevista(Integer candidaturaId) {
-        Long total = empregoJdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM emprego_t_entrevista_oferta WHERE id_candidatura = ?",
-                Long.class,
-                candidaturaId
-        );
-        return total != null && total > 0;
     }
 
     public Optional<CandidaturaDetalheResponse> buscarPorId(Integer id) {

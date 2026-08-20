@@ -12,7 +12,6 @@ import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.Gest
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -101,13 +100,6 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
                     "A entrevista só pode ser agendada depois de a candidatura ser aprovada."
             );
         }
-        if (candidaturaRepository.existeEntrevista(candidaturaId)) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
-                    "Esta candidatura já possui uma entrevista. Consulte a entrevista existente."
-            );
-        }
-
         EntrevistaAgendamentoRequest dados = new EntrevistaAgendamentoRequest(
                 request.dataEntrevista(),
                 request.horario(),
@@ -119,21 +111,12 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
                 textoObrigatorio(request.localEntrevista(), "Informe o local ou o acesso da entrevista."),
                 utilizadorObrigatorio(request.utilizador())
         );
-        Integer entrevistaId;
-        try {
-            entrevistaId = candidaturaRepository.inserirEntrevista(
-                    candidaturaId,
-                    candidatura,
-                    dados,
-                    ESTADO_ENTREVISTA_PENDENTE
-            );
-        } catch (DuplicateKeyException ex) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
-                    "Esta candidatura já possui uma entrevista. Consulte a entrevista existente.",
-                    ex
-            );
-        }
+        Integer entrevistaId = candidaturaRepository.inserirEntrevista(
+                candidaturaId,
+                candidatura,
+                dados,
+                ESTADO_ENTREVISTA_PENDENTE
+        );
         return buscarEntrevistaObrigatoria(candidaturaId, entrevistaId);
     }
 
@@ -170,13 +153,7 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
         );
         String utilizador = utilizadorObrigatorio(request.utilizador());
         buscarPorId(candidaturaId);
-        EntrevistaResponse entrevista = buscarEntrevistaObrigatoria(candidaturaId, entrevistaId);
-        if (entrevista.estado() != null && !ESTADO_ENTREVISTA_PENDENTE.equals(entrevista.estado())) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
-                    "O resultado desta entrevista já foi registado. Consulte os dados da entrevista."
-            );
-        }
+        buscarEntrevistaObrigatoria(candidaturaId, entrevistaId);
 
         candidaturaRepository.atualizarResultadoEntrevista(
                 candidaturaId,
