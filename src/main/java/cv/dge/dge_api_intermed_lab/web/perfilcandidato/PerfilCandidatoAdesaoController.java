@@ -6,7 +6,6 @@ import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.PerfilCandida
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.service.PerfilCandidatoAdesaoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,16 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class PerfilCandidatoAdesaoController {
 
     private final PerfilCandidatoAdesaoService adesaoService;
-
-    @GetMapping
-    public PerfilCandidatoApiResponse<AdesaoJovemResponse> carregarFormulario(
-            @RequestParam(required = false) Long pessoaId
-    ) {
-        return PerfilCandidatoApiResponse.sucesso(
-                "Dados para adesão carregados com sucesso.",
-                adesaoService.carregarFormulario(pessoaId)
-        );
-    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

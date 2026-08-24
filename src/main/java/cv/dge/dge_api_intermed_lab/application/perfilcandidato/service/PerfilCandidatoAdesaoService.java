@@ -5,7 +5,5 @@ import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AdesaoJovemRe
 
 public interface PerfilCandidatoAdesaoService {
 
-    AdesaoJovemResponse carregarFormulario(Long pessoaId);
-
     AdesaoJovemResponse confirmarAdesao(Long pessoaId, AdesaoJovemRequest request);
 }

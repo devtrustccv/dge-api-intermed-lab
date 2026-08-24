@@ -2,41 +2,10 @@
     "info":  {
                  "_postman_id":  "b283f124-0172-4208-b312-adesao-perfil-candidato",
                  "name":  "Perfil Candidato - Adesão",
-                 "description":  "APIs de consulta e confirmação da adesão do jovem.",
+                 "description":  "API de confirmação da adesão do jovem.",
                  "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
              },
     "item":  [
-                 {
-                     "name":  "Carregar formulário de adesão",
-                     "request":  {
-                                     "method":  "GET",
-                                     "header":  [
-
-                                                ],
-                                     "url":  {
-                                                 "raw":  "{{baseUrl}}/v1/perfil-candidato/adesao?pessoaId={{pessoaId}}",
-                                                 "host":  [
-                                                              "{{baseUrl}}"
-                                                          ],
-                                                 "path":  [
-                                                              "v1",
-                                                              "perfil-candidato",
-                                                              "adesao"
-                                                          ],
-                                                 "query":  [
-                                                               {
-                                                                   "key":  "pessoaId",
-                                                                   "value":  "{{pessoaId}}",
-                                                                   "description":  "Identificador da pessoa com sessão ativa no portal."
-                                                               }
-                                                           ]
-                                             },
-                                     "description":  "Carrega fotografia, NIF, nacionalidade, nascimento, sexo, documento, emissão, validade, estado civil e eventual adesão já registada."
-                                 },
-                     "response":  [
-
-                                  ]
-                 },
                  {
                      "name":  "Confirmar adesão",
                      "request":  {
@@ -69,7 +38,7 @@
                                                                }
                                                            ]
                                              },
-                                     "description":  "Regista a situação profissional, resolve o id do utente no backend e grava a data atual e o utilizador da submissão."
+                                     "description":  "Regista a situação profissional, resolve o id do utente no backend e grava a data atual e o email do utilizador da submissão. Os restantes campos do formulário são preenchidos por outra API."
                                  },
                      "response":  [
 

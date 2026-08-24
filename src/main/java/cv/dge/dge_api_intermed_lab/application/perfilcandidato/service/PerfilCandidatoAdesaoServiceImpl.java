@@ -17,17 +17,6 @@ public class PerfilCandidatoAdesaoServiceImpl implements PerfilCandidatoAdesaoSe
     private final PerfilCandidatoAdesaoRepository adesaoRepository;
 
     @Override
-    @Transactional(readOnly = true)
-    public AdesaoJovemResponse carregarFormulario(Long pessoaId) {
-        validarPessoa(pessoaId);
-        return adesaoRepository.buscarFormulario(pessoaId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Não foi possível encontrar os seus dados pessoais. Atualize a página ou contacte o serviço de atendimento."
-                ));
-    }
-
-    @Override
     @Transactional
     public AdesaoJovemResponse confirmarAdesao(Long pessoaId, AdesaoJovemRequest request) {
         validarPessoa(pessoaId);
@@ -65,8 +54,7 @@ public class PerfilCandidatoAdesaoServiceImpl implements PerfilCandidatoAdesaoSe
             );
         }
 
-        adesaoRepository.inserir(pessoaId, utenteId, situacaoProfissional, utilizador);
-        return carregarFormulario(pessoaId);
+        return adesaoRepository.inserir(pessoaId, utenteId, situacaoProfissional, utilizador);
     }
 
     private void validarPessoa(Long pessoaId) {
