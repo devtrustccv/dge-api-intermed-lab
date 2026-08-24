@@ -17,14 +17,11 @@ import org.springframework.stereotype.Repository;
 public class PerfilCandidatoCertificadoRepository {
 
     private final JdbcTemplate empregoJdbcTemplate;
-    private final JdbcTemplate globalJdbcTemplate;
 
     public PerfilCandidatoCertificadoRepository(
-            @Qualifier("primaryDataSource") DataSource primaryDataSource,
-            @Qualifier("tertiaryDataSource") DataSource tertiaryDataSource
+            @Qualifier("primaryDataSource") DataSource primaryDataSource
     ) {
         this.empregoJdbcTemplate = new JdbcTemplate(primaryDataSource);
-        this.globalJdbcTemplate = new JdbcTemplate(tertiaryDataSource);
     }
 
     public Optional<FonteEmprego> buscarFonteEmprego(Integer colocacaoId, Long pessoaId) {
@@ -84,15 +81,30 @@ public class PerfilCandidatoCertificadoRepository {
     }
 
     public Optional<FontePessoa> buscarFontePessoa(Long pessoaId) {
-        return globalJdbcTemplate.query(
+        return empregoJdbcTemplate.query(
                 """
-                        SELECT naturalidade, data_nasc, num_documento
-                        FROM ci_t_pessoa
-                        WHERE id = ?
+                        SELECT
+                            COALESCE(
+                                NULLIF(TRIM(detalhes.dados ->> 'naturalidade'), ''),
+                                NULLIF(TRIM(detalhes.dados ->> 'nacionalidade'), '')
+                            ) AS naturalidade,
+                            utente.data_nascimento,
+                            utente.num_documento
+                        FROM emprego_t_utente utente
+                        LEFT JOIN LATERAL (
+                            SELECT acolhimento.detalhes AS dados
+                            FROM emprego_t_detalhes_acolhimento acolhimento
+                            WHERE acolhimento.id_utente = utente.id
+                            ORDER BY acolhimento.date_create DESC NULLS LAST, acolhimento.id DESC
+                            FETCH FIRST 1 ROWS ONLY
+                        ) detalhes ON TRUE
+                        WHERE CAST(utente.pessoa_id AS BIGINT) = ?
+                        ORDER BY utente.date_create DESC NULLS LAST, utente.id DESC
+                        FETCH FIRST 1 ROWS ONLY
                         """,
                 (rs, rowNum) -> new FontePessoa(
                         rs.getString("naturalidade"),
-                        rs.getObject("data_nasc", LocalDate.class),
+                        rs.getObject("data_nascimento", LocalDate.class),
                         rs.getString("num_documento")
                 ),
                 pessoaId

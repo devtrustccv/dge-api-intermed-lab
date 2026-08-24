@@ -15,7 +15,8 @@ import org.springframework.web.server.ResponseStatusException;
 @RestControllerAdvice(assignableTypes = {
         PerfilCandidatoDashboardController.class,
         PerfilCandidatoAdesaoController.class,
-        PerfilCandidatoCertificadoController.class
+        PerfilCandidatoCertificadoController.class,
+        PerfilCandidatoVagaController.class
 })
 @Slf4j
 public class PerfilCandidatoApiExceptionHandler {

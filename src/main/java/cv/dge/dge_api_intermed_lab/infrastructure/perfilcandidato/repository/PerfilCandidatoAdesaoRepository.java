@@ -21,55 +21,38 @@ public class PerfilCandidatoAdesaoRepository {
     private static final DateTimeFormatter DATA_DIA_MES_ANO = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     private final JdbcTemplate empregoJdbcTemplate;
-    private final JdbcTemplate globalJdbcTemplate;
 
     public PerfilCandidatoAdesaoRepository(
-            @Qualifier("primaryDataSource") DataSource primaryDataSource,
-            @Qualifier("tertiaryDataSource") DataSource tertiaryDataSource
+            @Qualifier("primaryDataSource") DataSource primaryDataSource
     ) {
         this.empregoJdbcTemplate = new JdbcTemplate(primaryDataSource);
-        this.globalJdbcTemplate = new JdbcTemplate(tertiaryDataSource);
     }
 
     public Optional<AdesaoJovemResponse> buscarFormulario(Long pessoaId) {
-        Optional<PessoaGlobal> pessoaGlobal = buscarPessoaGlobal(pessoaId);
         Optional<UtenteLocal> utenteLocal = buscarUtenteLocal(pessoaId);
-        if (pessoaGlobal.isEmpty() && utenteLocal.isEmpty()) {
+        if (utenteLocal.isEmpty()) {
             return Optional.empty();
         }
 
-        PessoaGlobal pessoa = pessoaGlobal.orElse(null);
-        UtenteLocal utente = utenteLocal.orElse(null);
+        UtenteLocal utente = utenteLocal.orElseThrow();
         AdesaoRegisto adesao = buscarAdesao(pessoaId).orElse(null);
 
         return Optional.of(new AdesaoJovemResponse(
                 adesao == null ? null : adesao.id(),
                 pessoaId,
-                primeiroTexto(pessoa == null ? null : pessoa.foto(), utente == null ? null : utente.foto()),
-                primeiroTexto(pessoa == null ? null : pessoa.nif(), utente == null ? null : utente.nif()),
-                primeiroTexto(
-                        pessoa == null ? null : pessoa.nacionalidade(),
-                        utente == null ? null : utente.nacionalidade()
-                ),
-                primeiro(pessoa == null ? null : pessoa.dataNascimento(), utente == null ? null : utente.dataNascimento()),
-                primeiroTexto(pessoa == null ? null : pessoa.sexo(), utente == null ? null : utente.sexo()),
-                primeiroTexto(
-                        pessoa == null ? null : pessoa.tipoDocumento(),
-                        utente == null ? null : utente.tipoDocumento()
-                ),
-                primeiroTexto(
-                        pessoa == null ? null : pessoa.numeroDocumento(),
-                        utente == null ? null : utente.numeroDocumento()
-                ),
-                utente == null ? null : utente.localEmissao(),
-                primeiro(pessoa == null ? null : pessoa.dataValidade(), utente == null ? null : utente.dataValidade()),
-                primeiroTexto(
-                        pessoa == null ? null : pessoa.estadoCivil(),
-                        utente == null ? null : utente.estadoCivil()
-                ),
+                utente.foto(),
+                utente.nif(),
+                utente.nacionalidade(),
+                utente.dataNascimento(),
+                utente.sexo(),
+                utente.tipoDocumento(),
+                utente.numeroDocumento(),
+                utente.localEmissao(),
+                utente.dataValidade(),
+                utente.estadoCivil(),
                 adesao == null ? null : adesao.situacaoProfissional(),
                 adesao != null,
-                utente != null && adesao == null,
+                adesao == null,
                 adesao == null ? null : adesao.dataAdesao(),
                 adesao == null ? null : adesao.utilizadorRegisto()
         ));
@@ -121,37 +104,6 @@ public class PerfilCandidatoAdesaoRepository {
             throw new IllegalStateException("Não foi possível obter o identificador da adesão registada.");
         }
         return id.intValue();
-    }
-
-    private Optional<PessoaGlobal> buscarPessoaGlobal(Long pessoaId) {
-        return globalJdbcTemplate.query(
-                """
-                        SELECT
-                            foto,
-                            nif,
-                            COALESCE(NULLIF(TRIM(nacionalidade), ''), nacionalidade_id) AS nacionalidade,
-                            data_nasc,
-                            sexo,
-                            tipo_documento,
-                            num_documento,
-                            dt_validade,
-                            estado_civil
-                        FROM ci_t_pessoa
-                        WHERE id = ?
-                        """,
-                (rs, rowNum) -> new PessoaGlobal(
-                        rs.getString("foto"),
-                        rs.getString("nif"),
-                        rs.getString("nacionalidade"),
-                        rs.getObject("data_nasc", LocalDate.class),
-                        rs.getString("sexo"),
-                        rs.getString("tipo_documento"),
-                        rs.getString("num_documento"),
-                        rs.getObject("dt_validade", LocalDate.class),
-                        rs.getString("estado_civil")
-                ),
-                pessoaId
-        ).stream().findFirst();
     }
 
     private Optional<UtenteLocal> buscarUtenteLocal(Long pessoaId) {
@@ -235,30 +187,6 @@ public class PerfilCandidatoAdesaoRepository {
                 return null;
             }
         }
-    }
-
-    private String primeiroTexto(String principal, String alternativa) {
-        if (principal != null && !principal.trim().isEmpty()) {
-            return principal.trim();
-        }
-        return alternativa == null || alternativa.trim().isEmpty() ? null : alternativa.trim();
-    }
-
-    private <T> T primeiro(T principal, T alternativa) {
-        return principal != null ? principal : alternativa;
-    }
-
-    private record PessoaGlobal(
-            String foto,
-            String nif,
-            String nacionalidade,
-            LocalDate dataNascimento,
-            String sexo,
-            String tipoDocumento,
-            String numeroDocumento,
-            LocalDate dataValidade,
-            String estadoCivil
-    ) {
     }
 
     private record UtenteLocal(

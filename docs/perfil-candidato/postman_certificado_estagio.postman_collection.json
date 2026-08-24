@@ -1,0 +1,142 @@
+﻿{
+    "info":  {
+                 "_postman_id":  "bfb16f93-cb2f-4645-84f1-certificado-estagio",
+                 "name":  "Perfil Candidato - Certificado de Estágio",
+                 "description":  "APIs de consulta, emissão e validação do certificado de estágio.",
+                 "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+             },
+    "item":  [
+                 {
+                     "name":  "Consultar dados e substituições do certificado",
+                     "request":  {
+                                     "method":  "GET",
+                                     "header":  [
+
+                                                ],
+                                     "url":  {
+                                                 "raw":  "{{baseUrl}}/v1/perfil-candidato/certificados/estagio?colocacaoId={{colocacaoId}}\u0026pessoaId={{pessoaId}}",
+                                                 "host":  [
+                                                              "{{baseUrl}}"
+                                                          ],
+                                                 "path":  [
+                                                              "v1",
+                                                              "perfil-candidato",
+                                                              "certificados",
+                                                              "estagio"
+                                                          ],
+                                                 "query":  [
+                                                               {
+                                                                   "key":  "colocacaoId",
+                                                                   "value":  "{{colocacaoId}}",
+                                                                   "description":  "Estágio selecionado no perfil do candidato."
+                                                               },
+                                                               {
+                                                                   "key":  "pessoaId",
+                                                                   "value":  "{{pessoaId}}",
+                                                                   "description":  "Pessoa com sessão ativa no portal."
+                                                               }
+                                                           ]
+                                             },
+                                     "description":  "Carrega os dados do certificado e o mapa substituicoes. Se o certificado já tiver sido emitido, devolve o snapshot guardado; caso contrário, devolve uma pré-visualização com os dados atuais."
+                                 },
+                     "response":  [
+
+                                  ]
+                 },
+                 {
+                     "name":  "Emitir certificado",
+                     "request":  {
+                                     "method":  "POST",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    }
+                                                ],
+                                     "body":  {
+                                                  "mode":  "raw",
+                                                  "raw":  "{\n  \"assinatura\": \"{{assinatura}}\",\n  \"utilizador\": \"{{utilizador}}\"\n}"
+                                              },
+                                     "url":  {
+                                                 "raw":  "{{baseUrl}}/v1/perfil-candidato/certificados/estagio?colocacaoId={{colocacaoId}}\u0026pessoaId={{pessoaId}}",
+                                                 "host":  [
+                                                              "{{baseUrl}}"
+                                                          ],
+                                                 "path":  [
+                                                              "v1",
+                                                              "perfil-candidato",
+                                                              "certificados",
+                                                              "estagio"
+                                                          ],
+                                                 "query":  [
+                                                               {
+                                                                   "key":  "colocacaoId",
+                                                                   "value":  "{{colocacaoId}}"
+                                                               },
+                                                               {
+                                                                   "key":  "pessoaId",
+                                                                   "value":  "{{pessoaId}}"
+                                                               }
+                                                           ]
+                                             },
+                                     "description":  "Guarda a data de emissão, assinatura, utilizador emissor e um snapshot dos dados. Gera automaticamente o código de contraprova."
+                                 },
+                     "response":  [
+
+                                  ]
+                 },
+                 {
+                     "name":  "Validar código de contraprova",
+                     "request":  {
+                                     "method":  "GET",
+                                     "header":  [
+
+                                                ],
+                                     "url":  {
+                                                 "raw":  "{{baseUrl}}/v1/perfil-candidato/certificados/estagio/validar/{{codigoContraprova}}",
+                                                 "host":  [
+                                                              "{{baseUrl}}"
+                                                          ],
+                                                 "path":  [
+                                                              "v1",
+                                                              "perfil-candidato",
+                                                              "certificados",
+                                                              "estagio",
+                                                              "validar",
+                                                              "{{codigoContraprova}}"
+                                                          ]
+                                             },
+                                     "description":  "Confirma a autenticidade do certificado através do código de contraprova impresso no documento."
+                                 },
+                     "response":  [
+
+                                  ]
+                 }
+             ],
+    "variable":  [
+                     {
+                         "key":  "baseUrl",
+                         "value":  "http://localhost:9001/api"
+                     },
+                     {
+                         "key":  "pessoaId",
+                         "value":  "2001101700869"
+                     },
+                     {
+                         "key":  "colocacaoId",
+                         "value":  "1"
+                     },
+                     {
+                         "key":  "assinatura",
+                         "value":  "Diretor do Centro de Emprego"
+                     },
+                     {
+                         "key":  "codigoContraprova",
+                         "value":  "CERT-COLOQUE-O-CODIGO-DEVOLVIDO-NA-EMISSAO"
+                     },
+                     {
+                         "key":  "utilizador",
+                         "value":  "candidato.teste@dge.cv"
+                     }
+                 ]
+}

@@ -74,9 +74,8 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
         validarRequest(request);
         String utilizador = utilizadorObrigatorio(request.utilizador());
         String tipo = normalizarTipoObrigatorio(request.tipo());
-        Long pessoaId = resolverPessoaIdPorDocumento(request.numeroDocumento());
         CoordenadorOrientadorRequest dados = normalizarRequest(request, tipo);
-        Integer id = coordenadorOrientadorRepository.inserir(dados, pessoaId, ESTADO_ATIVO, utilizador);
+        Integer id = coordenadorOrientadorRepository.inserir(dados, request.pessoaId(), ESTADO_ATIVO, utilizador);
         return buscarPorId(id);
     }
 
@@ -87,10 +86,14 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
         validarRequest(request);
         String utilizador = utilizadorObrigatorio(request.utilizador());
         String tipo = normalizarTipoObrigatorio(request.tipo());
-        Long pessoaId = resolverPessoaIdPorDocumento(request.numeroDocumento());
         buscarPorId(id);
 
-        coordenadorOrientadorRepository.atualizar(id, normalizarRequest(request, tipo), pessoaId, utilizador);
+        coordenadorOrientadorRepository.atualizar(
+                id,
+                normalizarRequest(request, tipo),
+                request.pessoaId(),
+                utilizador
+        );
         return buscarPorId(id);
     }
 
@@ -161,19 +164,10 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
         }
     }
 
-    private Long resolverPessoaIdPorDocumento(String numeroDocumento) {
-        String numero = textoObrigatorio(numeroDocumento, "Informe o número do documento.");
-        return coordenadorOrientadorRepository.buscarPessoaPorNumeroDocumento(numero)
-                .map(PessoaGlobalResponse::id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Não foi encontrada nenhuma pessoa com o número de documento informado."
-                ));
-    }
-
     private CoordenadorOrientadorRequest normalizarRequest(CoordenadorOrientadorRequest request, String tipo) {
         return new CoordenadorOrientadorRequest(
                 texto(request.numeroDocumento()),
+                request.pessoaId(),
                 texto(request.nome()),
                 tipo,
                 texto(request.cargo()),

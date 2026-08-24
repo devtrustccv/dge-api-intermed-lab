@@ -1,0 +1,344 @@
+﻿{
+    "info":  {
+                 "_postman_id":  "194029bf-4b25-4437-b72e-consulta-vagas",
+                 "name":  "Perfil Candidato - Consulta de Vagas",
+                 "description":  "APIs de consulta de vagas de emprego e estágio e submissão da candidatura.",
+                 "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+             },
+    "item":  [
+                 {
+                     "name":  "Carregar entidades, ilhas e concelhos",
+                     "request":  {
+                                     "method":  "GET",
+                                     "header":  [
+
+                                                ],
+                                     "url":  {
+                                                 "raw":  "{{baseUrl}}/v1/perfil-candidato/vagas/opcoes?ilhaId={{ilhaId}}",
+                                                 "host":  [
+                                                              "{{baseUrl}}"
+                                                          ],
+                                                 "path":  [
+                                                              "v1",
+                                                              "perfil-candidato",
+                                                              "vagas",
+                                                              "opcoes"
+                                                          ],
+                                                 "query":  [
+                                                               {
+                                                                   "key":  "ilhaId",
+                                                                   "value":  "{{ilhaId}}",
+                                                                   "description":  "Opcional. Quando informado, devolve apenas os concelhos ligados à ilha selecionada."
+                                                               }
+                                                           ]
+                                             },
+                                     "description":  "Devolve entidades, ilhas e concelhos existentes nas ofertas da base de negocio. Cada opcao inclui id, codigo e descricao."
+                                 },
+                     "response":  [
+
+                                  ]
+                 },
+                 {
+                     "name":  "Consultar vagas - lista e mapa",
+                     "request":  {
+                                     "method":  "GET",
+                                     "header":  [
+
+                                                ],
+                                     "url":  {
+                                                 "raw":  "{{baseUrl}}/v1/perfil-candidato/vagas?pessoaId={{pessoaId}}\u0026tipoOferta={{tipoOferta}}\u0026entidadeId={{entidadeId}}\u0026ilha={{ilha}}\u0026concelho={{concelho}}\u0026estado={{estadoOferta}}\u0026codigoReferencia={{codigoReferencia}}\u0026dataInicio={{dataInicio}}\u0026dataFim={{dataFim}}\u0026pesquisa={{pesquisa}}",
+                                                 "host":  [
+                                                              "{{baseUrl}}"
+                                                          ],
+                                                 "path":  [
+                                                              "v1",
+                                                              "perfil-candidato",
+                                                              "vagas"
+                                                          ],
+                                                 "query":  [
+                                                               {
+                                                                   "key":  "pessoaId",
+                                                                   "value":  "{{pessoaId}}",
+                                                                   "description":  "Candidato com sessão ativa."
+                                                               },
+                                                               {
+                                                                   "key":  "tipoOferta",
+                                                                   "value":  "{{tipoOferta}}",
+                                                                   "description":  "OFERTA_EMPREGO ou OFERTA_ESTAGIO.",
+                                                                   "disabled":  true
+                                                               },
+                                                               {
+                                                                   "key":  "entidadeId",
+                                                                   "value":  "{{entidadeId}}",
+                                                                   "disabled":  true
+                                                               },
+                                                               {
+                                                                   "key":  "ilha",
+                                                                   "value":  "{{ilha}}",
+                                                                   "description":  "Código da ilha devolvido em opções.",
+                                                                   "disabled":  true
+                                                               },
+                                                               {
+                                                                   "key":  "concelho",
+                                                                   "value":  "{{concelho}}",
+                                                                   "description":  "Código do concelho devolvido em opções.",
+                                                                   "disabled":  true
+                                                               },
+                                                               {
+                                                                   "key":  "estado",
+                                                                   "value":  "{{estadoOferta}}",
+                                                                   "description":  "ATIVA ou FECHADA.",
+                                                                   "disabled":  true
+                                                               },
+                                                               {
+                                                                   "key":  "codigoReferencia",
+                                                                   "value":  "{{codigoReferencia}}",
+                                                                   "disabled":  true
+                                                               },
+                                                               {
+                                                                   "key":  "dataInicio",
+                                                                   "value":  "{{dataInicio}}",
+                                                                   "description":  "Formato yyyy-MM-dd.",
+                                                                   "disabled":  true
+                                                               },
+                                                               {
+                                                                   "key":  "dataFim",
+                                                                   "value":  "{{dataFim}}",
+                                                                   "description":  "Formato yyyy-MM-dd.",
+                                                                   "disabled":  true
+                                                               },
+                                                               {
+                                                                   "key":  "pesquisa",
+                                                                   "value":  "{{pesquisa}}",
+                                                                   "description":  "Pesquisa por título, entidade ou código.",
+                                                                   "disabled":  true
+                                                               }
+                                                           ]
+                                             },
+                                     "description":  "Um único endpoint devolve totais, cartões da lista, disponibilidade para candidatura e pontos agregados por concelho para o mapa. Apenas ofertas ATIVA e FECHADA são visíveis no Perfil Candidato."
+                                 },
+                     "response":  [
+
+                                  ]
+                 },
+                 {
+                     "name":  "Consultar detalhes da vaga",
+                     "request":  {
+                                     "method":  "GET",
+                                     "header":  [
+
+                                                ],
+                                     "url":  {
+                                                 "raw":  "{{baseUrl}}/v1/perfil-candidato/vagas/{{ofertaId}}?pessoaId={{pessoaId}}",
+                                                 "host":  [
+                                                              "{{baseUrl}}"
+                                                          ],
+                                                 "path":  [
+                                                              "v1",
+                                                              "perfil-candidato",
+                                                              "vagas",
+                                                              "{{ofertaId}}"
+                                                          ],
+                                                 "query":  [
+                                                               {
+                                                                   "key":  "pessoaId",
+                                                                   "value":  "{{pessoaId}}"
+                                                               }
+                                                           ]
+                                             },
+                                     "description":  "Devolve os dados completos da oferta, descrições dos valores codificados e a indicação se o candidato pode submeter candidatura."
+                                 },
+                     "response":  [
+
+                                  ]
+                 },
+                 {
+                     "name":  "Carregar formulário de candidatura",
+                     "request":  {
+                                     "method":  "GET",
+                                     "header":  [
+
+                                                ],
+                                     "url":  {
+                                                 "raw":  "{{baseUrl}}/v1/perfil-candidato/vagas/{{ofertaId}}/candidatura?pessoaId={{pessoaId}}",
+                                                 "host":  [
+                                                              "{{baseUrl}}"
+                                                          ],
+                                                 "path":  [
+                                                              "v1",
+                                                              "perfil-candidato",
+                                                              "vagas",
+                                                              "{{ofertaId}}",
+                                                              "candidatura"
+                                                          ],
+                                                 "query":  [
+                                                               {
+                                                                   "key":  "pessoaId",
+                                                                   "value":  "{{pessoaId}}"
+                                                               }
+                                                           ]
+                                             },
+                                     "description":  "Carrega o CV mais recente, habilitação e área de formação. Também informa se já existe candidatura para a oferta."
+                                 },
+                     "response":  [
+
+                                  ]
+                 },
+                 {
+                     "name":  "Candidatar com nova versão do CV",
+                     "request":  {
+                                     "method":  "POST",
+                                     "header":  [
+
+                                                ],
+                                     "body":  {
+                                                  "mode":  "formdata",
+                                                  "formdata":  [
+                                                                   {
+                                                                       "key":  "dados",
+                                                                       "value":  "{\"habilitacaoAcademica\":\"LICENCIATURA\",\"areaFormacao\":\"Informática\",\"utilizador\":\"{{utilizador}}\"}",
+                                                                       "type":  "text",
+                                                                       "contentType":  "application/json"
+                                                                   },
+                                                                   {
+                                                                       "key":  "novaVersaoCv",
+                                                                       "type":  "file",
+                                                                       "src":  [
+
+                                                                               ],
+                                                                       "description":  "Nova versão do currículo."
+                                                                   },
+                                                                   {
+                                                                       "key":  "outrosDocumentos",
+                                                                       "type":  "file",
+                                                                       "src":  [
+
+                                                                               ],
+                                                                       "description":  "Pode repetir este campo para enviar vários documentos."
+                                                                   }
+                                                               ]
+                                              },
+                                     "url":  {
+                                                 "raw":  "{{baseUrl}}/v1/perfil-candidato/vagas/{{ofertaId}}/candidaturas?pessoaId={{pessoaId}}",
+                                                 "host":  [
+                                                              "{{baseUrl}}"
+                                                          ],
+                                                 "path":  [
+                                                              "v1",
+                                                              "perfil-candidato",
+                                                              "vagas",
+                                                              "{{ofertaId}}",
+                                                              "candidaturas"
+                                                          ],
+                                                 "query":  [
+                                                               {
+                                                                   "key":  "pessoaId",
+                                                                   "value":  "{{pessoaId}}"
+                                                               }
+                                                           ]
+                                             },
+                                     "description":  "Submete dados e ficheiros em multipart/form-data. O backend grava a candidatura com canal PORTAL e estado TRIAGEM."
+                                 },
+                     "response":  [
+
+                                  ]
+                 },
+                 {
+                     "name":  "Candidatar reutilizando o CV atual",
+                     "request":  {
+                                     "method":  "POST",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    }
+                                                ],
+                                     "body":  {
+                                                  "mode":  "raw",
+                                                  "raw":  "{\n  \"habilitacaoAcademica\": \"LICENCIATURA\",\n  \"areaFormacao\": \"Informática\",\n  \"utilizador\": \"{{utilizador}}\"\n}"
+                                              },
+                                     "url":  {
+                                                 "raw":  "{{baseUrl}}/v1/perfil-candidato/vagas/{{ofertaId}}/candidaturas?pessoaId={{pessoaId}}",
+                                                 "host":  [
+                                                              "{{baseUrl}}"
+                                                          ],
+                                                 "path":  [
+                                                              "v1",
+                                                              "perfil-candidato",
+                                                              "vagas",
+                                                              "{{ofertaId}}",
+                                                              "candidaturas"
+                                                          ],
+                                                 "query":  [
+                                                               {
+                                                                   "key":  "pessoaId",
+                                                                   "value":  "{{pessoaId}}"
+                                                               }
+                                                           ]
+                                             },
+                                     "description":  "Usa o currículo mais recente já guardado. Se o candidato ainda não tiver CV, a API pede o envio do ficheiro em multipart/form-data."
+                                 },
+                     "response":  [
+
+                                  ]
+                 }
+             ],
+    "variable":  [
+                     {
+                         "key":  "baseUrl",
+                         "value":  "http://localhost:9001/api"
+                     },
+                     {
+                         "key":  "pessoaId",
+                         "value":  "2001101700869"
+                     },
+                     {
+                         "key":  "utilizador",
+                         "value":  "candidato.teste@dge.cv"
+                     },
+                     {
+                         "key":  "ofertaId",
+                         "value":  "14"
+                     },
+                     {
+                         "key":  "ilhaId",
+                         "value":  "2387"
+                     },
+                     {
+                         "key":  "tipoOferta",
+                         "value":  "OFERTA_ESTAGIO"
+                     },
+                     {
+                         "key":  "entidadeId",
+                         "value":  "10"
+                     },
+                     {
+                         "key":  "ilha",
+                         "value":  "2387"
+                     },
+                     {
+                         "key":  "concelho",
+                         "value":  "238704"
+                     },
+                     {
+                         "key":  "estadoOferta",
+                         "value":  "ATIVA"
+                     },
+                     {
+                         "key":  "codigoReferencia",
+                         "value":  "OF-2026-001"
+                     },
+                     {
+                         "key":  "dataInicio",
+                         "value":  "2026-08-01"
+                     },
+                     {
+                         "key":  "dataFim",
+                         "value":  "2026-08-31"
+                     },
+                     {
+                         "key":  "pesquisa",
+                         "value":  "Assistente"
+                     }
+                 ]
+}

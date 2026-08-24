@@ -2,6 +2,7 @@ package cv.dge.dge_api_intermed_lab.application.perfilentidade.dto;
 
 public record CoordenadorOrientadorRequest(
         String numeroDocumento,
+        Long pessoaId,
         String nome,
         String tipo,
         String cargo,
