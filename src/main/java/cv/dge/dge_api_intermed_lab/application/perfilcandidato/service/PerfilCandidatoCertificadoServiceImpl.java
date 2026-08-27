@@ -1,5 +1,6 @@
 package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
+import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CertificadoEstagioEmissaoRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CertificadoEstagioResponse;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.PerfilCandidatoCertificadoRepository;
@@ -31,6 +32,7 @@ public class PerfilCandidatoCertificadoServiceImpl implements PerfilCandidatoCer
     private static final DateTimeFormatter FORMATO_CERTIFICADO = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final PerfilCandidatoCertificadoRepository certificadoRepository;
+    private final GlobalGeografiaService globalGeografiaService;
 
     @Override
     @Transactional(readOnly = true)
@@ -204,9 +206,10 @@ public class PerfilCandidatoCertificadoServiceImpl implements PerfilCandidatoCer
             LocalDateTime dataEmissao,
             String codigoContraprova
     ) {
+        String naturalidadeNome = nomePais(naturalidade);
         Map<String, String> substituicoes = new LinkedHashMap<>();
         substituicoes.put("$NOME$", texto(nome));
-        substituicoes.put("$NATURALIDADE$", texto(naturalidade));
+        substituicoes.put("$NATURALIDADE$", texto(naturalidadeNome));
         substituicoes.put("$DATA_NASCIMENTO$", data(dataNascimento));
         substituicoes.put("$NUM_DOCUMENTO$", texto(numeroDocumento));
         substituicoes.put("$HABILITACAO_ACADEMICA$", texto(habilitacaoAcademica));
@@ -224,7 +227,7 @@ public class PerfilCandidatoCertificadoServiceImpl implements PerfilCandidatoCer
                 pessoaId,
                 candidaturaId,
                 nome,
-                naturalidade,
+                naturalidadeNome,
                 dataNascimento,
                 numeroDocumento,
                 habilitacaoAcademica,
@@ -243,7 +246,9 @@ public class PerfilCandidatoCertificadoServiceImpl implements PerfilCandidatoCer
     private void validarDadosParaEmissao(CertificadoEstagioResponse certificado) {
         List<String> camposEmFalta = new ArrayList<>();
         adicionarSeVazio(camposEmFalta, certificado.nome(), "nome do estagiário");
-        adicionarSeVazio(camposEmFalta, certificado.naturalidade(), "naturalidade");
+        if (!naturalidadeValida(certificado.naturalidade())) {
+            camposEmFalta.add("naturalidade");
+        }
         if (certificado.dataNascimento() == null) {
             camposEmFalta.add("data de nascimento");
         }
@@ -274,6 +279,28 @@ public class PerfilCandidatoCertificadoServiceImpl implements PerfilCandidatoCer
         if (valor == null || valor.isBlank()) {
             campos.add(descricao);
         }
+    }
+
+    private boolean naturalidadeValida(String valor) {
+        return valor != null && !valor.isBlank() && !codigoPais(valor);
+    }
+
+    private String nomePais(String valor) {
+        if (valor == null || valor.isBlank()) {
+            return valor;
+        }
+        String codigo = valor.trim();
+        return globalGeografiaService.buscarNomePorCodigo(codigo)
+                .filter(nome -> !nome.isBlank())
+                .orElse(codigoPais(codigo) ? null : codigo);
+    }
+
+    private boolean codigoPais(String valor) {
+        if (valor == null || valor.isBlank()) {
+            return false;
+        }
+        String limpo = valor.trim();
+        return limpo.chars().allMatch(Character::isDigit);
     }
 
     private void validarIdentificadores(Integer colocacaoId, Long pessoaId) {
