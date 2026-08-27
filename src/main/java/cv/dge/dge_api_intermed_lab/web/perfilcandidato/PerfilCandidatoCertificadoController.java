@@ -24,12 +24,11 @@ public class PerfilCandidatoCertificadoController {
 
     @GetMapping
     public PerfilCandidatoApiResponse<CertificadoEstagioResponse> consultar(
-            @RequestParam(required = false) Integer colocacaoId,
-            @RequestParam(required = false) Long pessoaId
+            @RequestParam Integer colocacaoId
     ) {
         return PerfilCandidatoApiResponse.sucesso(
                 "Dados do certificado carregados com sucesso.",
-                certificadoService.consultar(colocacaoId, pessoaId)
+                certificadoService.consultar(colocacaoId)
         );
     }
 

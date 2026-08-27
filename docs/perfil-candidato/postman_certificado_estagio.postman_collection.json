@@ -14,7 +14,7 @@
 
                                                 ],
                                      "url":  {
-                                                 "raw":  "{{baseUrl}}/v1/perfil-candidato/certificados/estagio?colocacaoId={{colocacaoId}}\u0026pessoaId={{pessoaId}}",
+                                                 "raw":  "{{baseUrl}}/v1/perfil-candidato/certificados/estagio?colocacaoId={{colocacaoId}}",
                                                  "host":  [
                                                               "{{baseUrl}}"
                                                           ],
@@ -29,11 +29,6 @@
                                                                    "key":  "colocacaoId",
                                                                    "value":  "{{colocacaoId}}",
                                                                    "description":  "Estágio selecionado no perfil do candidato."
-                                                               },
-                                                               {
-                                                                   "key":  "pessoaId",
-                                                                   "value":  "{{pessoaId}}",
-                                                                   "description":  "Pessoa com sessão ativa no portal."
                                                                }
                                                            ]
                                              },

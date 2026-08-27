@@ -34,11 +34,11 @@ public class PerfilCandidatoCertificadoServiceImpl implements PerfilCandidatoCer
 
     @Override
     @Transactional(readOnly = true)
-    public CertificadoEstagioResponse consultar(Integer colocacaoId, Long pessoaId) {
-        validarIdentificadores(colocacaoId, pessoaId);
-        return certificadoRepository.buscarEmitido(colocacaoId, pessoaId)
+    public CertificadoEstagioResponse consultar(Integer colocacaoId) {
+        validarColocacaoId(colocacaoId);
+        return certificadoRepository.buscarEmitido(colocacaoId)
                 .map(this::paraResponse)
-                .orElseGet(() -> montarPrevisualizacao(colocacaoId, pessoaId));
+                .orElseGet(() -> montarPrevisualizacao(colocacaoId));
     }
 
     @Override
@@ -127,13 +127,19 @@ public class PerfilCandidatoCertificadoServiceImpl implements PerfilCandidatoCer
                 ));
     }
 
+    private CertificadoEstagioResponse montarPrevisualizacao(Integer colocacaoId) {
+        return montarPrevisualizacao(colocacaoId, null);
+    }
+
     private CertificadoEstagioResponse montarPrevisualizacao(Integer colocacaoId, Long pessoaId) {
-        FonteEmprego emprego = certificadoRepository.buscarFonteEmprego(colocacaoId, pessoaId)
+        FonteEmprego emprego = (pessoaId == null
+                ? certificadoRepository.buscarFonteEmprego(colocacaoId)
+                : certificadoRepository.buscarFonteEmprego(colocacaoId, pessoaId))
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Não foi encontrado um estágio associado ao seu perfil. Atualize a página ou contacte o serviço de atendimento."
                 ));
-        FontePessoa pessoa = certificadoRepository.buscarFontePessoa(pessoaId)
+        FontePessoa pessoa = certificadoRepository.buscarFontePessoa(emprego.pessoaId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Não foi possível encontrar os seus dados pessoais. Atualize a página ou contacte o serviço de atendimento."
@@ -271,9 +277,13 @@ public class PerfilCandidatoCertificadoServiceImpl implements PerfilCandidatoCer
     }
 
     private void validarIdentificadores(Integer colocacaoId, Long pessoaId) {
+        validarColocacaoId(colocacaoId);
         if (pessoaId == null || pessoaId <= 0) {
             throw erro("Não foi possível identificar o candidato. Atualize a página, entre novamente e tente de novo.");
         }
+    }
+
+    private void validarColocacaoId(Integer colocacaoId) {
         if (colocacaoId == null || colocacaoId <= 0) {
             throw erro("Selecione o estágio para consultar ou emitir o certificado.");
         }

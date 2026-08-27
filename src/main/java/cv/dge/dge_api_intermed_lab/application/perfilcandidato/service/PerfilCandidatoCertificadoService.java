@@ -5,7 +5,7 @@ import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CertificadoEs
 
 public interface PerfilCandidatoCertificadoService {
 
-    CertificadoEstagioResponse consultar(Integer colocacaoId, Long pessoaId);
+    CertificadoEstagioResponse consultar(Integer colocacaoId);
 
     CertificadoEstagioResponse emitir(
             Integer colocacaoId,

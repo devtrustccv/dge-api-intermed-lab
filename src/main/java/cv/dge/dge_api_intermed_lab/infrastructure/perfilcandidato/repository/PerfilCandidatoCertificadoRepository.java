@@ -24,37 +24,24 @@ public class PerfilCandidatoCertificadoRepository {
         this.empregoJdbcTemplate = new JdbcTemplate(primaryDataSource);
     }
 
-    public Optional<FonteEmprego> buscarFonteEmprego(Integer colocacaoId, Long pessoaId) {
-        return empregoJdbcTemplate.query(
+    public Optional<FonteEmprego> buscarFonteEmprego(Integer colocacaoId) {
+        return queryFonteEmprego(
                 """
-                        SELECT
-                            colocacao.id AS colocacao_id,
-                            CAST(colocacao.pessoa_id AS BIGINT) AS pessoa_id,
-                            colocacao.id_candidatura AS candidatura_id,
-                            colocacao.nome,
-                            candidatura.habilitacao_academica,
-                            colocacao.denominacao_entidade AS nome_entidade,
-                            colocacao.data_inicio_previsto AS data_inicio,
-                            colocacao.data_fim_previsto AS data_fim,
-                            avaliacao.classificacao AS classificacao_final
-                        FROM emprego_t_colocacao_candidato colocacao
-                        LEFT JOIN emprego_t_oferta oferta
-                            ON oferta.id = colocacao.id_oferta
-                        LEFT JOIN emprego_t_candidatura_oferta candidatura
-                            ON candidatura.id = colocacao.id_candidatura
-                        LEFT JOIN LATERAL (
-                            SELECT avaliacao_estagiario.classificacao
-                            FROM emprego_t_avaliacao_estagiario avaliacao_estagiario
-                            WHERE avaliacao_estagiario.candidatura_id = colocacao.id_candidatura
-                              AND UPPER(TRIM(COALESCE(avaliacao_estagiario.tipo_avaliacao, ''))) = 'FINAL'
-                            ORDER BY
-                                COALESCE(
-                                    avaliacao_estagiario.date_update,
-                                    avaliacao_estagiario.date_create
-                                ) DESC NULLS LAST,
-                                avaliacao_estagiario.id DESC
-                            FETCH FIRST 1 ROWS ONLY
-                        ) avaliacao ON TRUE
+                        WHERE colocacao.id = ?
+                          AND UPPER(COALESCE(
+                              NULLIF(TRIM(colocacao.tipo_oferta), ''),
+                              NULLIF(TRIM(oferta.tipo_oferta), ''),
+                              ''
+                          ))
+                              = 'OFERTA_ESTAGIO'
+                        """,
+                colocacaoId
+        );
+    }
+
+    public Optional<FonteEmprego> buscarFonteEmprego(Integer colocacaoId, Long pessoaId) {
+        return queryFonteEmprego(
+                """
                         WHERE colocacao.id = ?
                           AND CAST(colocacao.pessoa_id AS BIGINT) = ?
                           AND UPPER(COALESCE(
@@ -64,20 +51,9 @@ public class PerfilCandidatoCertificadoRepository {
                           ))
                               = 'OFERTA_ESTAGIO'
                         """,
-                (rs, rowNum) -> new FonteEmprego(
-                        rs.getInt("colocacao_id"),
-                        getLong(rs, "pessoa_id"),
-                        getInteger(rs, "candidatura_id"),
-                        rs.getString("nome"),
-                        rs.getString("habilitacao_academica"),
-                        rs.getString("nome_entidade"),
-                        rs.getObject("data_inicio", LocalDate.class),
-                        rs.getObject("data_fim", LocalDate.class),
-                        decimal(rs.getString("classificacao_final"))
-                ),
                 colocacaoId,
                 pessoaId
-        ).stream().findFirst();
+        );
     }
 
     public Optional<FontePessoa> buscarFontePessoa(Long pessoaId) {
@@ -108,6 +84,14 @@ public class PerfilCandidatoCertificadoRepository {
                         rs.getString("num_documento")
                 ),
                 pessoaId
+        ).stream().findFirst();
+    }
+
+    public Optional<CertificadoEmitido> buscarEmitido(Integer colocacaoId) {
+        return empregoJdbcTemplate.query(
+                sqlCertificado("WHERE colocacao_id = ?"),
+                this::mapCertificado,
+                colocacaoId
         ).stream().findFirst();
     }
 
@@ -178,6 +162,53 @@ public class PerfilCandidatoCertificadoRepository {
             throw new IllegalStateException("Não foi possível concluir a emissão do certificado.");
         }
         return id.intValue();
+    }
+
+    private Optional<FonteEmprego> queryFonteEmprego(String condicao, Object... args) {
+        return empregoJdbcTemplate.query(
+                """
+                        SELECT
+                            colocacao.id AS colocacao_id,
+                            CAST(colocacao.pessoa_id AS BIGINT) AS pessoa_id,
+                            colocacao.id_candidatura AS candidatura_id,
+                            colocacao.nome,
+                            candidatura.habilitacao_academica,
+                            colocacao.denominacao_entidade AS nome_entidade,
+                            colocacao.data_inicio_previsto AS data_inicio,
+                            colocacao.data_fim_previsto AS data_fim,
+                            avaliacao.classificacao AS classificacao_final
+                        FROM emprego_t_colocacao_candidato colocacao
+                        LEFT JOIN emprego_t_oferta oferta
+                            ON oferta.id = colocacao.id_oferta
+                        LEFT JOIN emprego_t_candidatura_oferta candidatura
+                            ON candidatura.id = colocacao.id_candidatura
+                        LEFT JOIN LATERAL (
+                            SELECT avaliacao_estagiario.classificacao
+                            FROM emprego_t_avaliacao_estagiario avaliacao_estagiario
+                            WHERE avaliacao_estagiario.candidatura_id = colocacao.id_candidatura
+                              AND UPPER(TRIM(COALESCE(avaliacao_estagiario.tipo_avaliacao, ''))) = 'FINAL'
+                            ORDER BY
+                                COALESCE(
+                                    avaliacao_estagiario.date_update,
+                                    avaliacao_estagiario.date_create
+                                ) DESC NULLS LAST,
+                                avaliacao_estagiario.id DESC
+                            FETCH FIRST 1 ROWS ONLY
+                        ) avaliacao ON TRUE
+                        """ + condicao,
+                (rs, rowNum) -> new FonteEmprego(
+                        rs.getInt("colocacao_id"),
+                        getLong(rs, "pessoa_id"),
+                        getInteger(rs, "candidatura_id"),
+                        rs.getString("nome"),
+                        rs.getString("habilitacao_academica"),
+                        rs.getString("nome_entidade"),
+                        rs.getObject("data_inicio", LocalDate.class),
+                        rs.getObject("data_fim", LocalDate.class),
+                        decimal(rs.getString("classificacao_final"))
+                ),
+                args
+        ).stream().findFirst();
     }
 
     private String sqlCertificado(String condicao) {
