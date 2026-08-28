@@ -1,11 +1,14 @@
 package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaPorTipoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AreaGeograficaProcuradaResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ColocacaoRecenteResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.EvolucaoCandidaturaMensalResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.PerfilCandidatoDashboardResponse;
+import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.PerfilCandidatoDashboardRepository;
 import java.time.Year;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -28,12 +31,14 @@ public class PerfilCandidatoDashboardServiceImpl implements PerfilCandidatoDashb
     };
 
     private final PerfilCandidatoDashboardRepository dashboardRepository;
+    private final GlobalGeografiaService globalGeografiaService;
 
     @Override
     @Transactional(readOnly = true)
     public PerfilCandidatoDashboardResponse buscarDashboard(Long pessoaId, Integer ano) {
         validarPessoa(pessoaId);
         int anoConsulta = validarAno(ano);
+        Map<String, String> descricoesGeografia = new HashMap<>();
 
         return new PerfilCandidatoDashboardResponse(
                 anoConsulta,
@@ -43,8 +48,14 @@ public class PerfilCandidatoDashboardServiceImpl implements PerfilCandidatoDashb
                 dashboardRepository.contarVagasAbertas("OFERTA_ESTAGIO"),
                 completarMeses(dashboardRepository.listarEvolucaoCandidaturas(pessoaId, anoConsulta)),
                 enriquecerTipos(dashboardRepository.listarCandidaturasPorTipo(pessoaId)),
-                dashboardRepository.listarTopAreasGeograficas(),
-                enriquecerColocacoes(dashboardRepository.listarColocacoesRecentes(pessoaId))
+                enriquecerAreasGeograficas(
+                        dashboardRepository.listarTopAreasGeograficas(),
+                        descricoesGeografia
+                ),
+                enriquecerColocacoes(
+                        dashboardRepository.listarColocacoesRecentes(pessoaId),
+                        descricoesGeografia
+                )
         );
     }
 
@@ -100,20 +111,52 @@ public class PerfilCandidatoDashboardServiceImpl implements PerfilCandidatoDashb
                 .toList();
     }
 
-    private List<ColocacaoRecenteResponse> enriquecerColocacoes(List<ColocacaoRecenteResponse> colocacoes) {
+    private List<AreaGeograficaProcuradaResponse> enriquecerAreasGeograficas(
+            List<AreaGeograficaProcuradaResponse> areas,
+            Map<String, String> descricoesGeografia
+    ) {
+        return areas.stream()
+                .map(item -> new AreaGeograficaProcuradaResponse(
+                        descricaoGeografia(item.ilha(), descricoesGeografia),
+                        descricaoGeografia(item.concelho(), descricoesGeografia),
+                        item.total()
+                ))
+                .toList();
+    }
+
+    private List<ColocacaoRecenteResponse> enriquecerColocacoes(
+            List<ColocacaoRecenteResponse> colocacoes,
+            Map<String, String> descricoesGeografia
+    ) {
         return colocacoes.stream()
                 .map(item -> new ColocacaoRecenteResponse(
                         item.idColocacao(),
                         item.idOferta(),
                         item.nomeOferta(),
                         item.nomeEmpresa(),
-                        item.ilha(),
-                        item.concelho(),
+                        descricaoGeografia(item.ilha(), descricoesGeografia),
+                        descricaoGeografia(item.concelho(), descricoesGeografia),
                         normalizarTipoOferta(item.tipoOferta()),
                         descricaoTipoOferta(item.tipoOferta()),
                         item.dataColocacao()
                 ))
                 .toList();
+    }
+
+    private String descricaoGeografia(String codigo, Map<String, String> descricoesGeografia) {
+        if (codigo == null || codigo.trim().isEmpty()) {
+            return codigo;
+        }
+        String codigoLimpo = codigo.trim();
+        return descricoesGeografia.computeIfAbsent(codigoLimpo, this::buscarDescricaoGeografia);
+    }
+
+    private String buscarDescricaoGeografia(String codigo) {
+        try {
+            return globalGeografiaService.buscarNomePorCodigo(codigo).orElse(codigo);
+        } catch (Exception ex) {
+            return codigo;
+        }
     }
 
     private String normalizarTipoOferta(String tipoOferta) {

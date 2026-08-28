@@ -17,13 +17,16 @@ public record VagaListaResponse(
         String denominacaoEntidade,
         Integer orientadorId,
         String orientadorDenominacao,
+        String orientadorNome,
         Integer coordenadorId,
         String coordenadorDenominacao,
+        String coordenadorNome,
         String coordenadorEmail,
         String coordenadorTelefone,
         String codigoReferencia,
         String estado,
         String estadoDesc,
+        LocalDate dataInicio,
         LocalDate dataFimCandidatura
 ) {
 }

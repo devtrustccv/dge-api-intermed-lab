@@ -171,6 +171,7 @@ public class GestaoVagaRepository {
                     coordenador.telemovel AS coordenador_telemovel,
                     o.codigo_referencia,
                     o.estado,
+                    o.data_inicio_candidatura,
                     o.data_fim_candidatura
                 FROM emprego_t_oferta o
                 LEFT JOIN emprego_t_entidade_colaborador orientador ON orientador.id = o.orientador_id
@@ -418,13 +419,16 @@ public class GestaoVagaRepository {
                 rs.getString("denominacao_entidade"),
                 rs.getObject("orientador_id", Integer.class),
                 rs.getString("orientador_denominacao"),
+                rs.getString("orientador_denominacao"),
                 rs.getObject("coordenador_id", Integer.class),
+                rs.getString("coordenador_denominacao"),
                 rs.getString("coordenador_denominacao"),
                 rs.getString("coordenador_email"),
                 rs.getString("coordenador_telemovel"),
                 rs.getString("codigo_referencia"),
                 rs.getString("estado"),
                 rs.getString("estado"),
+                rs.getObject("data_inicio_candidatura", java.time.LocalDate.class),
                 rs.getObject("data_fim_candidatura", java.time.LocalDate.class)
         );
     }

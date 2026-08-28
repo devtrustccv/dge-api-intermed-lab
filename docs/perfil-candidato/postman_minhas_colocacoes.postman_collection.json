@@ -1,0 +1,166 @@
+{
+  "info": {
+    "_postman_id": "9f0d159a-d020-49be-8e63-minhas-colocacoes",
+    "name": "Perfil Candidato - Minhas Colocações",
+    "description": "APIs de leitura para os ecrãs Minhas colocações — Lista e Detalhes. O front-end controla a apresentação e mostra Ver avaliação somente para OFERTA_ESTAGIO. A API valida os identificadores, limita os dados ao candidato e devolve o contrato com path e URL de visualização. Esta coleção é independente da coleção de Certificado de Estágio.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 - Listar minhas colocações",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/colocacoes?pessoaId={{pessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "colocacoes"],
+          "query": [
+            {
+              "key": "pessoaId",
+              "value": "{{pessoaId}}",
+              "description": "Identificador do candidato obtido da sessão."
+            }
+          ]
+        },
+        "description": "Devolve somente colocações da pessoa informada, ordenadas da mais recente para a mais antiga. O teste guarda automaticamente o primeiro colocacaoId para o pedido de detalhe."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', function () { pm.response.to.have.status(200); });",
+              "const resposta = pm.response.json();",
+              "pm.test('Resposta segue o contrato do Perfil Candidato', function () {",
+              "  pm.expect(resposta.sucesso).to.eql(true);",
+              "  pm.expect(resposta.dados).to.be.an('array');",
+              "});",
+              "if (resposta.dados.length > 0) {",
+              "  const item = resposta.dados[0];",
+              "  pm.collectionVariables.set('colocacaoId', item.colocacaoId);",
+              "  pm.test('Item contém dados da lista', function () {",
+              "    pm.expect(item).to.have.property('tipoOferta');",
+              "    pm.expect(item).to.have.property('tipoOfertaDescricao');",
+              "    pm.expect(item).to.have.property('titulo');",
+              "    pm.expect(item).to.have.property('codigoReferencia');",
+              "    pm.expect(item).to.have.property('dataColocacao');",
+              "    pm.expect(item).to.have.property('contratoPath');",
+              "    pm.expect(item).to.have.property('contratoUrl');",
+              "  });",
+              "}"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "02 - Consultar detalhe da minha colocação",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/colocacoes/{{colocacaoId}}?pessoaId={{pessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "colocacoes", "{{colocacaoId}}"],
+          "query": [
+            {"key": "pessoaId", "value": "{{pessoaId}}"}
+          ]
+        },
+        "description": "Carrega o detalhe somente quando colocacaoId pertence a pessoaId. Inclui domínios normalizados e a URL de visualização do contrato."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', function () { pm.response.to.have.status(200); });",
+              "const dados = pm.response.json().dados;",
+              "pm.test('Detalhe contém os campos do PowerPoint', function () {",
+              "  pm.expect(dados.colocacaoId).to.eql(Number(pm.collectionVariables.get('colocacaoId')));",
+              "  pm.expect(dados).to.have.property('dataInicioPrevisto');",
+              "  pm.expect(dados).to.have.property('dataFimPrevisto');",
+              "  pm.expect(dados).to.have.property('tipoContrato');",
+              "  pm.expect(dados).to.have.property('tipoContratoDescricao');",
+              "  pm.expect(dados).to.have.property('duracaoContrato');",
+              "  pm.expect(dados).to.have.property('descricao');",
+              "  pm.expect(dados).to.have.property('estado');",
+              "  pm.expect(dados).to.have.property('estadoDescricao');",
+              "  pm.expect(dados).to.have.property('contratoUrl');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "03 - Segurança - bloquear colocação de outra pessoa",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/colocacoes/{{colocacaoId}}?pessoaId={{outraPessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "colocacoes", "{{colocacaoId}}"],
+          "query": [
+            {"key": "pessoaId", "value": "{{outraPessoaId}}"}
+          ]
+        },
+        "description": "Use um colocacaoId pertencente a pessoaId e uma outraPessoaId diferente. O resultado esperado é 404, sem dados da colocação."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Acesso alheio é ocultado com 404', function () { pm.response.to.have.status(404); });",
+              "pm.test('Resposta não expõe dados', function () {",
+              "  const resposta = pm.response.json();",
+              "  pm.expect(resposta.sucesso).to.eql(false);",
+              "  pm.expect(resposta.dados).to.eql(null);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "04 - Validação - candidato não identificado",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/colocacoes",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "colocacoes"]
+        },
+        "description": "A interface deve obter pessoaId da sessão. A API também protege o contrato e responde 400 quando o identificador não é enviado."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Pessoa ausente responde 400', function () { pm.response.to.have.status(400); });",
+              "pm.test('Erro segue contrato padrão', function () { pm.expect(pm.response.json().sucesso).to.eql(false); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    }
+  ],
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:9001/api"},
+    {"key": "pessoaId", "value": "2001101700869"},
+    {"key": "outraPessoaId", "value": "2001101700870"},
+    {"key": "colocacaoId", "value": "1"}
+  ]
+}

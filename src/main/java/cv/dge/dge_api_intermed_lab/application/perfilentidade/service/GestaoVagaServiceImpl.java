@@ -270,13 +270,16 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
                 vaga.denominacaoEntidade(),
                 vaga.orientadorId(),
                 vaga.orientadorDenominacao(),
+                vaga.orientadorNome(),
                 vaga.coordenadorId(),
                 vaga.coordenadorDenominacao(),
+                vaga.coordenadorNome(),
                 vaga.coordenadorEmail(),
                 vaga.coordenadorTelefone(),
                 vaga.codigoReferencia(),
                 valorDominio(EmpregoDominio.DOMINIO_ESTADO_OFERTA, vaga.estado()),
                 descricaoDominio(EmpregoDominio.DOMINIO_ESTADO_OFERTA, vaga.estado()),
+                vaga.dataInicio(),
                 vaga.dataFimCandidatura()
         );
     }

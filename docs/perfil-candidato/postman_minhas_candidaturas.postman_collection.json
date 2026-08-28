@@ -1,0 +1,278 @@
+{
+  "info": {
+    "_postman_id": "6d7cbb50-07d1-4ea4-9df5-minhas-candidaturas",
+    "name": "Perfil Candidato - Minhas Candidaturas",
+    "description": "APIs que alimentam os ecrãs de listagem e detalhe de Minhas candidaturas (emprego e estágio). Responsabilidade do front-end: apresentação dos campos, dependência visual Ilha/Concelho e obrigatoriedade de filtros na interface. Responsabilidade da API: validar pessoaId, identificadores, datas e domínios; limitar todos os resultados ao candidato; devolver códigos e descrições separados; impedir acesso ao detalhe de outro candidato. A coleção de Certificado de Estágio permanece independente.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 - Carregar opções dos filtros",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/candidaturas/opcoes?pessoaId={{pessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "candidaturas", "opcoes"],
+          "query": [
+            {
+              "key": "pessoaId",
+              "value": "{{pessoaId}}",
+              "description": "Identificador do candidato da sessão."
+            }
+          ]
+        },
+        "description": "Devolve tipos de oferta, entidades, ilhas e estados. Os valores de entidades e geografias são limitados às candidaturas do candidato. Sem ilha selecionada, concelhos é devolvido vazio."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', function () { pm.response.to.have.status(200); });",
+              "const resposta = pm.response.json();",
+              "pm.test('Contrato padrão do Perfil Candidato', function () {",
+              "  pm.expect(resposta.sucesso).to.eql(true);",
+              "  pm.expect(resposta.dados).to.have.property('tiposOferta');",
+              "  pm.expect(resposta.dados).to.have.property('entidades');",
+              "  pm.expect(resposta.dados).to.have.property('ilhas');",
+              "  pm.expect(resposta.dados).to.have.property('concelhos');",
+              "  pm.expect(resposta.dados).to.have.property('estadosCandidatura');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "02 - Carregar concelhos da ilha selecionada",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/candidaturas/opcoes?pessoaId={{pessoaId}}&ilha={{ilha}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "candidaturas", "opcoes"],
+          "query": [
+            {"key": "pessoaId", "value": "{{pessoaId}}"},
+            {
+              "key": "ilha",
+              "value": "{{ilha}}",
+              "description": "Código/id da ilha selecionada no front-end."
+            }
+          ]
+        },
+        "description": "Recarrega as opções e preenche concelhos apenas com valores relacionados com a ilha e com candidaturas do candidato."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Concelhos devolvidos como lista', function () {",
+              "  pm.expect(pm.response.json().dados.concelhos).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "03 - Listar minhas candidaturas",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/candidaturas?pessoaId={{pessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "candidaturas"],
+          "query": [
+            {
+              "key": "pessoaId",
+              "value": "{{pessoaId}}",
+              "description": "A API devolve exclusivamente candidaturas desta pessoa."
+            }
+          ]
+        },
+        "description": "Lista as candidaturas por data decrescente. Ilha e concelho são devolvidos com id/código e descrição em campos separados. Se houver resultados, o teste guarda automaticamente candidaturaId para o pedido de detalhe."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', function () { pm.response.to.have.status(200); });",
+              "const resposta = pm.response.json();",
+              "pm.test('Lista pertence ao contrato padrão', function () {",
+              "  pm.expect(resposta.sucesso).to.eql(true);",
+              "  pm.expect(resposta.dados).to.be.an('array');",
+              "});",
+              "if (resposta.dados.length > 0) {",
+              "  pm.collectionVariables.set('candidaturaId', resposta.dados[0].candidaturaId);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "04 - Listar com todos os filtros",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/candidaturas?pessoaId={{pessoaId}}&tipoOferta={{tipoOferta}}&entidadeId={{entidadeId}}&ilha={{ilha}}&concelho={{concelho}}&estado={{estado}}&codigoReferencia={{codigoReferencia}}&dataInicio={{dataInicio}}&dataFim={{dataFim}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "candidaturas"],
+          "query": [
+            {"key": "pessoaId", "value": "{{pessoaId}}"},
+            {"key": "tipoOferta", "value": "{{tipoOferta}}"},
+            {"key": "entidadeId", "value": "{{entidadeId}}"},
+            {"key": "ilha", "value": "{{ilha}}"},
+            {"key": "concelho", "value": "{{concelho}}"},
+            {"key": "estado", "value": "{{estado}}"},
+            {"key": "codigoReferencia", "value": "{{codigoReferencia}}"},
+            {"key": "dataInicio", "value": "{{dataInicio}}"},
+            {"key": "dataFim", "value": "{{dataFim}}"}
+          ]
+        },
+        "description": "Aplica os filtros definidos no PowerPoint. tipoOferta e estado aceitam os valores oficiais dos domínios; as datas filtram date_create de forma inclusiva. Ajuste as variáveis ao conteúdo da base antes de executar."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Resultado é uma lista', function () { pm.expect(pm.response.json().dados).to.be.an('array'); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "05 - Consultar detalhe da minha candidatura",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/candidaturas/{{candidaturaId}}?pessoaId={{pessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "candidaturas", "{{candidaturaId}}"],
+          "query": [
+            {"key": "pessoaId", "value": "{{pessoaId}}"}
+          ]
+        },
+        "description": "Devolve o detalhe apenas quando candidaturaId pertence a pessoaId. Inclui motivoRecusa, canal/canalDescricao e a lista plana de anexos com tipo, nome, path e URL de visualização."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', function () { pm.response.to.have.status(200); });",
+              "const dados = pm.response.json().dados;",
+              "pm.test('Detalhe contém os campos específicos', function () {",
+              "  pm.expect(dados.candidaturaId).to.eql(Number(pm.collectionVariables.get('candidaturaId')));",
+              "  pm.expect(dados).to.have.property('motivoRecusa');",
+              "  pm.expect(dados).to.have.property('canal');",
+              "  pm.expect(dados).to.have.property('canalDescricao');",
+              "  pm.expect(dados.anexos).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "06 - Segurança - bloquear candidatura de outra pessoa",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/candidaturas/{{candidaturaId}}?pessoaId={{outraPessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "candidaturas", "{{candidaturaId}}"],
+          "query": [
+            {"key": "pessoaId", "value": "{{outraPessoaId}}"}
+          ]
+        },
+        "description": "Teste negativo de isolamento horizontal. Use candidaturaId pertencente a pessoaId e uma outraPessoaId diferente; a API deve responder 404 sem expor o registo."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Acesso alheio é ocultado com 404', function () { pm.response.to.have.status(404); });",
+              "pm.test('Resposta não expõe dados', function () {",
+              "  const resposta = pm.response.json();",
+              "  pm.expect(resposta.sucesso).to.eql(false);",
+              "  pm.expect(resposta.dados).to.eql(null);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "07 - Validação - intervalo de datas inválido",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/candidaturas?pessoaId={{pessoaId}}&dataInicio=2026-12-31&dataFim=2026-01-01",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "candidaturas"],
+          "query": [
+            {"key": "pessoaId", "value": "{{pessoaId}}"},
+            {"key": "dataInicio", "value": "2026-12-31"},
+            {"key": "dataFim", "value": "2026-01-01"}
+          ]
+        },
+        "description": "A interface pode antecipar esta validação, mas a API também protege o contrato e deve responder 400."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Intervalo inválido responde 400', function () { pm.response.to.have.status(400); });",
+              "pm.test('Erro segue contrato padrão', function () { pm.expect(pm.response.json().sucesso).to.eql(false); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    }
+  ],
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:9001/api"},
+    {"key": "pessoaId", "value": "2001101700869"},
+    {"key": "outraPessoaId", "value": "2001101700870"},
+    {"key": "candidaturaId", "value": "1"},
+    {"key": "tipoOferta", "value": "OFERTA_EMPREGO"},
+    {"key": "entidadeId", "value": "1"},
+    {"key": "ilha", "value": "1"},
+    {"key": "concelho", "value": "2"},
+    {"key": "estado", "value": "TRIAGEM"},
+    {"key": "codigoReferencia", "value": "REF"},
+    {"key": "dataInicio", "value": "2026-01-01"},
+    {"key": "dataFim", "value": "2026-12-31"}
+  ]
+}
