@@ -2,6 +2,7 @@ package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -112,6 +113,43 @@ class ConsultaVagaServiceImplTest {
         );
         assertThat(enviados.get(0).getPath()).isNotEqualTo(enviados.get(1).getPath());
         verify(vagaRepository).atualizarAnexos(org.mockito.Mockito.eq(candidaturaId), any());
+    }
+
+    @Test
+    void devePermitirCandidaturaSemCurriculoNemOutrosDocumentos() {
+        Integer ofertaId = 23;
+        Long pessoaId = 123456L;
+        Integer candidaturaId = 78;
+        when(vagaRepository.buscarOferta(ofertaId, pessoaId))
+                .thenReturn(Optional.of(ofertaDisponivel(ofertaId)));
+        when(vagaRepository.buscarUltimaCandidatura(pessoaId)).thenReturn(Optional.empty());
+        when(vagaRepository.buscarNomePessoa(pessoaId)).thenReturn(Optional.of("Kevin Sousa"));
+        when(vagaRepository.inserirCandidatura(any(), any(), any(), any(), any(), any()))
+                .thenReturn(candidaturaId);
+
+        var resultado = service.candidatar(
+                ofertaId,
+                pessoaId,
+                new CandidaturaVagaRequest("LICENCIATURA", "Programação", "kevin@dge.cv"),
+                null,
+                null
+        );
+
+        assertThat(resultado.id()).isEqualTo(candidaturaId);
+        assertThat(resultado.curriculumVitae()).isNull();
+        assertThat(resultado.outrosDocumentos()).isEmpty();
+        verify(comboboxService, never()).listarDocumentosAtivos();
+        verify(documentService, never()).save(any());
+
+        ArgumentCaptor<Object> anexosCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(vagaRepository).atualizarAnexos(
+                org.mockito.Mockito.eq(candidaturaId),
+                anexosCaptor.capture()
+        );
+        assertThat(anexosCaptor.getValue()).isInstanceOfSatisfying(Map.class, anexos -> {
+            assertThat(anexos.get("curriculumVitae")).isNull();
+            assertThat(anexos.get("outrosDocumentos")).isEqualTo(List.of());
+        });
     }
 
     private Map<String, Object> tipoDocumento(Integer id, String descricao) {

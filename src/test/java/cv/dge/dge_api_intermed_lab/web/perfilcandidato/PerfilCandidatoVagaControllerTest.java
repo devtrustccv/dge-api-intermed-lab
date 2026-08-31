@@ -2,6 +2,7 @@ package cv.dge.dge_api_intermed_lab.web.perfilcandidato;
 
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -84,6 +85,38 @@ class PerfilCandidatoVagaControllerTest {
                 argThat(ficheiros -> ficheiros != null
                         && ficheiros.size() == 1
                         && "Diploma.pdf".equals(ficheiros.get(0).getOriginalFilename()))
+        );
+    }
+
+    @Test
+    void deveAceitarCandidaturaMultipartSemAnexos() throws Exception {
+        MockMultipartFile dados = new MockMultipartFile(
+                "dados",
+                "",
+                MediaType.TEXT_PLAIN_VALUE + ";charset=UTF-8",
+                """
+                        {
+                          "habilitacaoAcademica": "LICENCIATURA",
+                          "areaFormacao": "Programação",
+                          "utilizador": "kevin@dge.cv"
+                        }
+                        """.getBytes(StandardCharsets.UTF_8)
+        );
+
+        mockMvc.perform(multipart("/v1/perfil-candidato/vagas/{ofertaId}/candidaturas", 23)
+                        .file(dados)
+                        .characterEncoding(StandardCharsets.UTF_8.name())
+                        .param("pessoaId", "9001"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.sucesso").value(true));
+
+        verify(consultaVagaService).candidatar(
+                eq(23),
+                eq(9001L),
+                argThat(request -> request != null
+                        && "LICENCIATURA".equals(request.habilitacaoAcademica())),
+                isNull(),
+                argThat(ficheiros -> ficheiros != null && ficheiros.isEmpty())
         );
     }
 }

@@ -165,12 +165,6 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
                 .map(CandidaturaAnterior::anexos)
                 .map(this::extrairCurriculo)
                 .orElse(null);
-        if (!temFicheiro(curriculo) && curriculoAnterior == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Anexe o seu currículo para concluir a candidatura."
-            );
-        }
 
         List<MultipartFile> ficheirosValidos = outrosDocumentos == null
                 ? List.of()
