@@ -12,6 +12,7 @@ import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagas
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.PerfilCandidatoApiResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.service.ConsultaVagaService;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -121,15 +122,17 @@ public class PerfilCandidatoVagaController {
             @RequestPart(value = "dados", required = false) String dadosJson,
             @RequestPart(value = "novaVersaoCv", required = false) MultipartFile novaVersaoCv,
             @RequestPart(value = "curriculo", required = false) MultipartFile curriculo,
-            @RequestPart(value = "outrosDocumentos", required = false) List<MultipartFile> outrosDocumentos
+            @RequestPart(value = "cv", required = false) MultipartFile cv,
+            @RequestPart(value = "outrosDocumentos", required = false) List<MultipartFile> outrosDocumentos,
+            @RequestPart(value = "documentos", required = false) List<MultipartFile> documentos
     ) {
-        MultipartFile ficheiroCurriculo = temConteudo(novaVersaoCv) ? novaVersaoCv : curriculo;
+        MultipartFile ficheiroCurriculo = primeiroComConteudo(novaVersaoCv, curriculo, cv);
         return respostaCandidatura(consultaVagaService.candidatar(
                 ofertaId,
                 pessoaId,
                 converterDados(dadosJson),
                 ficheiroCurriculo,
-                outrosDocumentos
+                juntarDocumentos(outrosDocumentos, documentos)
         ));
     }
 
@@ -162,5 +165,33 @@ public class PerfilCandidatoVagaController {
 
     private boolean temConteudo(MultipartFile ficheiro) {
         return ficheiro != null && !ficheiro.isEmpty();
+    }
+
+    private MultipartFile primeiroComConteudo(MultipartFile... ficheiros) {
+        for (MultipartFile ficheiro : ficheiros) {
+            if (temConteudo(ficheiro)) {
+                return ficheiro;
+            }
+        }
+        return null;
+    }
+
+    private List<MultipartFile> juntarDocumentos(
+            List<MultipartFile> outrosDocumentos,
+            List<MultipartFile> documentos
+    ) {
+        List<MultipartFile> resultado = new ArrayList<>();
+        adicionarComConteudo(resultado, outrosDocumentos);
+        adicionarComConteudo(resultado, documentos);
+        return List.copyOf(resultado);
+    }
+
+    private void adicionarComConteudo(List<MultipartFile> destino, List<MultipartFile> origem) {
+        if (origem == null) {
+            return;
+        }
+        origem.stream()
+                .filter(this::temConteudo)
+                .forEach(destino::add);
     }
 }

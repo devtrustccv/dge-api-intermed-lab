@@ -1,6 +1,7 @@
 package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocRelacaoDTO;
+import cv.dge.dge_api_intermed_lab.application.document.service.ComboboxService;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaDocumentoResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaVagaFormularioResponse;
@@ -17,6 +18,7 @@ import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.Con
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ConsultaVagaRepository.CandidaturaAnterior;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ConsultaVagaRepository.OfertaDetalhe;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ConsultaVagaRepository.OfertaResumo;
+import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -27,16 +29,19 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ConsultaVagaServiceImpl implements ConsultaVagaService {
 
     private static final String SITUACAO_ABERTA = "ABERTA";
@@ -49,6 +54,7 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
 
     private final ConsultaVagaRepository vagaRepository;
     private final DocumentService documentService;
+    private final ComboboxService comboboxService;
 
     @Value("${document.candidatura.app-code:interm_laboral}")
     private String appCodeDocumento;
@@ -58,6 +64,12 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
 
     @Value("${document.candidatura.tipo-relacao:EMPREGO_T_CANDIDATURA_OFERTA}")
     private String tipoRelacaoDocumento;
+
+    @Value("${document.candidatura.tipo-curriculo-id:}")
+    private String tipoCurriculoIdConfigurado;
+
+    @Value("${document.candidatura.tipo-outro-id:}")
+    private String tipoOutroIdConfigurado;
 
     @Override
     @Transactional(readOnly = true)
@@ -160,6 +172,16 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
             );
         }
 
+        List<MultipartFile> ficheirosValidos = outrosDocumentos == null
+                ? List.of()
+                : outrosDocumentos.stream().filter(this::temFicheiro).toList();
+        String idTipoCurriculo = temFicheiro(curriculo)
+                ? resolverIdTipoDocumento(TIPO_DOCUMENTO_CURRICULO)
+                : null;
+        String idTipoOutro = ficheirosValidos.isEmpty()
+                ? null
+                : resolverIdTipoDocumento(TIPO_DOCUMENTO_OUTRO);
+
         String nomeCandidato = vagaRepository.buscarNomePessoa(pessoaId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
@@ -182,18 +204,22 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
         }
 
         CandidaturaDocumentoResponse curriculumVitae = temFicheiro(curriculo)
-                ? guardarDocumento(candidaturaId, curriculo, TIPO_DOCUMENTO_CURRICULO, 1)
+                ? guardarDocumento(
+                        candidaturaId,
+                        curriculo,
+                        TIPO_DOCUMENTO_CURRICULO,
+                        idTipoCurriculo,
+                        1
+                )
                 : curriculoAnterior;
 
         List<CandidaturaDocumentoResponse> outros = new ArrayList<>();
-        List<MultipartFile> ficheirosValidos = outrosDocumentos == null
-                ? List.of()
-                : outrosDocumentos.stream().filter(this::temFicheiro).toList();
         for (int indice = 0; indice < ficheirosValidos.size(); indice++) {
             outros.add(guardarDocumento(
                     candidaturaId,
                     ficheirosValidos.get(indice),
                     TIPO_DOCUMENTO_OUTRO,
+                    idTipoOutro,
                     indice + 1
             ));
         }
@@ -426,20 +452,29 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
             Integer candidaturaId,
             MultipartFile ficheiro,
             String tipo,
+            String idTipoDocumento,
             int indice
     ) {
         String nomeOriginal = StringUtils.cleanPath(
                 Optional.ofNullable(ficheiro.getOriginalFilename()).orElse("documento-" + indice)
         );
-        String nomeBase = removerExtensao(nomeOriginal);
+        String nomeBase = sanitizarSegmentoPath(removerExtensao(nomeOriginal));
+        String nomeArmazenamento = sanitizarSegmentoPath(tipo)
+                + "-" + indice + "-" + nomeBase;
+        String pathDocumento = construirPathDocumento(
+                candidaturaId,
+                nomeArmazenamento,
+                nomeOriginal
+        );
         try {
             String path = documentService.save(DocRelacaoDTO.builder()
                     .idRelacao(candidaturaId)
                     .tipoRelacao(tipoRelacaoDocumento)
                     .estado(estadoDocumento)
                     .name(nomeOriginal)
-                    .idTpDoc(tipo)
-                    .fileName(nomeBase)
+                    .idTpDoc(idTipoDocumento)
+                    .fileName(nomeArmazenamento)
+                    .path(pathDocumento)
                     .appCode(appCodeDocumento)
                     .file(ficheiro)
                     .build());
@@ -450,12 +485,151 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
                     documentService.gerarLinkPublico(path)
             );
         } catch (RuntimeException ex) {
+            registarErroUpload(candidaturaId, tipo, idTipoDocumento, nomeOriginal, ex);
             throw new ResponseStatusException(
                     HttpStatus.BAD_GATEWAY,
                     "Não foi possível guardar os documentos da candidatura. Tente novamente mais tarde.",
                     ex
             );
         }
+    }
+
+    private String resolverIdTipoDocumento(String tipo) {
+        String configurado = TIPO_DOCUMENTO_CURRICULO.equals(tipo)
+                ? tipoCurriculoIdConfigurado
+                : tipoOutroIdConfigurado;
+        if (temTexto(configurado)) {
+            return validarIdTipoDocumento(configurado, tipo);
+        }
+
+        return comboboxService.listarDocumentosAtivos().stream()
+                .filter(item -> correspondeTipoDocumento(item, tipo))
+                .map(item -> item.get("id"))
+                .filter(this::idTipoDocumentoValido)
+                .map(String::valueOf)
+                .findFirst()
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Não foi encontrado no catálogo um tipo documental ativo para "
+                                + descricaoTipoDocumento(tipo)
+                                + ". Configure o respetivo ID antes de submeter a candidatura."
+                ));
+    }
+
+    private boolean correspondeTipoDocumento(Map<String, Object> item, String tipo) {
+        Object descricao = item == null ? null : item.get("tipo_documento_desc");
+        String normalizado = normalizarParaPesquisa(descricao == null ? null : descricao.toString());
+        if (!temTexto(normalizado)) {
+            return false;
+        }
+        if (TIPO_DOCUMENTO_CURRICULO.equals(tipo)) {
+            return normalizado.contains("CURRIC") || "CV".equals(normalizado);
+        }
+        return (normalizado.contains("OUTRO") && normalizado.contains("DOCUMENT"))
+                || normalizado.contains("DOCUMENTO COMPLEMENTAR")
+                || normalizado.startsWith("ANEX");
+    }
+
+    private String validarIdTipoDocumento(String valor, String tipo) {
+        String limpo = valor.trim();
+        if (idTipoDocumentoValido(limpo)) {
+            return limpo;
+        }
+        throw new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "O ID documental configurado para " + descricaoTipoDocumento(tipo) + " não é válido."
+        );
+    }
+
+    private boolean idTipoDocumentoValido(Object valor) {
+        if (valor == null) {
+            return false;
+        }
+        try {
+            return Long.parseLong(valor.toString().trim()) > 0;
+        } catch (NumberFormatException ex) {
+            return false;
+        }
+    }
+
+    private String descricaoTipoDocumento(String tipo) {
+        return TIPO_DOCUMENTO_CURRICULO.equals(tipo) ? "o currículo" : "outro documento";
+    }
+
+    private String construirPathDocumento(
+            Integer candidaturaId,
+            String nomeArmazenamento,
+            String nomeOriginal
+    ) {
+        return appCodeDocumento
+                + "/"
+                + LocalDateTime.now().getYear()
+                + "/modulos/"
+                + sanitizarSegmentoPath(tipoRelacaoDocumento)
+                + "/"
+                + candidaturaId
+                + "/"
+                + nomeArmazenamento
+                + extensao(nomeOriginal);
+    }
+
+    private String sanitizarSegmentoPath(String valor) {
+        String limpo = textoOpcional(valor);
+        if (limpo == null) {
+            return "documento";
+        }
+        return limpo
+                .replaceAll("[\\\\/:*?\"<>|]+", "_")
+                .replace(' ', '_');
+    }
+
+    private String extensao(String nomeFicheiro) {
+        if (!temTexto(nomeFicheiro)) {
+            return "";
+        }
+        int indice = nomeFicheiro.lastIndexOf('.');
+        return indice < 0 ? "" : nomeFicheiro.substring(indice);
+    }
+
+    private String normalizarParaPesquisa(String valor) {
+        if (!temTexto(valor)) {
+            return null;
+        }
+        return Normalizer.normalize(valor, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "")
+                .trim()
+                .toUpperCase(Locale.ROOT);
+    }
+
+    private void registarErroUpload(
+            Integer candidaturaId,
+            String tipo,
+            String idTipoDocumento,
+            String nomeOriginal,
+            RuntimeException ex
+    ) {
+        if (ex instanceof HttpStatusCodeException httpException) {
+            log.error(
+                    "Falha no serviço documental da candidatura: candidaturaId={}, tipo={}, idTpDoc={}, "
+                            + "ficheiro={}, status={}, resposta={}",
+                    candidaturaId,
+                    tipo,
+                    idTipoDocumento,
+                    nomeOriginal,
+                    httpException.getStatusCode(),
+                    httpException.getResponseBodyAsString(),
+                    ex
+            );
+            return;
+        }
+        log.error(
+                "Falha no serviço documental da candidatura: candidaturaId={}, tipo={}, idTpDoc={}, ficheiro={}",
+                candidaturaId,
+                tipo,
+                idTipoDocumento,
+                nomeOriginal,
+                ex
+        );
     }
 
     private CandidaturaDocumentoResponse extrairCurriculo(Object anexos) {

@@ -1,0 +1,172 @@
+{
+  "info": {
+    "_postman_id": "ce88e7c2-e8ac-4cd6-9dbf-minhas-avaliacoes",
+    "name": "Perfil Candidato - Minhas Avaliações",
+    "description": "APIs de leitura para os ecrãs Minhas avaliações — Lista e Detalhes. A API limita os dados à pessoa informada, devolve as descrições dos domínios e deixa a construção da tabela e do modal a cargo do front-end.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 - Listar minhas avaliações",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/avaliacoes?pessoaId={{pessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "avaliacoes"],
+          "query": [
+            {
+              "key": "pessoaId",
+              "value": "{{pessoaId}}",
+              "description": "Identificador do candidato obtido da sessão."
+            }
+          ]
+        },
+        "description": "Devolve somente avaliações da pessoa informada, ordenadas da mais recente para a mais antiga. O teste guarda automaticamente o primeiro avaliacaoId para o pedido de detalhe."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', function () { pm.response.to.have.status(200); });",
+              "const resposta = pm.response.json();",
+              "pm.test('Resposta segue o contrato do Perfil Candidato', function () {",
+              "  pm.expect(resposta.sucesso).to.eql(true);",
+              "  pm.expect(resposta.dados).to.be.an('array');",
+              "});",
+              "if (resposta.dados.length > 0) {",
+              "  const item = resposta.dados[0];",
+              "  pm.collectionVariables.set('avaliacaoId', item.avaliacaoId);",
+              "  pm.test('Item contém os campos da lista', function () {",
+              "    pm.expect(item).to.have.property('tipoAvaliacao');",
+              "    pm.expect(item).to.have.property('tipoAvaliacaoDescricao');",
+              "    pm.expect(item).to.have.property('periodoReferencia');",
+              "    pm.expect(item).to.have.property('classificacao');",
+              "    pm.expect(item).to.have.property('dataRegisto');",
+              "  });",
+              "}"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "02 - Consultar detalhe da minha avaliação",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/avaliacoes/{{avaliacaoId}}?pessoaId={{pessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "avaliacoes", "{{avaliacaoId}}"],
+          "query": [
+            {"key": "pessoaId", "value": "{{pessoaId}}"}
+          ]
+        },
+        "description": "Carrega o detalhe somente quando avaliacaoId pertence a pessoaId. Inclui as descrições de tipo de avaliação, competência, avaliação e grau de satisfação."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', function () { pm.response.to.have.status(200); });",
+              "const dados = pm.response.json().dados;",
+              "pm.test('Detalhe contém os campos do PowerPoint', function () {",
+              "  pm.expect(dados.avaliacaoId).to.eql(Number(pm.collectionVariables.get('avaliacaoId')));",
+              "  pm.expect(dados).to.have.property('tipoAvaliacaoDescricao');",
+              "  pm.expect(dados).to.have.property('periodoReferencia');",
+              "  pm.expect(dados.avaliacaoDesempenho).to.be.an('array');",
+              "  pm.expect(dados).to.have.property('grauSatisfacaoDescricao');",
+              "  pm.expect(dados).to.have.property('interesseContratacao');",
+              "  pm.expect(dados).to.have.property('classificacao');",
+              "  pm.expect(dados).to.have.property('observacao');",
+              "  pm.expect(dados).to.have.property('dataRegisto');",
+              "});",
+              "if (dados.avaliacaoDesempenho.length > 0) {",
+              "  pm.test('Desempenho contém código e descrição', function () {",
+              "    const item = dados.avaliacaoDesempenho[0];",
+              "    pm.expect(item).to.have.property('tipoCompetencia');",
+              "    pm.expect(item).to.have.property('tipoCompetenciaDescricao');",
+              "    pm.expect(item).to.have.property('avaliacao');",
+              "    pm.expect(item).to.have.property('avaliacaoDescricao');",
+              "  });",
+              "}"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "03 - Segurança - bloquear avaliação de outra pessoa",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/avaliacoes/{{avaliacaoId}}?pessoaId={{outraPessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "avaliacoes", "{{avaliacaoId}}"],
+          "query": [
+            {"key": "pessoaId", "value": "{{outraPessoaId}}"}
+          ]
+        },
+        "description": "Use um avaliacaoId pertencente a pessoaId e uma outraPessoaId diferente. O resultado esperado é 404, sem dados da avaliação."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Acesso alheio é ocultado com 404', function () { pm.response.to.have.status(404); });",
+              "pm.test('Resposta não expõe dados', function () {",
+              "  const resposta = pm.response.json();",
+              "  pm.expect(resposta.sucesso).to.eql(false);",
+              "  pm.expect(resposta.dados).to.eql(null);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "04 - Validação - candidato não identificado",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/avaliacoes",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "avaliacoes"]
+        },
+        "description": "A interface deve obter pessoaId da sessão. A API responde 400 quando o identificador não é enviado."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Pessoa ausente responde 400', function () { pm.response.to.have.status(400); });",
+              "pm.test('Erro segue contrato padrão', function () { pm.expect(pm.response.json().sucesso).to.eql(false); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    }
+  ],
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:9001/api"},
+    {"key": "pessoaId", "value": "2001101700869"},
+    {"key": "outraPessoaId", "value": "2001101700870"},
+    {"key": "avaliacaoId", "value": "1"}
+  ]
+}

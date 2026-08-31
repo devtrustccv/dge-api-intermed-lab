@@ -1,0 +1,326 @@
+{
+  "info": {
+    "_postman_id": "feaa8f70-f7bb-4afd-9cf3-configuracao-alerta-ofertas",
+    "name": "Perfil Candidato - Configuração de Alertas de Ofertas",
+    "description": "APIs da lista, nova configuração, detalhe e atualização dos alertas de ofertas. A coleção carrega as opções reais, cria um registo, reutiliza o alertaId devolvido e valida o isolamento por candidato.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 - Carregar opções base da configuração",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/alertas-ofertas/opcoes?pessoaId={{pessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "alertas-ofertas", "opcoes"],
+          "query": [
+            {"key": "pessoaId", "value": "{{pessoaId}}"}
+          ]
+        },
+        "description": "Devolve o nome da pessoa ativa, domínios, ilhas e entidades. Guarda automaticamente a primeira ilha e entidade disponíveis."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', function () { pm.response.to.have.status(200); });",
+              "const resposta = pm.response.json();",
+              "const dados = resposta.dados;",
+              "pm.test('Opções seguem o contrato do formulário', function () {",
+              "  pm.expect(resposta.sucesso).to.eql(true);",
+              "  pm.expect(dados.pessoaId).to.eql(Number(pm.collectionVariables.get('pessoaId')));",
+              "  pm.expect(dados.tiposOferta).to.be.an('array').that.is.not.empty;",
+              "  pm.expect(dados.ilhas).to.be.an('array');",
+              "  pm.expect(dados.entidades).to.be.an('array');",
+              "  pm.expect(dados.habilitacoesLiterarias).to.be.an('array').that.is.not.empty;",
+              "  pm.expect(dados.niveisQualificacao).to.be.an('array').that.is.not.empty;",
+              "});",
+              "if (dados.ilhas.length > 0) {",
+              "  const ilha = dados.ilhas[0];",
+              "  pm.collectionVariables.set('ilha', ilha.id || ilha.codigo);",
+              "}",
+              "if (dados.entidades.length > 0) {",
+              "  pm.collectionVariables.set('entidadeId', dados.entidades[0].id);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "02 - Carregar concelhos da ilha selecionada",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/alertas-ofertas/opcoes?pessoaId={{pessoaId}}&ilha={{ilha}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "alertas-ofertas", "opcoes"],
+          "query": [
+            {"key": "pessoaId", "value": "{{pessoaId}}"},
+            {"key": "ilha", "value": "{{ilha}}"}
+          ]
+        },
+        "description": "Atualiza a lista dependente de concelhos para a ilha escolhida. Guarda automaticamente o primeiro concelho."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', function () { pm.response.to.have.status(200); });",
+              "const dados = pm.response.json().dados;",
+              "pm.test('Concelhos são devolvidos como opções', function () { pm.expect(dados.concelhos).to.be.an('array'); });",
+              "if (dados.concelhos.length > 0) {",
+              "  const concelho = dados.concelhos[0];",
+              "  pm.collectionVariables.set('concelho', concelho.id || concelho.codigo);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "03 - Criar configuração de alerta",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tipoOferta\": \"OFERTA_ESTAGIO\",\n  \"ilha\": \"{{ilha}}\",\n  \"concelho\": \"{{concelho}}\",\n  \"entidadeId\": {{entidadeId}},\n  \"habilitacaoLiteraria\": \"LICENCIATURA\",\n  \"nivelQualificacao\": \"4\",\n  \"utilizador\": \"{{utilizador}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/alertas-ofertas?pessoaId={{pessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "alertas-ofertas"],
+          "query": [
+            {"key": "pessoaId", "value": "{{pessoaId}}"}
+          ]
+        },
+        "description": "Grava a configuração com date_create atual, user_create informado e estado ATIVO. titulo_oferta não é enviado porque não faz parte do formulário especificado."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', function () { pm.response.to.have.status(200); });",
+              "const resposta = pm.response.json();",
+              "const dados = resposta.dados;",
+              "pm.test('Configuração foi criada ativa e com auditoria', function () {",
+              "  pm.expect(resposta.sucesso).to.eql(true);",
+              "  pm.expect(dados.alertaId).to.be.a('number');",
+              "  pm.expect(dados.pessoaId).to.eql(Number(pm.collectionVariables.get('pessoaId')));",
+              "  pm.expect(dados.estado).to.eql('ATIVO');",
+              "  pm.expect(dados.userCreate).to.eql(pm.collectionVariables.get('utilizador'));",
+              "  pm.expect(dados.dateCreate).to.not.eql(null);",
+              "});",
+              "pm.collectionVariables.set('alertaId', dados.alertaId);"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "04 - Listar configurações do candidato",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/alertas-ofertas?pessoaId={{pessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "alertas-ofertas"],
+          "query": [
+            {"key": "pessoaId", "value": "{{pessoaId}}"}
+          ]
+        },
+        "description": "Lista somente configurações da pessoa informada, das mais recentes para as mais antigas."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', function () { pm.response.to.have.status(200); });",
+              "const dados = pm.response.json().dados;",
+              "pm.test('Lista contém as colunas especificadas', function () {",
+              "  pm.expect(dados).to.be.an('array');",
+              "  const criado = dados.find(item => item.alertaId === Number(pm.collectionVariables.get('alertaId')));",
+              "  pm.expect(criado).to.not.eql(undefined);",
+              "  pm.expect(criado).to.have.property('tipoOfertaDescricao');",
+              "  pm.expect(criado).to.have.property('habilitacaoLiterariaDescricao');",
+              "  pm.expect(criado).to.have.property('nivelQualificacaoDescricao');",
+              "  pm.expect(criado).to.have.property('estadoDescricao');",
+              "  pm.expect(criado).to.have.property('dataConfiguracao');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "05 - Consultar detalhe da configuração",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/alertas-ofertas/{{alertaId}}?pessoaId={{pessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "alertas-ofertas", "{{alertaId}}"],
+          "query": [
+            {"key": "pessoaId", "value": "{{pessoaId}}"}
+          ]
+        },
+        "description": "Carrega códigos, descrições e todos os campos de auditoria somente quando o alerta pertence ao candidato."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', function () { pm.response.to.have.status(200); });",
+              "const dados = pm.response.json().dados;",
+              "pm.test('Detalhe contém formulário e auditoria', function () {",
+              "  pm.expect(dados.alertaId).to.eql(Number(pm.collectionVariables.get('alertaId')));",
+              "  pm.expect(dados).to.have.property('pessoaNome');",
+              "  pm.expect(dados).to.have.property('ilhaDescricao');",
+              "  pm.expect(dados).to.have.property('concelhoDescricao');",
+              "  pm.expect(dados).to.have.property('entidadeDescricao');",
+              "  pm.expect(dados).to.have.property('dateCreate');",
+              "  pm.expect(dados).to.have.property('userCreate');",
+              "  pm.expect(dados).to.have.property('dateUpdate');",
+              "  pm.expect(dados).to.have.property('userUpdate');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "06 - Atualizar configuração",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tipoOferta\": \"OFERTA_EMPREGO\",\n  \"ilha\": \"{{ilha}}\",\n  \"concelho\": \"{{concelho}}\",\n  \"entidadeId\": {{entidadeId}},\n  \"habilitacaoLiteraria\": \"LICENCIATURA\",\n  \"nivelQualificacao\": \"5\",\n  \"utilizador\": \"{{utilizador}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/alertas-ofertas/{{alertaId}}?pessoaId={{pessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "alertas-ofertas", "{{alertaId}}"],
+          "query": [
+            {"key": "pessoaId", "value": "{{pessoaId}}"}
+          ]
+        },
+        "description": "Atualiza somente os critérios configuráveis e preenche date_update/user_update. O estado e os dados de criação permanecem inalterados."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', function () { pm.response.to.have.status(200); });",
+              "const dados = pm.response.json().dados;",
+              "pm.test('Atualização preserva estado e preenche auditoria', function () {",
+              "  pm.expect(dados.tipoOferta).to.eql('OFERTA_EMPREGO');",
+              "  pm.expect(dados.nivelQualificacao).to.eql('5');",
+              "  pm.expect(dados.estado).to.eql('ATIVO');",
+              "  pm.expect(dados.userUpdate).to.eql(pm.collectionVariables.get('utilizador'));",
+              "  pm.expect(dados.dateUpdate).to.not.eql(null);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "07 - Segurança - bloquear configuração de outra pessoa",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/alertas-ofertas/{{alertaId}}?pessoaId={{outraPessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "alertas-ofertas", "{{alertaId}}"],
+          "query": [
+            {"key": "pessoaId", "value": "{{outraPessoaId}}"}
+          ]
+        },
+        "description": "O mesmo alertaId não pode ser consultado por outra pessoa. O resultado esperado é 404 sem exposição dos dados."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Acesso alheio é ocultado com 404', function () { pm.response.to.have.status(404); });",
+              "pm.test('Resposta não expõe dados', function () {",
+              "  const resposta = pm.response.json();",
+              "  pm.expect(resposta.sucesso).to.eql(false);",
+              "  pm.expect(resposta.dados).to.eql(null);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "08 - Validação - candidato não identificado",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/alertas-ofertas",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "alertas-ofertas"]
+        },
+        "description": "A API responde 400 quando o identificador do candidato não é enviado."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Pessoa ausente responde 400', function () { pm.response.to.have.status(400); });",
+              "pm.test('Erro segue o contrato padrão', function () { pm.expect(pm.response.json().sucesso).to.eql(false); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    }
+  ],
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:9001/api"},
+    {"key": "pessoaId", "value": "2001101700869"},
+    {"key": "outraPessoaId", "value": "2001101700870"},
+    {"key": "alertaId", "value": "1"},
+    {"key": "ilha", "value": "11"},
+    {"key": "concelho", "value": "111"},
+    {"key": "entidadeId", "value": "1"},
+    {"key": "utilizador", "value": "candidato.teste@dge.cv"}
+  ]
+}
