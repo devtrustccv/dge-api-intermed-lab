@@ -20,7 +20,8 @@ import org.springframework.web.server.ResponseStatusException;
         PerfilCandidatoCandidaturaController.class,
         PerfilCandidatoColocacaoController.class,
         PerfilCandidatoAvaliacaoController.class,
-        PerfilCandidatoAlertaOfertaController.class
+        PerfilCandidatoAlertaOfertaController.class,
+        PerfilCandidatoAssiduidadeController.class
 })
 @Slf4j
 public class PerfilCandidatoApiExceptionHandler {

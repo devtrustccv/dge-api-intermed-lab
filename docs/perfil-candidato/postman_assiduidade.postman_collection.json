@@ -1,0 +1,211 @@
+{
+  "info": {
+    "_postman_id": "60c27f50-70e8-4cf0-b0d4-perfil-candidato-assiduidade",
+    "name": "Perfil Candidato - Assiduidade",
+    "description": "Testes dos endpoints necessários para listar, consultar, registar e editar a assiduidade do candidato. O comprovativo é opcional.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Listar opções",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/assiduidades/opcoes",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "assiduidades", "opcoes"]
+        },
+        "description": "Devolve TIPO_ASSIDUIDADE e ESTADO_ASSIDUIDADE para preencher os selects do frontend."
+      },
+      "response": []
+    },
+    {
+      "name": "Registar sem comprovativo (opcional)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Registo criado', function () { pm.response.to.have.status(201); });",
+              "if (pm.response.code === 201) {",
+              "  const json = pm.response.json();",
+              "  if (json.dados && json.dados.assiduidadeId) pm.collectionVariables.set('assiduidadeId', json.dados.assiduidadeId);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "dados",
+              "value": "{\"tipoAssiduidade\":\"FALTA_JUSTIFICADA\",\"data\":\"2026-08-28\",\"horaEntrada\":\"08:30\",\"horaSaida\":\"17:15\",\"justificacao\":\"Consulta médica.\",\"utilizador\":\"{{utilizador}}\"}",
+              "type": "text",
+              "contentType": "application/json"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/assiduidades?pessoaId={{pessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "assiduidades"],
+          "query": [
+            {"key": "pessoaId", "value": "{{pessoaId}}"}
+          ]
+        },
+        "description": "Cria o registo em PENDENTE usando a colocação ativa. Não envia ficheiro para confirmar que o anexo não é obrigatório."
+      },
+      "response": []
+    },
+    {
+      "name": "Registar com comprovativo",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Registo com comprovativo criado', function () { pm.response.to.have.status(201); });",
+              "if (pm.response.code === 201) {",
+              "  const json = pm.response.json();",
+              "  if (json.dados && json.dados.assiduidadeId) pm.collectionVariables.set('assiduidadeId', json.dados.assiduidadeId);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "dados",
+              "value": "{\"tipoAssiduidade\":\"FALTA_JUSTIFICADA\",\"data\":\"2026-08-29\",\"horaEntrada\":\"08:30\",\"horaSaida\":\"17:15\",\"justificacao\":\"Consulta médica.\",\"utilizador\":\"{{utilizador}}\"}",
+              "type": "text",
+              "contentType": "application/json"
+            },
+            {
+              "key": "comprovativo",
+              "type": "file",
+              "src": ""
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/assiduidades?pessoaId={{pessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "assiduidades"],
+          "query": [
+            {"key": "pessoaId", "value": "{{pessoaId}}"}
+          ]
+        },
+        "description": "Selecione um ficheiro em comprovativo. Requer um tipo documental ativo compatível ou document.assiduidade.tipo-comprovativo-id configurado."
+      },
+      "response": []
+    },
+    {
+      "name": "Listar com filtros",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/assiduidades?pessoaId={{pessoaId}}&tipoAssiduidade=FALTA_JUSTIFICADA&estado=PENDENTE&dataInicio=2026-08-01&dataFim=2026-08-31",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "assiduidades"],
+          "query": [
+            {"key": "pessoaId", "value": "{{pessoaId}}"},
+            {"key": "tipoAssiduidade", "value": "FALTA_JUSTIFICADA"},
+            {"key": "estado", "value": "PENDENTE"},
+            {"key": "dataInicio", "value": "2026-08-01"},
+            {"key": "dataFim", "value": "2026-08-31"}
+          ]
+        },
+        "description": "As datas filtram date_create, conforme a especificação funcional."
+      },
+      "response": []
+    },
+    {
+      "name": "Consultar detalhe",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/assiduidades/{{assiduidadeId}}?pessoaId={{pessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "assiduidades", "{{assiduidadeId}}"],
+          "query": [
+            {"key": "pessoaId", "value": "{{pessoaId}}"}
+          ]
+        },
+        "description": "Devolve estado e observação apenas para leitura, além do path e URL pública do comprovativo."
+      },
+      "response": []
+    },
+    {
+      "name": "Editar sem substituir comprovativo",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "dados",
+              "value": "{\"tipoAssiduidade\":\"FALTA_JUSTIFICADA\",\"data\":\"2026-08-28\",\"horaEntrada\":\"09:00\",\"horaSaida\":\"17:30\",\"justificacao\":\"Consulta médica — horário corrigido.\",\"utilizador\":\"{{utilizador}}\"}",
+              "type": "text",
+              "contentType": "application/json"
+            },
+            {
+              "key": "novoAnexoComprovativo",
+              "type": "file",
+              "src": "",
+              "disabled": true
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/assiduidades/{{assiduidadeId}}?pessoaId={{pessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "assiduidades", "{{assiduidadeId}}"],
+          "query": [
+            {"key": "pessoaId", "value": "{{pessoaId}}"}
+          ]
+        },
+        "description": "Mantém o comprovativo atual quando novoAnexoComprovativo não é enviado. Ative e selecione um ficheiro para o substituir."
+      },
+      "response": []
+    },
+    {
+      "name": "Segurança - registo de outro candidato",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/assiduidades/{{assiduidadeId}}?pessoaId={{outraPessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "assiduidades", "{{assiduidadeId}}"],
+          "query": [
+            {"key": "pessoaId", "value": "{{outraPessoaId}}"}
+          ]
+        },
+        "description": "Deve devolver 404 para não expor assiduidade pertencente a outra pessoa."
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:9001/api", "type": "string"},
+    {"key": "pessoaId", "value": "2001101700869", "type": "string"},
+    {"key": "outraPessoaId", "value": "2001101700870", "type": "string"},
+    {"key": "assiduidadeId", "value": "1", "type": "string"},
+    {"key": "utilizador", "value": "candidato.teste@dge.cv", "type": "string"}
+  ]
+}
