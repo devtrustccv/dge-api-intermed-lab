@@ -54,6 +54,18 @@ public enum EmpregoDominio {
     STATUS_CANDIDATURA_APROVADO("STATUS_CANDIDATURA", "APROVADO", "Aprovado"),
     STATUS_CANDIDATURA_RECUSADO("STATUS_CANDIDATURA", "RECUSADO", "Recusado"),
 
+    SITUACAO_PROFISSIONAL_NOVO_EMPREGO("SITUACAO_PROFISSIONAL", "1", "A procura de novo emprego"),
+    SITUACAO_PROFISSIONAL_PRIMEIRO_EMPREGO("SITUACAO_PROFISSIONAL", "2", "A procura do primeiro emprego"),
+    SITUACAO_PROFISSIONAL_PRIMEIRO_ESTAGIO("SITUACAO_PROFISSIONAL", "3", "A procura do primeiro estágio"),
+    SITUACAO_PROFISSIONAL_DESEMPREGADO("SITUACAO_PROFISSIONAL", "4", "Desempregado"),
+    SITUACAO_PROFISSIONAL_EMPREGADO("SITUACAO_PROFISSIONAL", "5", "Empregado"),
+    SITUACAO_PROFISSIONAL_ESTAGIO("SITUACAO_PROFISSIONAL", "6", "Estágio"),
+
+    CANDIDATURA_STATUS_PENDENTE("CANDIDATURA_STATUS", "PENDENTE", "Pendente"),
+    CANDIDATURA_STATUS_PRE_SELECIONADO("CANDIDATURA_STATUS", "PRE_SELECIONADO", "Pré-selecionado"),
+    CANDIDATURA_STATUS_SELECIONADO("CANDIDATURA_STATUS", "SELECIONADO", "Selecionado"),
+    CANDIDATURA_STATUS_NAO_SELECIONADO("CANDIDATURA_STATUS", "NAO_SELECIONADO", "Não Selecionado"),
+
     CANAL_OFERTA_PORTAL("CANAL_OFERTA", "PORTAL", "Portal"),
     CANAL_OFERTA_BACKOFFICE("CANAL_OFERTA", "BACKOFFICE", "Backoffice"),
 
@@ -92,6 +104,16 @@ public enum EmpregoDominio {
     ESTADO_ASSIDUIDADE_INDEFERIDO("ESTADO_ASSIDUIDADE", "INDEFERIDO", "Indeferido"),
     ESTADO_ASSIDUIDADE_PENDENTE("ESTADO_ASSIDUIDADE", "PENDENTE", "Pendente"),
 
+    ESTADO_SERVICO_ATIVO("ESTADO_SERVICO", "A", "Ativo"),
+    ESTADO_SERVICO_INATIVO("ESTADO_SERVICO", "I", "Inativo"),
+    ESTADO_SERVICO_CANCELADO("ESTADO_SERVICO", "C", "Cancelado"),
+    ESTADO_SERVICO_RASCUNHO("ESTADO_SERVICO", "R", "Rascunho"),
+    ESTADO_SERVICO_ELIMINADO("ESTADO_SERVICO", "E", "Eliminado"),
+
+    STATUS_ACEITACAO_CANDIDATO_ACEITE("STATUS_ACEITACAO_CANDIDATO", "ACEITE", "Aceite"),
+    STATUS_ACEITACAO_CANDIDATO_RECUSADO("STATUS_ACEITACAO_CANDIDATO", "RECUSADO", "Recusado"),
+    STATUS_ACEITACAO_CANDIDATO_PENDENTE("STATUS_ACEITACAO_CANDIDATO", "PENDENTE", "Pendente"),
+
     DECISAO_ASSIDUIDADE_APROVAR("DECISAO_ASSIDUIDADE", "APROVAR", "Aprovar"),
     DECISAO_ASSIDUIDADE_INDEFER("DECISAO_ASSIDUIDADE", "INDEFER", "Indeferir"),
 
@@ -122,6 +144,8 @@ public enum EmpregoDominio {
     public static final String DOMINIO_HABILITACAO_LITERARIA = "HABILITACAO_LITERARIA";
     public static final String DOMINIO_ESTADO = "ESTADO";
     public static final String DOMINIO_STATUS_CANDIDATURA = "STATUS_CANDIDATURA";
+    public static final String DOMINIO_SITUACAO_PROFISSIONAL = "SITUACAO_PROFISSIONAL";
+    public static final String DOMINIO_CANDIDATURA_STATUS = "CANDIDATURA_STATUS";
     public static final String DOMINIO_CANAL_OFERTA = "CANAL_OFERTA";
     public static final String DOMINIO_TIPO_COLABORADOR = "TIPO_COLABORADOR";
     public static final String DOMINIO_CANAL_ENTREVISTA = "CANAL_ENTREVISTA";
@@ -132,6 +156,8 @@ public enum EmpregoDominio {
     public static final String DOMINIO_TIPO_AVALIACAO = "TIPO_AVALIACAO";
     public static final String DOMINIO_TIPO_ASSIDUIDADE = "TIPO_ASSIDUIDADE";
     public static final String DOMINIO_ESTADO_ASSIDUIDADE = "ESTADO_ASSIDUIDADE";
+    public static final String DOMINIO_ESTADO_SERVICO = "ESTADO_SERVICO";
+    public static final String DOMINIO_STATUS_ACEITACAO_CANDIDATO = "STATUS_ACEITACAO_CANDIDATO";
     public static final String DOMINIO_DECISAO_ASSIDUIDADE = "DECISAO_ASSIDUIDADE";
     public static final String DOMINIO_AGENDADO_POR = "AGENDADO_POR";
     public static final String DOMINIO_AGENDAMENTO_POR = DOMINIO_AGENDADO_POR;
@@ -236,6 +262,26 @@ public enum EmpregoDominio {
             };
             case DOMINIO_STATUS_CANDIDATURA -> switch (valor) {
                 case "APROVAR", "APROVADA" -> "APROVADO";
+                case "RECUSAR", "RECUSADA" -> "RECUSADO";
+                default -> valor;
+            };
+            case DOMINIO_CANDIDATURA_STATUS -> switch (valor) {
+                case "TRIAGEM" -> "PENDENTE";
+                case "PRESELECIONADO", "PRE-SELECIONADO", "PRE SELECIONADO" -> "PRE_SELECIONADO";
+                case "APROVADO", "APROVADA" -> "SELECIONADO";
+                case "RECUSADO", "RECUSADA", "NAO-SELECIONADO", "NAO SELECIONADO" -> "NAO_SELECIONADO";
+                default -> valor;
+            };
+            case DOMINIO_ESTADO_SERVICO -> switch (valor) {
+                case "ATIVO", "ATIVA" -> "A";
+                case "INATIVO", "INATIVA", "INACTIVO", "INACTIVA" -> "I";
+                case "RASCUNHO", "EM_RASCUNHO" -> "R";
+                case "CANCELADO", "CANCELADA" -> "C";
+                case "ELIMINADO", "ELIMINADA", "REMOVIDO", "REMOVIDA" -> "E";
+                default -> valor;
+            };
+            case DOMINIO_STATUS_ACEITACAO_CANDIDATO -> switch (valor) {
+                case "ACEITO", "ACEITA", "ACEITAR" -> "ACEITE";
                 case "RECUSAR", "RECUSADA" -> "RECUSADO";
                 default -> valor;
             };

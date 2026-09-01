@@ -1,0 +1,116 @@
+{
+  "info": {
+    "_postman_id": "68e504fe-24b7-48ce-a404-prestacao-servicos-candidato",
+    "name": "Perfil Candidato - Prestação de Serviços - Como Candidato",
+    "description": "Consulta os serviços indicados ao candidato e permite aceitar ou recusar uma indicação feita pelo IEFP.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Opções dos filtros",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/prestacoes-servicos/candidato/opcoes",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "prestacoes-servicos", "candidato", "opcoes"]
+        },
+        "description": "Devolve o domínio ESTADO_SERVICO: A, I, C, R e E."
+      },
+      "response": []
+    },
+    {
+      "name": "Listar serviços indicados ao candidato",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/prestacoes-servicos/candidato?pessoaId={{pessoaId}}&tipoServico=Canalização&estado=A&dataInicio=2026-09-01&dataFim=2026-09-30",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "prestacoes-servicos", "candidato"],
+          "query": [
+            {"key": "pessoaId", "value": "{{pessoaId}}"},
+            {"key": "tipoServico", "value": "Canalização", "disabled": true},
+            {"key": "estado", "value": "A", "disabled": true},
+            {"key": "dataInicio", "value": "2026-09-01", "disabled": true},
+            {"key": "dataFim", "value": "2026-09-30", "disabled": true}
+          ]
+        },
+        "description": "A lista é isolada por pessoa_id na tabela emprego_t_intermediacao_candidato."
+      },
+      "response": []
+    },
+    {
+      "name": "Consultar detalhes do serviço",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/prestacoes-servicos/candidato/{{servicoId}}?pessoaId={{pessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "prestacoes-servicos", "candidato", "{{servicoId}}"],
+          "query": [
+            {"key": "pessoaId", "value": "{{pessoaId}}"}
+          ]
+        },
+        "description": "Devolve os dados readonly, descrições geográficas e links públicos dos anexos."
+      },
+      "response": []
+    },
+    {
+      "name": "Aceitar indicação",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"utilizador\": \"{{utilizador}}\"\n}",
+          "options": {"raw": {"language": "json"}}
+        },
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/prestacoes-servicos/candidato/{{servicoId}}/aceitar?pessoaId={{pessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "prestacoes-servicos", "candidato", "{{servicoId}}", "aceitar"],
+          "query": [
+            {"key": "pessoaId", "value": "{{pessoaId}}"}
+          ]
+        },
+        "description": "Grava ACEITE em status_aceitacao_candidato. Só é permitido para serviço ativo e selecionado pelo IEFP."
+      },
+      "response": []
+    },
+    {
+      "name": "Recusar indicação",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"utilizador\": \"{{utilizador}}\"\n}",
+          "options": {"raw": {"language": "json"}}
+        },
+        "url": {
+          "raw": "{{baseUrl}}/v1/perfil-candidato/prestacoes-servicos/candidato/{{servicoId}}/recusar?pessoaId={{pessoaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["v1", "perfil-candidato", "prestacoes-servicos", "candidato", "{{servicoId}}", "recusar"],
+          "query": [
+            {"key": "pessoaId", "value": "{{pessoaId}}"}
+          ]
+        },
+        "description": "Grava RECUSADO em status_aceitacao_candidato. Use um registo ainda PENDENTE e diferente do teste de aceitação."
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:9001/api"},
+    {"key": "pessoaId", "value": "2001101700869"},
+    {"key": "servicoId", "value": "1"},
+    {"key": "utilizador", "value": "candidato.teste"}
+  ]
+}
