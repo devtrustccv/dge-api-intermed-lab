@@ -1,0 +1,7 @@
+ALTER TABLE emprego_t_entidade_colaborador
+    ALTER COLUMN cargo TYPE VARCHAR(100),
+    ALTER COLUMN estado TYPE VARCHAR(100),
+    ALTER COLUMN user_create TYPE VARCHAR(100),
+    ALTER COLUMN user_update TYPE VARCHAR(100),
+    ALTER COLUMN tipo TYPE VARCHAR(100),
+    ALTER COLUMN telemovel TYPE VARCHAR(100);
