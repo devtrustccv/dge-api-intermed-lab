@@ -721,7 +721,7 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
             return false;
         }
         LocalDate hoje = LocalDate.now();
-        return (numVagas == null || numVagas > 0)
+        return numVagas != null && numVagas > 0
                 && (dataInicio == null || !hoje.isBefore(dataInicio))
                 && (dataFim == null || !hoje.isAfter(dataFim));
     }
@@ -753,7 +753,10 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
         if (!ESTADO_ATIVA.equals(normalizarEstado(estado))) {
             return "Esta oferta já não aceita candidaturas.";
         }
-        if (numVagas != null && numVagas <= 0) {
+        if (numVagas == null) {
+            return "A quantidade de vagas desta oferta não foi informada.";
+        }
+        if (numVagas <= 0) {
             return "Esta oferta já não tem vagas disponíveis.";
         }
         LocalDate hoje = LocalDate.now();

@@ -152,6 +152,20 @@ class ConsultaVagaServiceImplTest {
         });
     }
 
+    @Test
+    void deveBloquearCandidaturaQuandoNumeroDeVagasNaoFoiInformado() {
+        Integer ofertaId = 24;
+        Long pessoaId = 123456L;
+        when(vagaRepository.buscarOferta(ofertaId, pessoaId))
+                .thenReturn(Optional.of(ofertaComNumeroVagas(ofertaId, null)));
+
+        var resultado = service.buscarPorId(ofertaId, pessoaId);
+
+        assertThat(resultado.podeCandidatar()).isFalse();
+        assertThat(resultado.motivoIndisponibilidade())
+                .isEqualTo("A quantidade de vagas desta oferta não foi informada.");
+    }
+
     private Map<String, Object> tipoDocumento(Integer id, String descricao) {
         Map<String, Object> tipo = new LinkedHashMap<>();
         tipo.put("id", id);
@@ -169,6 +183,10 @@ class ConsultaVagaServiceImplTest {
     }
 
     private OfertaDetalhe ofertaDisponivel(Integer ofertaId) {
+        return ofertaComNumeroVagas(ofertaId, 1);
+    }
+
+    private OfertaDetalhe ofertaComNumeroVagas(Integer ofertaId, Integer numVagas) {
         return new OfertaDetalhe(
                 ofertaId,
                 "VG-TESTE",
@@ -184,7 +202,7 @@ class ConsultaVagaServiceImplTest {
                 "Empresa Teste",
                 null,
                 null,
-                1,
+                numVagas,
                 null,
                 null,
                 null,
