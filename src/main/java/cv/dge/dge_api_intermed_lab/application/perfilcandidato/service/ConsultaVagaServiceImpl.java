@@ -250,7 +250,9 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
                     "Não foi possível carregar as ofertas. Atualize a página e tente novamente."
             );
         }
-        validarPessoa(filtro.pessoaId());
+        if (filtro.pessoaId() != null) {
+            validarPessoa(filtro.pessoaId());
+        }
         if (filtro.dataInicio() != null && filtro.dataFim() != null
                 && filtro.dataFim().isBefore(filtro.dataInicio())) {
             throw new ResponseStatusException(

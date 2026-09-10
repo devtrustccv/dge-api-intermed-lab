@@ -11,6 +11,7 @@ import cv.dge.dge_api_intermed_lab.application.document.dto.DocRelacaoDTO;
 import cv.dge.dge_api_intermed_lab.application.document.service.ComboboxService;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaVagaRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaFiltro;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ConsultaVagaRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ConsultaVagaRepository.OfertaDetalhe;
 import java.time.LocalDateTime;
@@ -164,6 +165,29 @@ class ConsultaVagaServiceImplTest {
         assertThat(resultado.podeCandidatar()).isFalse();
         assertThat(resultado.motivoIndisponibilidade())
                 .isEqualTo("A quantidade de vagas desta oferta não foi informada.");
+    }
+
+    @Test
+    void devePermitirListarVagasPorEntidadeSemPessoaId() {
+        when(vagaRepository.listar(any())).thenReturn(List.of());
+
+        var resultado = service.listar(new ConsultaVagaFiltro(
+                null,
+                null,
+                40,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        ));
+
+        assertThat(resultado.totalOfertas()).isZero();
+        verify(vagaRepository).listar(org.mockito.ArgumentMatchers.argThat(filtro ->
+                filtro.pessoaId() == null && Integer.valueOf(40).equals(filtro.entidadeId())
+        ));
     }
 
     private Map<String, Object> tipoDocumento(Integer id, String descricao) {

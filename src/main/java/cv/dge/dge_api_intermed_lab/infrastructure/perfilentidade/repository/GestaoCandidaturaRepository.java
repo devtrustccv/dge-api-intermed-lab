@@ -76,7 +76,11 @@ public class GestaoCandidaturaRepository {
                     c.canal,
                     c.status_candidatura,
                     c.selecao_iefp,
+                    c.habilitacao_academica,
+                    c.anexos,
+                    c.motivo_recusa,
                     c.date_create,
+                    o.codigo_referencia,
                     o.titulo,
                     entrevista.id AS entrevista_id
                 FROM emprego_t_candidatura_oferta c
@@ -93,25 +97,47 @@ public class GestaoCandidaturaRepository {
                 ORDER BY c.date_create DESC NULLS LAST, c.id DESC
                 """;
 
-        return empregoJdbcTemplate.query(sql, (rs, rowNum) -> new CandidaturaListaResponse(
-                rs.getInt("id"),
-                getLong(rs, "pessoa_id"),
-                textoOuPadrao(rs.getString("nome"), buscarNomePessoa(getLong(rs, "pessoa_id")).orElse(null)),
-                rs.getString("tipo_oferta"),
-                rs.getString("tipo_oferta"),
-                rs.getObject("id_oferta", Integer.class),
-                rs.getString("titulo"),
-                rs.getString("canal"),
-                rs.getString("canal"),
-                rs.getString("status_candidatura"),
-                rs.getString("status_candidatura"),
-                rs.getObject("selecao_iefp", Boolean.class),
-                null,
-                null,
-                rs.getObject("entrevista_id", Integer.class),
-                rs.getObject("entrevista_id") != null,
-                rs.getObject("date_create", LocalDateTime.class)
-        ), params.toArray());
+        return empregoJdbcTemplate.query(sql, (rs, rowNum) -> {
+            Long pessoaId = getLong(rs, "pessoa_id");
+            CandidatoDetalheResponse candidato = buscarCandidato(
+                    pessoaId,
+                    rs.getString("nome"),
+                    rs.getString("habilitacao_academica")
+            );
+            Object anexo = readJson(rs.getObject("anexos"));
+            Integer entrevistaId = rs.getObject("entrevista_id", Integer.class);
+
+            return new CandidaturaListaResponse(
+                    rs.getInt("id"),
+                    pessoaId,
+                    candidato.nome(),
+                    candidato.dataNascimento(),
+                    candidato.sexo(),
+                    candidato.email(),
+                    candidato.telemovel(),
+                    candidato.localizacao(),
+                    candidato.morada(),
+                    candidato.habilitacaoAcademica(),
+                    rs.getString("tipo_oferta"),
+                    rs.getString("tipo_oferta"),
+                    rs.getObject("id_oferta", Integer.class),
+                    rs.getString("codigo_referencia"),
+                    rs.getString("titulo"),
+                    rs.getString("canal"),
+                    rs.getString("canal"),
+                    extrairTipoDocumento(anexo),
+                    anexo,
+                    rs.getString("status_candidatura"),
+                    rs.getString("status_candidatura"),
+                    rs.getString("motivo_recusa"),
+                    rs.getObject("selecao_iefp", Boolean.class),
+                    null,
+                    null,
+                    entrevistaId,
+                    entrevistaId != null,
+                    rs.getObject("date_create", LocalDateTime.class)
+            );
+        }, params.toArray());
     }
 
     public Optional<CandidaturaDetalheResponse> buscarPorId(Integer id) {
@@ -364,24 +390,6 @@ public class GestaoCandidaturaRepository {
         ));
     }
 
-    private Optional<String> buscarNomePessoa(Long pessoaId) {
-        if (pessoaId == null) {
-            return Optional.empty();
-        }
-        List<String> resultados = globalJdbcTemplate.query(
-                """
-                        SELECT nome
-                        FROM ci_t_pessoa
-                        WHERE id = ?
-                        """,
-                (rs, rowNum) -> rs.getString("nome"),
-                pessoaId
-        );
-        return resultados.stream()
-                .filter(this::temTexto)
-                .findFirst();
-    }
-
     private Optional<String> buscarNomeGeografia(String idOuCodigo) {
         if (!temTexto(idOuCodigo)) {
             return Optional.empty();
@@ -470,6 +478,47 @@ public class GestaoCandidaturaRepository {
         } catch (Exception ex) {
             return value.toString();
         }
+    }
+
+    private String extrairTipoDocumento(Object anexos) {
+        if (anexos instanceof java.util.Map<?, ?> mapa) {
+            Object curriculo = primeiroValor(mapa, "curriculumVitae", "curriculoVitae", "curriculo", "cv");
+            String tipoCurriculo = extrairTipoDocumentoDoValor(curriculo);
+            if (temTexto(tipoCurriculo)) {
+                return tipoCurriculo;
+            }
+            if (curriculo != null) {
+                return "CURRICULO_VITAE";
+            }
+            Object outros = primeiroValor(mapa, "outrosDocumentos", "documentos", "anexos");
+            return extrairTipoDocumentoDoValor(outros);
+        }
+        return extrairTipoDocumentoDoValor(anexos);
+    }
+
+    private String extrairTipoDocumentoDoValor(Object valor) {
+        if (valor instanceof java.util.Map<?, ?> mapa) {
+            Object tipo = primeiroValor(mapa, "tipo", "tipoDocumento", "idTpDoc", "id_tp_doc");
+            return texto(tipo);
+        }
+        if (valor instanceof Iterable<?> valores) {
+            for (Object item : valores) {
+                String tipo = extrairTipoDocumentoDoValor(item);
+                if (temTexto(tipo)) {
+                    return tipo;
+                }
+            }
+        }
+        return null;
+    }
+
+    private Object primeiroValor(java.util.Map<?, ?> mapa, String... chaves) {
+        for (String chave : chaves) {
+            if (mapa.containsKey(chave)) {
+                return mapa.get(chave);
+            }
+        }
+        return null;
     }
 
     private void setLong(PreparedStatement ps, int index, Long value) throws java.sql.SQLException {
