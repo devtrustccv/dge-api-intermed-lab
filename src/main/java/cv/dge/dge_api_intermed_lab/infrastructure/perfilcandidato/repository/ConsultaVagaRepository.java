@@ -54,7 +54,13 @@ public class ConsultaVagaRepository {
     public List<OfertaResumo> listar(ConsultaVagaFiltro filtro) {
         List<Object> parametros = new ArrayList<>();
         String where = construirWhere(filtro, parametros);
-        String sql = """
+        String sql = construirSqlListagem(where);
+
+        return empregoJdbcTemplate.query(sql, this::mapResumo, parametros.toArray());
+    }
+
+    private String construirSqlListagem(String where) {
+        return """
                 SELECT
                     o.id,
                     o.titulo,
@@ -70,11 +76,9 @@ public class ConsultaVagaRepository {
                     o.data_fim_candidatura,
                     FALSE AS ja_candidatado
                 FROM emprego_t_oferta o
-                """ + where + """
+                %s
                 ORDER BY o.data_fim_candidatura ASC NULLS LAST, o.date_create DESC NULLS LAST, o.id DESC
-                """;
-
-        return empregoJdbcTemplate.query(sql, this::mapResumo, parametros.toArray());
+                """.formatted(where);
     }
 
     public Optional<OfertaDetalhe> buscarOferta(Integer ofertaId, Long pessoaId) {
