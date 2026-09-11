@@ -20,10 +20,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class PerfilCandidatoVagaControllerTest {
@@ -39,7 +41,10 @@ class PerfilCandidatoVagaControllerTest {
                 consultaVagaService,
                 new ObjectMapper()
         );
-        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(controller)
+                .setControllerAdvice(new PerfilCandidatoApiExceptionHandler())
+                .build();
     }
 
     @Test
@@ -60,8 +65,17 @@ class PerfilCandidatoVagaControllerTest {
 
     @Test
     void deveExigirEntidadeIdAoListarVagas() throws Exception {
+        when(consultaVagaService.listar(argThat(filtro -> filtro.entidadeId() == null)))
+                .thenThrow(new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Informe uma entidade v\u00e1lida para consultar as ofertas."
+                ));
+
         mockMvc.perform(get("/v1/perfil-candidato/vagas"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.sucesso").value(false))
+                .andExpect(jsonPath("$.mensagem")
+                        .value("Informe uma entidade v\u00e1lida para consultar as ofertas."));
     }
 
     @Test

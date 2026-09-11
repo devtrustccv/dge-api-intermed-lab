@@ -1,6 +1,7 @@
 package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -27,7 +28,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class ConsultaVagaServiceImplTest {
@@ -187,6 +190,27 @@ class ConsultaVagaServiceImplTest {
         verify(vagaRepository).listar(org.mockito.ArgumentMatchers.argThat(filtro ->
                 Integer.valueOf(40).equals(filtro.entidadeId())
         ));
+    }
+
+    @Test
+    void deveRejeitarListagemSemEntidadeIdComErroDeNegocio() {
+        ConsultaVagaFiltro filtro = new ConsultaVagaFiltro(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+
+        assertThatThrownBy(() -> service.listar(filtro))
+                .isInstanceOfSatisfying(ResponseStatusException.class, ex -> {
+                    assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+                    assertThat(ex.getReason()).contains("entidade");
+                });
     }
 
     private Map<String, Object> tipoDocumento(Integer id, String descricao) {
