@@ -59,7 +59,8 @@
                                                                {
                                                                    "key":  "entidadeId",
                                                                    "value":  "{{entidadeId}}",
-                                                                   "description":  "Entidade cujas vagas serão consultadas. Campo obrigatório."
+                                                                   "description":  "Filtro opcional. Quando desativado, devolve as vagas de todas as entidades.",
+                                                                   "disabled":  true
                                                                },
                                                                {
                                                                    "key":  "tipoOferta",
@@ -110,7 +111,7 @@
                                                                }
                                                            ]
                                              },
-                                     "description":  "Lista as vagas da entidade informada, sem receber pessoaId. Devolve totais, cartões da lista, disponibilidade geral e pontos agregados por concelho para o mapa. Apenas ofertas ATIVA e FECHADA são visíveis no Perfil Candidato."
+                                     "description":  "Lista todas as vagas quando entidadeId não é informado, ou filtra pela entidade quando o parâmetro é enviado. Não recebe pessoaId. Devolve totais, cartões da lista, disponibilidade geral e pontos agregados por concelho para o mapa. Apenas ofertas ATIVA e FECHADA são visíveis no Perfil Candidato."
                                  },
                      "response":  [
 

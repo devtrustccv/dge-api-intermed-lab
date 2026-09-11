@@ -250,7 +250,7 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
                     "Não foi possível carregar as ofertas. Atualize a página e tente novamente."
             );
         }
-        if (filtro.entidadeId() == null || filtro.entidadeId() <= 0) {
+        if (filtro.entidadeId() != null && filtro.entidadeId() <= 0) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Informe uma entidade v\u00e1lida para consultar as ofertas."
