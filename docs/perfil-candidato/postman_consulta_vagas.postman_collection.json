@@ -46,7 +46,7 @@
 
                                                 ],
                                      "url":  {
-                                                 "raw":  "{{baseUrl}}/v1/perfil-candidato/vagas?pessoaId={{pessoaId}}\u0026tipoOferta={{tipoOferta}}\u0026entidadeId={{entidadeId}}\u0026ilha={{ilha}}\u0026concelho={{concelho}}\u0026estado={{estadoOferta}}\u0026codigoReferencia={{codigoReferencia}}\u0026dataInicio={{dataInicio}}\u0026dataFim={{dataFim}}\u0026pesquisa={{pesquisa}}",
+                                                 "raw":  "{{baseUrl}}/v1/perfil-candidato/vagas?entidadeId={{entidadeId}}\u0026tipoOferta={{tipoOferta}}\u0026ilha={{ilha}}\u0026concelho={{concelho}}\u0026estado={{estadoOferta}}\u0026codigoReferencia={{codigoReferencia}}\u0026dataInicio={{dataInicio}}\u0026dataFim={{dataFim}}\u0026pesquisa={{pesquisa}}",
                                                  "host":  [
                                                               "{{baseUrl}}"
                                                           ],
@@ -57,19 +57,14 @@
                                                           ],
                                                  "query":  [
                                                                {
-                                                                   "key":  "pessoaId",
-                                                                   "value":  "{{pessoaId}}",
-                                                                   "description":  "Candidato com sessão ativa."
+                                                                   "key":  "entidadeId",
+                                                                   "value":  "{{entidadeId}}",
+                                                                   "description":  "Entidade cujas vagas serão consultadas. Campo obrigatório."
                                                                },
                                                                {
                                                                    "key":  "tipoOferta",
                                                                    "value":  "{{tipoOferta}}",
                                                                    "description":  "OFERTA_EMPREGO ou OFERTA_ESTAGIO.",
-                                                                   "disabled":  true
-                                                               },
-                                                               {
-                                                                   "key":  "entidadeId",
-                                                                   "value":  "{{entidadeId}}",
                                                                    "disabled":  true
                                                                },
                                                                {
@@ -115,7 +110,7 @@
                                                                }
                                                            ]
                                              },
-                                     "description":  "Um único endpoint devolve totais, cartões da lista, disponibilidade para candidatura e pontos agregados por concelho para o mapa. Apenas ofertas ATIVA e FECHADA são visíveis no Perfil Candidato."
+                                     "description":  "Lista as vagas da entidade informada, sem receber pessoaId. Devolve totais, cartões da lista, disponibilidade geral e pontos agregados por concelho para o mapa. Apenas ofertas ATIVA e FECHADA são visíveis no Perfil Candidato."
                                  },
                      "response":  [
 

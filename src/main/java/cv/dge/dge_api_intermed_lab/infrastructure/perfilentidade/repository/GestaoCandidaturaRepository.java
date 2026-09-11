@@ -127,6 +127,7 @@ public class GestaoCandidaturaRepository {
                     rs.getString("canal"),
                     extrairTipoDocumento(anexo),
                     anexo,
+                    null,
                     rs.getString("status_candidatura"),
                     rs.getString("status_candidatura"),
                     rs.getString("motivo_recusa"),

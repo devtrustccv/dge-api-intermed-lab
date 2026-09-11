@@ -40,9 +40,8 @@ public class PerfilCandidatoVagaController {
 
     @GetMapping
     public PerfilCandidatoApiResponse<ConsultaVagasResponse> listar(
-            @RequestParam(required = false) Long pessoaId,
             @RequestParam(required = false) String tipoOferta,
-            @RequestParam(required = false) Integer entidadeId,
+            @RequestParam Integer entidadeId,
             @RequestParam(required = false) String ilha,
             @RequestParam(required = false) String concelho,
             @RequestParam(required = false) String estado,
@@ -56,7 +55,6 @@ public class PerfilCandidatoVagaController {
         return PerfilCandidatoApiResponse.sucesso(
                 "Ofertas disponíveis carregadas com sucesso.",
                 consultaVagaService.listar(new ConsultaVagaFiltro(
-                        pessoaId,
                         tipoOferta,
                         entidadeId,
                         ilha,

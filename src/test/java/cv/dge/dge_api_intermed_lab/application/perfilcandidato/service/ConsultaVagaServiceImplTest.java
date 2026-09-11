@@ -168,11 +168,10 @@ class ConsultaVagaServiceImplTest {
     }
 
     @Test
-    void devePermitirListarVagasPorEntidadeSemPessoaId() {
+    void deveListarVagasPorEntidade() {
         when(vagaRepository.listar(any())).thenReturn(List.of());
 
         var resultado = service.listar(new ConsultaVagaFiltro(
-                null,
                 null,
                 40,
                 null,
@@ -186,7 +185,7 @@ class ConsultaVagaServiceImplTest {
 
         assertThat(resultado.totalOfertas()).isZero();
         verify(vagaRepository).listar(org.mockito.ArgumentMatchers.argThat(filtro ->
-                filtro.pessoaId() == null && Integer.valueOf(40).equals(filtro.entidadeId())
+                Integer.valueOf(40).equals(filtro.entidadeId())
         ));
     }
 

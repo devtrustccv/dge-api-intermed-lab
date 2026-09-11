@@ -1,7 +1,9 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.dto;
 
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaDocumentoResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record CandidaturaListaResponse(
         Integer id,
@@ -23,6 +25,7 @@ public record CandidaturaListaResponse(
         String canalDesc,
         String tipoDocumento,
         Object anexo,
+        List<CandidaturaDocumentoResponse> anexos,
         String statusCandidatura,
         String statusCandidaturaDesc,
         String motivoRecusa,

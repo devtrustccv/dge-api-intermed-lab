@@ -68,21 +68,13 @@ public class ConsultaVagaRepository {
                     o.estado,
                     o.data_inicio_candidatura,
                     o.data_fim_candidatura,
-                    EXISTS (
-                        SELECT 1
-                        FROM emprego_t_candidatura_oferta candidatura
-                        WHERE candidatura.id_oferta = o.id
-                          AND candidatura.pessoa_id = ?
-                    ) AS ja_candidatado
+                    FALSE AS ja_candidatado
                 FROM emprego_t_oferta o
                 """ + where + """
                 ORDER BY o.data_fim_candidatura ASC NULLS LAST, o.date_create DESC NULLS LAST, o.id DESC
                 """;
 
-        List<Object> todosParametros = new ArrayList<>();
-        todosParametros.add(filtro.pessoaId());
-        todosParametros.addAll(parametros);
-        return empregoJdbcTemplate.query(sql, this::mapResumo, todosParametros.toArray());
+        return empregoJdbcTemplate.query(sql, this::mapResumo, parametros.toArray());
     }
 
     public Optional<OfertaDetalhe> buscarOferta(Integer ofertaId, Long pessoaId) {

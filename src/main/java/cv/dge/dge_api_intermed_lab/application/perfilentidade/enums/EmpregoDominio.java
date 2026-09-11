@@ -26,6 +26,9 @@ public enum EmpregoDominio {
     SIM_NAO_S("SIM_NAO", "S", "Sim"),
     SIM_NAO_N("SIM_NAO", "N", "N\u00e3o"),
 
+    SEXO_MASCULINO("SEXO", "M", "Masculino"),
+    SEXO_FEMININO("SEXO", "F", "Feminino"),
+
     REGIME_CONTRATO_EFETIVO("REGIME_CONTRATO", "CONTRATO_EFETIVO", "Contrato Efetivo"),
     REGIME_CONTRATO_TERMO("REGIME_CONTRATO", "CONTRATO_TERMO", "Contrato a termo"),
     REGIME_CONTRATO_PRESTACAO_SERVICO("REGIME_CONTRATO", "PRESTACAO_SERVICO", "Presta\u00e7\u00e3o de Servi\u00e7os"),
@@ -138,6 +141,7 @@ public enum EmpregoDominio {
     public static final String DOMINIO_TIPO_OFERTA = "TIPO_OFERTA";
     public static final String DOMINIO_NIVEL_CONHECIMENTO = "NIVEL_CONHECIMENTO";
     public static final String DOMINIO_SIM_NAO = "SIM_NAO";
+    public static final String DOMINIO_SEXO = "SEXO";
     public static final String DOMINIO_REGIME_CONTRATO = "REGIME_CONTRATO";
     public static final String DOMINIO_NIVEL_QUALIFICACAO = "NIVEL_QUALIFICACAO";
     public static final String DOMINIO_PARECER_ENTREVISTA = "PARECER_ENTREVISTA";
@@ -242,6 +246,11 @@ public enum EmpregoDominio {
                 case "NIVEL_3" -> "3";
                 case "NIVEL_4" -> "4";
                 case "NIVEL_5" -> "5";
+                default -> valor;
+            };
+            case DOMINIO_SEXO -> switch (valor) {
+                case "MASCULINO", "MALE" -> "M";
+                case "FEMININO", "FEMALE" -> "F";
                 default -> valor;
             };
             case DOMINIO_HABILITACAO_LITERARIA -> switch (valor) {

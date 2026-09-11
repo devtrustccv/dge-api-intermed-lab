@@ -4,13 +4,17 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagasResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.service.ConsultaVagaService;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,6 +40,28 @@ class PerfilCandidatoVagaControllerTest {
                 new ObjectMapper()
         );
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+    }
+
+    @Test
+    void deveListarVagasApenasPorEntidadeId() throws Exception {
+        when(consultaVagaService.listar(argThat(filtro ->
+                Integer.valueOf(40).equals(filtro.entidadeId())
+        ))).thenReturn(new ConsultaVagasResponse(0L, 0L, 0L, List.of(), List.of()));
+
+        mockMvc.perform(get("/v1/perfil-candidato/vagas")
+                        .param("entidadeId", "40"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sucesso").value(true));
+
+        verify(consultaVagaService).listar(argThat(filtro ->
+                Integer.valueOf(40).equals(filtro.entidadeId())
+        ));
+    }
+
+    @Test
+    void deveExigirEntidadeIdAoListarVagas() throws Exception {
+        mockMvc.perform(get("/v1/perfil-candidato/vagas"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

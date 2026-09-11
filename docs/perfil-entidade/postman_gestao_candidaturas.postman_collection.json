@@ -24,7 +24,7 @@
                 "candidaturas"
               ]
             },
-            "description": "Lista as candidaturas. entrevistaId identifica a entrevista pendente mais recente. Enquanto existir uma entrevista pendente, podeAgendarEntrevista é false e podeRegistarResultadoEntrevista é true. Depois de a entrevista ser realizada, pode ser agendada uma nova."
+            "description": "Lista as candidaturas. sexoCandidato contém a descrição (por exemplo, Masculino ou Feminino). anexo contém o primeiro documento e anexos contém a lista completa com tipo, nome, path e url de visualização no SGF. entrevistaId identifica a entrevista pendente mais recente. Enquanto existir uma entrevista pendente, podeAgendarEntrevista é false e podeRegistarResultadoEntrevista é true. Depois de a entrevista ser realizada, pode ser agendada uma nova."
           },
           "response": []
         },

@@ -250,8 +250,11 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
                     "Não foi possível carregar as ofertas. Atualize a página e tente novamente."
             );
         }
-        if (filtro.pessoaId() != null) {
-            validarPessoa(filtro.pessoaId());
+        if (filtro.entidadeId() == null || filtro.entidadeId() <= 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Informe uma entidade v\u00e1lida para consultar as ofertas."
+            );
         }
         if (filtro.dataInicio() != null && filtro.dataFim() != null
                 && filtro.dataFim().isBefore(filtro.dataInicio())) {
@@ -261,7 +264,6 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
             );
         }
         return new ConsultaVagaFiltro(
-                filtro.pessoaId(),
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_TIPO_OFERTA, filtro.tipoOferta(),
                         "Selecione um tipo de oferta válido."),
                 filtro.entidadeId(),

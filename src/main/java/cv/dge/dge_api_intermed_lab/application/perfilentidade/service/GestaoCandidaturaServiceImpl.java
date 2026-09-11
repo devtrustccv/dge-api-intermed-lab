@@ -1,5 +1,8 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 
+import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
+import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaDocumentoResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaAvaliacaoRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaDetalheResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaFiltro;
@@ -10,8 +13,15 @@ import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EntrevistaResu
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.GestaoCandidaturaRepository;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,14 +29,24 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
 
     private static final String STATUS_TRIAGEM = "TRIAGEM";
     private static final String STATUS_APROVADO = "APROVADO";
     private static final String ESTADO_ENTREVISTA_PENDENTE = "PENDENTE";
     private static final String ESTADO_ENTREVISTA_REALIZADO = "REALIZADO";
+    private static final String TIPO_DOCUMENTO_CURRICULO = "CURRICULO_VITAE";
+    private static final String TIPO_DOCUMENTO_OUTRO = "OUTRO_DOCUMENTO";
 
     private final GestaoCandidaturaRepository candidaturaRepository;
+    private final DocumentService documentService;
+
+    @Value("${document.candidatura.app-code:interm_laboral}")
+    private String appCodeDocumento;
+
+    @Value("${document.candidatura.tipo-relacao:EMPREGO_T_CANDIDATURA_OFERTA}")
+    private String tipoRelacaoDocumento;
 
     @Override
     @Transactional(readOnly = true)
@@ -206,12 +226,18 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
     }
 
     private CandidaturaListaResponse enriquecerLista(CandidaturaListaResponse item) {
+        List<CandidaturaDocumentoResponse> anexos = resolverAnexos(item);
+        CandidaturaDocumentoResponse primeiroAnexo = anexos.stream().findFirst().orElse(null);
+        String tipoDocumento = temTexto(item.tipoDocumento())
+                ? item.tipoDocumento()
+                : primeiroAnexo == null ? null : primeiroAnexo.tipo();
+
         return new CandidaturaListaResponse(
                 item.id(),
                 item.pessoaId(),
                 item.nomeCandidato(),
                 item.dataNascCandidato(),
-                item.sexoCandidato(),
+                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_SEXO, item.sexoCandidato()),
                 item.emailCandidato(),
                 item.telefoneCandidato(),
                 item.ilhaConcelhoCandidato(),
@@ -224,8 +250,9 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
                 item.tituloOferta(),
                 valorDominio(EmpregoDominio.DOMINIO_CANAL_OFERTA, item.canal()),
                 EmpregoDominio.descricao(EmpregoDominio.DOMINIO_CANAL_OFERTA, item.canal()),
-                item.tipoDocumento(),
-                item.anexo(),
+                tipoDocumento,
+                primeiroAnexo,
+                anexos,
                 valorDominio(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, item.statusCandidatura()),
                 EmpregoDominio.descricao(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, item.statusCandidatura()),
                 item.motivoRecusa(),
@@ -236,6 +263,180 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
                 Boolean.TRUE.equals(item.podeRegistarResultadoEntrevista()),
                 item.dataCandidatura()
         );
+    }
+
+    private List<CandidaturaDocumentoResponse> resolverAnexos(CandidaturaListaResponse item) {
+        List<CandidaturaDocumentoResponse> documentos = new ArrayList<>();
+        Set<String> identidades = new LinkedHashSet<>();
+        adicionarAnexos(item.anexo(), null, documentos, identidades);
+
+        if (documentos.isEmpty()) {
+            adicionarAnexosDaRelacao(item.id(), documentos, identidades);
+        }
+        return List.copyOf(documentos);
+    }
+
+    private void adicionarAnexos(
+            Object valor,
+            String tipoPadrao,
+            List<CandidaturaDocumentoResponse> documentos,
+            Set<String> identidades
+    ) {
+        if (valor == null) {
+            return;
+        }
+        if (valor instanceof Collection<?> valores) {
+            valores.forEach(item -> adicionarAnexos(item, tipoPadrao, documentos, identidades));
+            return;
+        }
+        if (valor instanceof Map<?, ?> mapa) {
+            CandidaturaDocumentoResponse documento = converterDocumento(mapa, tipoPadrao);
+            if (documento != null) {
+                adicionarSemDuplicar(documento, documentos, identidades);
+                return;
+            }
+
+            Object curriculo = primeiroValor(mapa, "curriculumVitae", "curriculoVitae", "curriculo", "cv");
+            Object outros = primeiroValor(mapa, "outrosDocumentos", "documentos", "outros", "anexos");
+            adicionarAnexos(curriculo, TIPO_DOCUMENTO_CURRICULO, documentos, identidades);
+            adicionarAnexos(outros, TIPO_DOCUMENTO_OUTRO, documentos, identidades);
+            if (curriculo == null && outros == null) {
+                mapa.values().forEach(item -> adicionarAnexos(item, tipoPadrao, documentos, identidades));
+            }
+            return;
+        }
+        if (valor instanceof CandidaturaDocumentoResponse documento) {
+            adicionarSemDuplicar(normalizarDocumento(documento), documentos, identidades);
+            return;
+        }
+
+        String path = texto(valor);
+        if (path != null) {
+            adicionarSemDuplicar(new CandidaturaDocumentoResponse(
+                    tipoPadrao,
+                    nomeDoPath(path),
+                    path,
+                    documentService.gerarLinkPublico(path)
+            ), documentos, identidades);
+        }
+    }
+
+    private CandidaturaDocumentoResponse converterDocumento(Map<?, ?> mapa, String tipoPadrao) {
+        String path = texto(primeiroValor(mapa, "path", "caminho", "anexo"));
+        String url = texto(primeiroValor(mapa, "url", "previewUrl", "ver_documento"));
+        if (!temTexto(path) && !temTexto(url)) {
+            return null;
+        }
+
+        String tipo = texto(primeiroValor(mapa, "tipo", "tipoDocumento", "idTpDoc", "id_tp_doc"));
+        String nome = texto(primeiroValor(mapa, "nome", "name", "fileName", "file_name", "ficheiro"));
+        if (!temTexto(url) && temTexto(path)) {
+            url = documentService.gerarLinkPublico(path);
+        }
+        if (!temTexto(nome)) {
+            nome = nomeDoPath(temTexto(path) ? path : url);
+        }
+        return new CandidaturaDocumentoResponse(
+                temTexto(tipo) ? tipo : tipoPadrao,
+                nome,
+                path,
+                url
+        );
+    }
+
+    private CandidaturaDocumentoResponse normalizarDocumento(CandidaturaDocumentoResponse documento) {
+        String url = documento.url();
+        if (!temTexto(url) && temTexto(documento.path())) {
+            url = documentService.gerarLinkPublico(documento.path());
+        }
+        String nome = temTexto(documento.nome())
+                ? documento.nome()
+                : nomeDoPath(temTexto(documento.path()) ? documento.path() : url);
+        return new CandidaturaDocumentoResponse(documento.tipo(), nome, documento.path(), url);
+    }
+
+    private void adicionarAnexosDaRelacao(
+            Integer candidaturaId,
+            List<CandidaturaDocumentoResponse> documentos,
+            Set<String> identidades
+    ) {
+        try {
+            List<DocumentoResponseDTO> documentosRelacionados = documentService.getDocumentosPorRelacao(
+                    candidaturaId,
+                    tipoRelacaoDocumento,
+                    appCodeDocumento
+            );
+            if (documentosRelacionados == null) {
+                return;
+            }
+            documentosRelacionados.stream()
+                    .map(this::converterDocumentoDaRelacao)
+                    .forEach(documento -> adicionarSemDuplicar(documento, documentos, identidades));
+        } catch (RuntimeException ex) {
+            log.warn("Nao foi possivel consultar os anexos da candidatura {} no SGF.", candidaturaId, ex);
+        }
+    }
+
+    private CandidaturaDocumentoResponse converterDocumentoDaRelacao(DocumentoResponseDTO documento) {
+        String path = texto(documento.getPath());
+        String url = texto(documento.getPreviewUrl());
+        if (!temTexto(url) && temTexto(path)) {
+            url = documentService.gerarLinkPublico(path);
+        }
+        String nome = primeiroTexto(documento.getName(), documento.getFileName());
+        if (!temTexto(nome)) {
+            nome = nomeDoPath(temTexto(path) ? path : url);
+        }
+        return new CandidaturaDocumentoResponse(
+                texto(documento.getIdTpDoc()),
+                nome,
+                path,
+                url
+        );
+    }
+
+    private void adicionarSemDuplicar(
+            CandidaturaDocumentoResponse documento,
+            List<CandidaturaDocumentoResponse> documentos,
+            Set<String> identidades
+    ) {
+        if (documento == null || (!temTexto(documento.path()) && !temTexto(documento.url()))) {
+            return;
+        }
+        String identidade = primeiroTexto(documento.path(), documento.url(), documento.nome());
+        if (identidade == null || identidades.add(identidade)) {
+            documentos.add(documento);
+        }
+    }
+
+    private Object primeiroValor(Map<?, ?> mapa, String... chaves) {
+        for (String chave : chaves) {
+            if (mapa.containsKey(chave)) {
+                return mapa.get(chave);
+            }
+        }
+        return null;
+    }
+
+    private String primeiroTexto(String... valores) {
+        for (String valor : valores) {
+            String texto = texto(valor);
+            if (texto != null) {
+                return texto;
+            }
+        }
+        return null;
+    }
+
+    private String nomeDoPath(String valor) {
+        String texto = texto(valor);
+        if (texto == null) {
+            return null;
+        }
+        int indiceQuery = texto.indexOf('?');
+        String semQuery = indiceQuery >= 0 ? texto.substring(0, indiceQuery) : texto;
+        int indiceSeparador = Math.max(semQuery.lastIndexOf('/'), semQuery.lastIndexOf('\\'));
+        return indiceSeparador >= 0 ? semQuery.substring(indiceSeparador + 1) : semQuery;
     }
 
     private CandidaturaDetalheResponse enriquecerDetalhe(CandidaturaDetalheResponse item) {
@@ -345,6 +546,10 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
             return null;
         }
         return valor.trim();
+    }
+
+    private String texto(Object valor) {
+        return valor == null ? null : texto(valor.toString());
     }
 
     private boolean temTexto(String valor) {
