@@ -121,7 +121,7 @@ public class ConfiguracaoAlertaOfertaServiceImpl implements ConfiguracaoAlertaOf
 
         validarTamanho(ilha, 10, "O identificador da ilha não é válido.");
         validarTamanho(concelho, 10, "O identificador do concelho não é válido.");
-        validarTamanho(utilizador, 50, "O email do utilizador excede o tamanho permitido.");
+        validarTamanho(utilizador, 100, "A identificação do utilizador não pode exceder 100 caracteres.");
         if (concelho != null && ilha == null) {
             throw erro("Selecione primeiro a ilha correspondente ao concelho.");
         }

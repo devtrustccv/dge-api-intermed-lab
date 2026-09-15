@@ -41,13 +41,16 @@ public class ConsultaVagaRepository {
             """;
 
     private final JdbcTemplate empregoJdbcTemplate;
+    private final JdbcTemplate globalJdbcTemplate;
     private final ObjectMapper objectMapper;
 
     public ConsultaVagaRepository(
             @Qualifier("primaryDataSource") DataSource primaryDataSource,
+            @Qualifier("tertiaryDataSource") DataSource tertiaryDataSource,
             ObjectMapper objectMapper
     ) {
         this.empregoJdbcTemplate = new JdbcTemplate(primaryDataSource);
+        this.globalJdbcTemplate = new JdbcTemplate(tertiaryDataSource);
         this.objectMapper = objectMapper;
     }
 
@@ -194,13 +197,11 @@ public class ConsultaVagaRepository {
     }
 
     public Optional<String> buscarNomePessoa(Long pessoaId) {
-        return empregoJdbcTemplate.query(
+        return globalJdbcTemplate.query(
                 """
                         SELECT nome
-                        FROM emprego_t_utente
-                        WHERE CAST(pessoa_id AS BIGINT) = ?
-                        ORDER BY date_create DESC NULLS LAST, id DESC
-                        FETCH FIRST 1 ROWS ONLY
+                        FROM ci_t_pessoa
+                        WHERE id = ?
                         """,
                 (rs, rowNum) -> rs.getString("nome"),
                 pessoaId

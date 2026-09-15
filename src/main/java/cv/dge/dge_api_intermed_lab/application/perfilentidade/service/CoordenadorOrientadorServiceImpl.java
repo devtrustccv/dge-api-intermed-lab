@@ -158,6 +158,10 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
         utilizadorObrigatorio(request.utilizador());
         normalizarTipoObrigatorio(request.tipo());
 
+        if (request.entidadeId() == null || request.entidadeId() <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe a entidade.");
+        }
+
         textoObrigatorio(request.numeroDocumento(), "Informe o número do documento.");
         if (!temTexto(request.nome())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe o nome do colaborador.");
@@ -166,6 +170,7 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
 
     private CoordenadorOrientadorRequest normalizarRequest(CoordenadorOrientadorRequest request, String tipo) {
         return new CoordenadorOrientadorRequest(
+                request.entidadeId(),
                 texto(request.numeroDocumento()),
                 request.pessoaId(),
                 texto(request.nome()),
@@ -217,6 +222,7 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
     private CoordenadorOrientadorListaResponse enriquecerLista(CoordenadorOrientadorListaResponse item) {
         return new CoordenadorOrientadorListaResponse(
                 item.id(),
+                item.entidadeId(),
                 valorDominio(EmpregoDominio.DOMINIO_TIPO_COLABORADOR, item.tipo()),
                 EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_COLABORADOR, item.tipo()),
                 item.nome(),
@@ -232,6 +238,7 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
     private CoordenadorOrientadorResponse enriquecerDetalhe(CoordenadorOrientadorResponse item) {
         return new CoordenadorOrientadorResponse(
                 item.id(),
+                item.entidadeId(),
                 valorDominio(EmpregoDominio.DOMINIO_TIPO_COLABORADOR, item.tipo()),
                 EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_COLABORADOR, item.tipo()),
                 item.nome(),

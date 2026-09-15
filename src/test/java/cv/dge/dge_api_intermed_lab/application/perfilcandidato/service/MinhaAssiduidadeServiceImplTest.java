@@ -121,6 +121,49 @@ class MinhaAssiduidadeServiceImplTest {
     }
 
     @Test
+    void deveAceitarIdentificacaoDoUtilizadorAteCemCaracteres() {
+        String utilizador = "u".repeat(100);
+        MinhaAssiduidadeRequest request = new MinhaAssiduidadeRequest(
+                "falta justificada",
+                LocalDate.of(2026, 8, 28),
+                LocalTime.of(8, 30),
+                LocalTime.of(17, 15),
+                "Consulta médica.",
+                utilizador
+        );
+        ColocacaoAtiva colocacao = new ColocacaoAtiva(12, 5, "Entidade X", 9001L, "Kevin Sousa");
+        when(assiduidadeRepository.buscarColocacaoAtiva(9001L)).thenReturn(Optional.of(colocacao));
+        when(assiduidadeRepository.inserir(eq(colocacao), argThat(dados ->
+                utilizador.equals(dados.utilizador())
+        ), eq("PENDENTE"))).thenReturn(41);
+        when(assiduidadeRepository.buscarPorId(41, 9001L)).thenReturn(Optional.of(registo(null)));
+
+        MinhaAssiduidadeDetalheResponse resultado = service.criar(9001L, request, null);
+
+        assertThat(resultado.assiduidadeId()).isEqualTo(41);
+    }
+
+    @Test
+    void deveRejeitarIdentificacaoDoUtilizadorAcimaDeCemCaracteres() {
+        MinhaAssiduidadeRequest request = new MinhaAssiduidadeRequest(
+                "falta justificada",
+                LocalDate.of(2026, 8, 28),
+                LocalTime.of(8, 30),
+                LocalTime.of(17, 15),
+                "Consulta médica.",
+                "u".repeat(101)
+        );
+
+        assertThatThrownBy(() -> service.criar(9001L, request, null))
+                .isInstanceOfSatisfying(ResponseStatusException.class, ex -> {
+                    assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+                    assertThat(ex.getReason()).contains("100 caracteres");
+                });
+
+        verifyNoInteractions(assiduidadeRepository, documentService, comboboxService);
+    }
+
+    @Test
     void deveGuardarComprovativoOpcionalPeloServicoDocumental() {
         MockMultipartFile comprovativo = new MockMultipartFile(
                 "comprovativo",

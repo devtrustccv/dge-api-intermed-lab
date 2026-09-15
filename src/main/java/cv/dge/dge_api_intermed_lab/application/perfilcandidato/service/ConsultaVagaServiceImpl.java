@@ -176,11 +176,7 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
                 ? null
                 : resolverIdTipoDocumento(TIPO_DOCUMENTO_OUTRO);
 
-        String nomeCandidato = vagaRepository.buscarNomePessoa(pessoaId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Não foi possível encontrar os dados do candidato. Atualize a página, entre novamente e tente de novo."
-                ));
+        String nomeCandidato = vagaRepository.buscarNomePessoa(pessoaId).orElse(null);
 
         Integer candidaturaId = vagaRepository.inserirCandidatura(
                 pessoaId,

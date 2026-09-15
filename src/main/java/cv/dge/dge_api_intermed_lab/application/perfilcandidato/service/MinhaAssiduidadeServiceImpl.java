@@ -40,7 +40,7 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
     private static final String ESTADO_PENDENTE = "PENDENTE";
     private static final int TAMANHO_MAXIMO_COMPROVATIVO = 150;
     private static final int TAMANHO_MAXIMO_JUSTIFICACAO = 500;
-    private static final int TAMANHO_MAXIMO_UTILIZADOR = 25;
+    private static final int TAMANHO_MAXIMO_UTILIZADOR = 100;
     private static final DateTimeFormatter FORMATO_HORA = DateTimeFormatter.ofPattern("HH:mm");
 
     private final MinhaAssiduidadeRepository assiduidadeRepository;
@@ -195,7 +195,7 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
         validarTamanho(
                 utilizador,
                 TAMANHO_MAXIMO_UTILIZADOR,
-                "A identificação do utilizador não pode exceder 25 caracteres."
+                "A identificação do utilizador não pode exceder 100 caracteres."
         );
         return new MinhaAssiduidadeRequest(
                 tipo,

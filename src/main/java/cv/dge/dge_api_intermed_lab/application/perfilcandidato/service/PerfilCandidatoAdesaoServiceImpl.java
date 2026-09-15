@@ -36,7 +36,7 @@ public class PerfilCandidatoAdesaoServiceImpl implements PerfilCandidatoAdesaoSe
                 request.utilizador(),
                 "Não foi possível identificar o utilizador. Inicie sessão novamente e repita a operação."
         );
-        if (utilizador.length() > 50) {
+        if (utilizador.length() > 100) {
             throw erro("Não foi possível identificar corretamente o utilizador. Inicie sessão novamente e tente de novo.");
         }
 

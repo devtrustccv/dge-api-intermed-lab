@@ -293,8 +293,8 @@ public class ServicoCandidatoServiceImpl implements ServicoCandidatoService {
                     "Não foi possível identificar o utilizador. Entre novamente e tente de novo."
             );
         }
-        if (valor.length() > 25) {
-            throw erro(HttpStatus.BAD_REQUEST, "A identificação do utilizador não pode exceder 25 caracteres.");
+        if (valor.length() > 100) {
+            throw erro(HttpStatus.BAD_REQUEST, "A identificação do utilizador não pode exceder 100 caracteres.");
         }
         return valor;
     }

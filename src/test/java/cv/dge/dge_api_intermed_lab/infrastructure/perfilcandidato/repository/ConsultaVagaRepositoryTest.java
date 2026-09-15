@@ -14,6 +14,7 @@ class ConsultaVagaRepositoryTest {
     void deveSepararFiltroDaOrdenacaoNaConsultaDeVagas() {
         ConsultaVagaRepository repository = new ConsultaVagaRepository(
                 mock(DataSource.class),
+                mock(DataSource.class),
                 new ObjectMapper()
         );
 

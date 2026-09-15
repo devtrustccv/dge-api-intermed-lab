@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 public record CoordenadorOrientadorResponse(
         Integer id,
+        Integer entidadeId,
         String tipo,
         String tipoDesc,
         String nome,

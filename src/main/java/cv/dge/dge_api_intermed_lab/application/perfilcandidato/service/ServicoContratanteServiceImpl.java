@@ -745,7 +745,7 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
                 utilizador,
                 "Não foi possível identificar o utilizador. Entre novamente e tente de novo."
         );
-        validarTamanho(valor, 25, "A identificação do utilizador não pode exceder 25 caracteres.");
+        validarTamanho(valor, 100, "A identificação do utilizador não pode exceder 100 caracteres.");
         return valor;
     }
 

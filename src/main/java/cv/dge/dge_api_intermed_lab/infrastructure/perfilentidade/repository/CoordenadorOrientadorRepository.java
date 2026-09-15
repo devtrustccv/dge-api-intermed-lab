@@ -24,6 +24,7 @@ public class CoordenadorOrientadorRepository {
 
     private static final String CAMPOS_COLABORADOR = """
             id,
+            entidade_id,
             tipo,
             nome,
             pessoa_id,
@@ -39,6 +40,7 @@ public class CoordenadorOrientadorRepository {
 
     private static final String SQL_INSERT = """
             INSERT INTO emprego_t_entidade_colaborador (
+                entidade_id,
                 tipo,
                 nome,
                 pessoa_id,
@@ -48,12 +50,13 @@ public class CoordenadorOrientadorRepository {
                 estado,
                 date_create,
                 user_create
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """;
 
     private static final String SQL_UPDATE = """
             UPDATE emprego_t_entidade_colaborador
-            SET tipo = ?,
+            SET entidade_id = ?,
+                tipo = ?,
                 nome = ?,
                 pessoa_id = ?,
                 cargo = ?,
@@ -81,6 +84,7 @@ public class CoordenadorOrientadorRepository {
         String sql = """
                 SELECT
                     id,
+                    entidade_id,
                     tipo,
                     nome,
                     pessoa_id,
@@ -97,6 +101,7 @@ public class CoordenadorOrientadorRepository {
         return empregoJdbcTemplate.query(sql, (rs, rowNum) -> {
             return new CoordenadorOrientadorListaResponse(
                     rs.getInt("id"),
+                    getInteger(rs, "entidade_id"),
                     rs.getString("tipo"),
                     rs.getString("tipo"),
                     rs.getString("nome"),
@@ -115,6 +120,7 @@ public class CoordenadorOrientadorRepository {
         List<CoordenadorOrientadorResponse> resultados = empregoJdbcTemplate.query(sql, (rs, rowNum) -> {
             return new CoordenadorOrientadorResponse(
                     rs.getInt("id"),
+                    getInteger(rs, "entidade_id"),
                     rs.getString("tipo"),
                     rs.getString("tipo"),
                     rs.getString("nome"),
@@ -186,15 +192,16 @@ public class CoordenadorOrientadorRepository {
 
         empregoJdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(SQL_INSERT, new String[]{"id"});
-            ps.setString(1, request.tipo());
-            ps.setString(2, request.nome());
-            setLong(ps, 3, pessoaId);
-            ps.setString(4, request.cargo());
-            ps.setString(5, request.email());
-            ps.setString(6, request.telemovel());
-            ps.setString(7, estado);
-            ps.setTimestamp(8, Timestamp.valueOf(agora));
-            ps.setString(9, utilizador);
+            ps.setInt(1, request.entidadeId());
+            ps.setString(2, request.tipo());
+            ps.setString(3, request.nome());
+            setLong(ps, 4, pessoaId);
+            ps.setString(5, request.cargo());
+            ps.setString(6, request.email());
+            ps.setString(7, request.telemovel());
+            ps.setString(8, estado);
+            ps.setTimestamp(9, Timestamp.valueOf(agora));
+            ps.setString(10, utilizador);
             return ps;
         }, keyHolder);
 
@@ -205,6 +212,7 @@ public class CoordenadorOrientadorRepository {
     public void atualizar(Integer id, CoordenadorOrientadorRequest request, Long pessoaId, String utilizador) {
         empregoJdbcTemplate.update(
                 SQL_UPDATE,
+                request.entidadeId(),
                 request.tipo(),
                 request.nome(),
                 pessoaId,
@@ -290,6 +298,17 @@ public class CoordenadorOrientadorRepository {
             return number.longValue();
         }
         return Long.valueOf(value.toString());
+    }
+
+    private Integer getInteger(java.sql.ResultSet rs, String column) throws java.sql.SQLException {
+        Object value = rs.getObject(column);
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        return Integer.valueOf(value.toString());
     }
 
     private boolean temTexto(String valor) {

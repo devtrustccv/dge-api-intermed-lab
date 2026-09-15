@@ -154,8 +154,40 @@ class ConsultaVagaServiceImplTest {
     }
 
     @Test
-    void deveBloquearCandidaturaQuandoNumeroDeVagasNaoFoiInformado() {
+    void devePermitirCandidaturaQuandoNomeDaPessoaNaoForEncontrado() {
         Integer ofertaId = 24;
+        Long pessoaId = 123456L;
+        Integer candidaturaId = 79;
+        when(vagaRepository.buscarOferta(ofertaId, pessoaId))
+                .thenReturn(Optional.of(ofertaDisponivel(ofertaId)));
+        when(vagaRepository.buscarUltimaCandidatura(pessoaId)).thenReturn(Optional.empty());
+        when(vagaRepository.buscarNomePessoa(pessoaId)).thenReturn(Optional.empty());
+        when(vagaRepository.inserirCandidatura(any(), any(), any(), any(), any(), any()))
+                .thenReturn(candidaturaId);
+
+        var resultado = service.candidatar(
+                ofertaId,
+                pessoaId,
+                new CandidaturaVagaRequest("LICENCIATURA", "Programação", "kevin@dge.cv"),
+                null,
+                null
+        );
+
+        assertThat(resultado.id()).isEqualTo(candidaturaId);
+        assertThat(resultado.nomeCandidato()).isNull();
+        verify(vagaRepository).inserirCandidatura(
+                org.mockito.Mockito.eq(pessoaId),
+                org.mockito.ArgumentMatchers.isNull(),
+                any(),
+                any(),
+                any(),
+                any()
+        );
+    }
+
+    @Test
+    void deveBloquearCandidaturaQuandoNumeroDeVagasNaoFoiInformado() {
+        Integer ofertaId = 25;
         Long pessoaId = 123456L;
         when(vagaRepository.buscarOferta(ofertaId, pessoaId))
                 .thenReturn(Optional.of(ofertaComNumeroVagas(ofertaId, null)));
