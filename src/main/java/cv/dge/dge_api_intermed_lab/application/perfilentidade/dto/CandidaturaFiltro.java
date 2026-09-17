@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 public record CandidaturaFiltro(
         Long candidatoId,
+        String candidato,
         String estado,
         String tipoOferta,
         Integer ofertaId,

@@ -33,7 +33,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/v1/colocacoes-candidatos?tipoOferta=OFERTA_EMPREGO&codigoReferencia={{codigoReferencia}}&pessoaId={{pessoaId}}&tipoContrato=CONTRATO_TERMO&dataInicioPrevisto=2026-09-15&dataRegistoInicio=2026-08-01&dataRegistoFim=2026-08-31&entidadeId={{entidadeId}}",
+              "raw": "{{baseUrl}}/v1/colocacoes-candidatos?tipoOferta=OFERTA_EMPREGO&codigoReferencia={{codigoReferencia}}&candidato={{candidato}}&tipoContrato=Contrato%20a%20termo&dataInicioPrevisto=2026-09-15&dataRegistoInicio=2026-08-01&dataRegistoFim=2026-08-31&entidadeId={{entidadeId}}",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -51,12 +51,12 @@
                   "value": "{{codigoReferencia}}"
                 },
                 {
-                  "key": "pessoaId",
-                  "value": "{{pessoaId}}"
+                  "key": "candidato",
+                  "value": "{{candidato}}"
                 },
                 {
                   "key": "tipoContrato",
-                  "value": "CONTRATO_TERMO"
+                  "value": "Contrato a termo"
                 },
                 {
                   "key": "dataInicioPrevisto",
@@ -126,7 +126,7 @@
           "response": []
         },
         {
-          "name": "Select Candidatos por Oferta",
+          "name": "Select Candidatos por Entidade",
           "event": [
             {
               "listen": "test",
@@ -145,7 +145,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/v1/colocacoes-candidatos/candidatos?ofertaId={{ofertaId}}",
+              "raw": "{{baseUrl}}/v1/colocacoes-candidatos/candidatos?entidadeId={{entidadeId}}&ofertaId={{ofertaId}}",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -155,6 +155,10 @@
                 "candidatos"
               ],
               "query": [
+                {
+                  "key": "entidadeId",
+                  "value": "{{entidadeId}}"
+                },
                 {
                   "key": "ofertaId",
                   "value": "{{ofertaId}}"
@@ -321,6 +325,11 @@
     {
       "key": "pessoaId",
       "value": "2001101700869",
+      "type": "string"
+    },
+    {
+      "key": "candidato",
+      "value": "Kevin",
       "type": "string"
     },
     {

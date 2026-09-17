@@ -16,11 +16,19 @@ public class GestaoAvaliacaoEstagiarioController {
     @GetMapping
     public EmpregoApiResponse<List<AvaliacaoEstagiarioListaResponse>> listar(
             @RequestParam Integer entidadeId, @RequestParam(required=false) Long pessoaId,
-            @RequestParam(required=false) String tipoAvaliacao, @RequestParam(required=false) String periodoReferencia,
-            @RequestParam(required=false) LocalDate dataInicio, @RequestParam(required=false) LocalDate dataFim) {
+            @RequestParam(required=false) String estagiario,
+            @RequestParam(required=false) String nomeEstagiario,
+            @RequestParam(required=false) String tipoAvaliacao,
+            @RequestParam(required=false) String periodoRef,
+            @RequestParam(required=false) String periodoReferencia,
+            @RequestParam(required=false) LocalDate dataRegistro,
+            @RequestParam(required=false) LocalDate dataInicio,
+            @RequestParam(required=false) LocalDate dataFim) {
+        String nome = estagiario == null || estagiario.isBlank() ? nomeEstagiario : estagiario;
+        String periodo = periodoRef == null || periodoRef.isBlank() ? periodoReferencia : periodoRef;
         return EmpregoApiResponse.sucesso("Avaliacoes de estagiarios listadas com sucesso.",
-                service.listar(new AvaliacaoEstagiarioFiltro(entidadeId, pessoaId, tipoAvaliacao,
-                        periodoReferencia, dataInicio, dataFim)));
+                service.listar(new AvaliacaoEstagiarioFiltro(entidadeId, pessoaId, nome, tipoAvaliacao,
+                        periodo, dataRegistro, dataInicio, dataFim)));
     }
 
     @GetMapping("/{id}")

@@ -34,6 +34,7 @@ public class GestaoCandidaturaController {
     @GetMapping
     public EmpregoApiResponse<List<CandidaturaListaResponse>> listar(
             @RequestParam(value = "candidatoId", required = false) Long candidatoId,
+            @RequestParam(value = "candidato", required = false) String candidato,
             @RequestParam(value = "estado", required = false) String estado,
             @RequestParam(value = "tipoOferta", required = false) String tipoOferta,
             @RequestParam(value = "ofertaId", required = false) Integer ofertaId,
@@ -47,6 +48,7 @@ public class GestaoCandidaturaController {
                 "Candidaturas listadas com sucesso.",
                 gestaoCandidaturaService.listar(new CandidaturaFiltro(
                         candidatoId,
+                        candidato,
                         estado,
                         tipoOferta,
                         ofertaId,

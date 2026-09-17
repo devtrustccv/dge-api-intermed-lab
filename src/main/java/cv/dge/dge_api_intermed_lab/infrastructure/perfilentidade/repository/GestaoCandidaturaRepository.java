@@ -442,6 +442,10 @@ public class GestaoCandidaturaRepository {
             where.append(" AND c.pessoa_id = ?");
             params.add(filtro.candidatoId());
         }
+        if (temTexto(filtro.candidato())) {
+            where.append(" AND c.nome ILIKE ?");
+            params.add("%" + filtro.candidato().trim() + "%");
+        }
         adicionarFiltroTexto(where, params, "c.status_candidatura", filtro.estado());
         adicionarFiltroTexto(where, params, "c.tipo_oferta", filtro.tipoOferta());
         if (filtro.ofertaId() != null) {

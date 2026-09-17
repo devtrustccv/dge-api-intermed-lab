@@ -34,6 +34,7 @@ public class CoordenadorOrientadorController {
 
     @GetMapping
     public EmpregoApiResponse<List<CoordenadorOrientadorListaResponse>> listar(
+            @RequestParam(value = "entidadeId", required = false) Integer entidadeId,
             @RequestParam(value = "nome", required = false) String nome,
             @RequestParam(value = "tipo", required = false) String tipo,
             @RequestParam(value = "estado", required = false) String estado,
@@ -45,6 +46,7 @@ public class CoordenadorOrientadorController {
         return EmpregoApiResponse.sucesso(
                 "Coordenadores e orientadores listados com sucesso.",
                 coordenadorOrientadorService.listar(new CoordenadorOrientadorFiltro(
+                        entidadeId,
                         nome,
                         tipo,
                         estado,

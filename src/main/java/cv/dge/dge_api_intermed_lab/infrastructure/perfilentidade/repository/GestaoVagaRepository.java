@@ -275,6 +275,7 @@ public class GestaoVagaRepository {
 
         adicionarFiltroTexto(where, params, "o.tipo_oferta", filtro.tipoOferta());
         adicionarFiltroNumero(where, params, "o.entidade_id", filtro.entidadeId());
+        adicionarFiltroParcial(where, params, "o.denominacao_entidade", filtro.entidade());
         adicionarFiltroTexto(where, params, "o.ilha", filtro.ilha());
         adicionarFiltroTexto(where, params, "o.concelho", filtro.concelho());
         adicionarFiltroTexto(where, params, "o.estado", filtro.estado());
@@ -283,11 +284,11 @@ public class GestaoVagaRepository {
         adicionarFiltroNumero(where, params, "o.coordenador_id", filtro.coordenadorId());
 
         if (filtro.dataInicio() != null) {
-            where.append(" AND o.data_inicio_candidatura >= ?");
+            where.append(" AND o.date_create::date >= ?");
             params.add(filtro.dataInicio());
         }
         if (filtro.dataFim() != null) {
-            where.append(" AND o.data_fim_candidatura <= ?");
+            where.append(" AND o.date_create::date <= ?");
             params.add(filtro.dataFim());
         }
         if (temTexto(filtro.pesquisa())) {
@@ -317,6 +318,14 @@ public class GestaoVagaRepository {
         }
         where.append(" AND UPPER(").append(coluna).append(") = UPPER(?)");
         params.add(valor.trim());
+    }
+
+    private void adicionarFiltroParcial(StringBuilder where, List<Object> params, String coluna, String valor) {
+        if (!temTexto(valor)) {
+            return;
+        }
+        where.append(" AND ").append(coluna).append(" ILIKE ?");
+        params.add("%" + valor.trim() + "%");
     }
 
     private void adicionarFiltroNumero(StringBuilder where, List<Object> params, String coluna, Integer valor) {

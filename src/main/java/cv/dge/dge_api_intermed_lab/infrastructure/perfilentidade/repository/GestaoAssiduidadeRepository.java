@@ -156,6 +156,18 @@ public class GestaoAssiduidadeRepository {
             where.append(" AND UPPER(a.tipo_assiduidade) = UPPER(?)");
             params.add(filtro.tipoAssiduidade());
         }
+        if (filtro.data() != null) {
+            where.append(" AND a.data = ?");
+            params.add(filtro.data());
+        }
+        if (filtro.horaEntrada() != null) {
+            where.append(" AND a.hora_entrada = ?");
+            params.add(filtro.horaEntrada());
+        }
+        if (filtro.horaSaida() != null) {
+            where.append(" AND a.hora_saida = ?");
+            params.add(filtro.horaSaida());
+        }
         if (temTexto(filtro.estado())) {
             where.append(" AND UPPER(a.estado) = UPPER(?)");
             params.add(filtro.estado());

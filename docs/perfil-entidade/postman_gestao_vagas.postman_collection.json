@@ -23,37 +23,66 @@
                 "v1",
                 "vagas"
               ],
-              "query": []
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Listar Vagas com Filtros",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/v1/vagas?tipoOferta=OFERTA_EMPREGO&entidadeId={{entidadeId}}&estado=ATIVA",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "v1",
-                "vagas"
-              ],
               "query": [
                 {
                   "key": "tipoOferta",
-                  "value": "OFERTA_EMPREGO"
+                  "value": "OFERTA_EMPREGO",
+                  "disabled": true
                 },
                 {
                   "key": "entidadeId",
-                  "value": "{{entidadeId}}"
+                  "value": "{{entidadeId}}",
+                  "disabled": true
+                },
+                {
+                  "key": "entidade",
+                  "value": "Empresa Teste",
+                  "disabled": true
+                },
+                {
+                  "key": "ilha",
+                  "value": "ST",
+                  "disabled": true
+                },
+                {
+                  "key": "concelho",
+                  "value": "PR",
+                  "disabled": true
                 },
                 {
                   "key": "estado",
-                  "value": "ATIVA"
+                  "value": "ATIVA",
+                  "disabled": true
+                },
+                {
+                  "key": "referencia",
+                  "value": "VG-POSTMAN-001",
+                  "disabled": true
+                },
+                {
+                  "key": "orientadorId",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "coordenadorId",
+                  "value": "2",
+                  "disabled": true
+                },
+                {
+                  "key": "dataInicio",
+                  "value": "2026-08-01",
+                  "disabled": true
+                },
+                {
+                  "key": "dataFim",
+                  "value": "2026-08-31",
+                  "disabled": true
+                },
+                {
+                  "key": "pesquisa",
+                  "value": "Tecnico",
+                  "disabled": true
                 }
               ]
             }

@@ -17,7 +17,7 @@ public interface ColocacaoCandidatoService {
 
     List<ColocacaoOfertaSelectResponse> listarOfertasPorTipoEEntidade(String tipoOferta, Integer entidadeId);
 
-    List<ColocacaoCandidatoSelectResponse> listarCandidatosPorOferta(Integer ofertaId);
+    List<ColocacaoCandidatoSelectResponse> listarCandidatos(Integer entidadeId, Integer ofertaId);
 
     ColocacaoCandidatoResponse criar(ColocacaoCandidatoRequest request);
 

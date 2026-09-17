@@ -5,6 +5,7 @@ import java.time.LocalDate;
 public record VagaFiltro(
         String tipoOferta,
         Integer entidadeId,
+        String entidade,
         String ilha,
         String concelho,
         String estado,

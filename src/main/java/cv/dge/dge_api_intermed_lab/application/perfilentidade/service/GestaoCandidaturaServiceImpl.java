@@ -196,6 +196,7 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
     private CandidaturaFiltro normalizarFiltro(CandidaturaFiltro filtro) {
         return new CandidaturaFiltro(
                 filtro.candidatoId(),
+                texto(filtro.candidato()),
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, filtro.estado()),
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_TIPO_OFERTA, filtro.tipoOferta()),
                 filtro.ofertaId(),

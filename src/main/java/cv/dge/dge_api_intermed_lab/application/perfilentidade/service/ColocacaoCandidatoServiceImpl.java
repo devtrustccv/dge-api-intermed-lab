@@ -73,11 +73,14 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
 
     @Override
     @Transactional(readOnly = true)
-    public List<ColocacaoCandidatoSelectResponse> listarCandidatosPorOferta(Integer ofertaId) {
-        if (ofertaId == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione uma oferta.");
+    public List<ColocacaoCandidatoSelectResponse> listarCandidatos(Integer entidadeId, Integer ofertaId) {
+        if (entidadeId == null || entidadeId <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione uma entidade.");
         }
-        return colocacaoRepository.listarCandidatosPorOferta(ofertaId);
+        if (ofertaId != null && ofertaId <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione uma oferta válida.");
+        }
+        return colocacaoRepository.listarCandidatos(entidadeId, ofertaId);
     }
 
     @Override
@@ -127,6 +130,7 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_TIPO_OFERTA, filtro.tipoOferta()),
                 texto(filtro.codigoReferencia()),
                 filtro.pessoaId(),
+                texto(filtro.candidato()),
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_REGIME_CONTRATO, filtro.tipoContrato()),
                 filtro.dataInicioPrevisto(),
                 filtro.dataRegistoInicio(),
@@ -300,6 +304,11 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
             return null;
         }
         return EmpregoDominio.valorOficial(dominio, texto)
+                .or(() -> EmpregoDominio.listarPorDominio(dominio).stream()
+                        .filter(item -> EmpregoDominio.normalizar(item.getDescricao())
+                                .equals(EmpregoDominio.normalizar(texto)))
+                        .map(EmpregoDominio::getValor)
+                        .findFirst())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
                         "Uma das opções selecionadas não é válida. Atualize a página e tente novamente."

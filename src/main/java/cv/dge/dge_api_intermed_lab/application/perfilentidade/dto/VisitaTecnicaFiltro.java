@@ -7,6 +7,7 @@ public record VisitaTecnicaFiltro(
         String estado,
         String agendadoPor,
         Integer cefpId,
+        String cefp,
         LocalDate dataVisita,
         LocalDate dataInicio,
         LocalDate dataFim

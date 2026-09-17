@@ -39,7 +39,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/v1/assiduidades?entidadeId={{entidadeId}}&estagiarioId={{estagiarioId}}&ofertaId={{ofertaId}}&tipoAssiduidade=FALTA&estado=PENDENTE",
+              "raw": "{{baseUrl}}/v1/assiduidades?entidadeId={{entidadeId}}&estagiarioId={{estagiarioId}}&ofertaId={{ofertaId}}&tipoAssiduidade=FALTA&data=2026-09-17&horaEntrada=08:00&horaSaida=17:00&estado=PENDENTE",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -63,6 +63,18 @@
                 {
                   "key": "tipoAssiduidade",
                   "value": "FALTA"
+                },
+                {
+                  "key": "data",
+                  "value": "2026-09-17"
+                },
+                {
+                  "key": "horaEntrada",
+                  "value": "08:00"
+                },
+                {
+                  "key": "horaSaida",
+                  "value": "17:00"
                 },
                 {
                   "key": "estado",

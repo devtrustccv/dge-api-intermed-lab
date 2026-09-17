@@ -8,6 +8,8 @@ import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeOfe
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeValidacaoRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EmpregoApiResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.GestaoAssiduidadeService;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +33,9 @@ public class GestaoAssiduidadeController {
             @RequestParam(value = "estagiarioId", required = false) Long estagiarioId,
             @RequestParam(value = "ofertaId", required = false) Integer ofertaId,
             @RequestParam(value = "tipoAssiduidade", required = false) String tipoAssiduidade,
+            @RequestParam(value = "data", required = false) LocalDate data,
+            @RequestParam(value = "horaEntrada", required = false) LocalTime horaEntrada,
+            @RequestParam(value = "horaSaida", required = false) LocalTime horaSaida,
             @RequestParam(value = "estado", required = false) String estado
     ) {
         return EmpregoApiResponse.sucesso(
@@ -40,6 +45,9 @@ public class GestaoAssiduidadeController {
                         estagiarioId,
                         ofertaId,
                         tipoAssiduidade,
+                        data,
+                        horaEntrada,
+                        horaSaida,
                         estado
                 ))
         );

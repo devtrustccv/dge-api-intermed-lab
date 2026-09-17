@@ -107,11 +107,21 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
                             + " Atualize a página e tente novamente.");
         }
         validarEntidadeId(filtro.entidadeId());
+        if (filtro.horaEntrada() != null && filtro.horaSaida() != null
+                && filtro.horaSaida().isBefore(filtro.horaEntrada())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "A hora de saída não pode ser anterior à hora de entrada."
+            );
+        }
         return new AssiduidadeEstagiarioFiltro(
                 filtro.entidadeId(),
                 filtro.estagiarioId(),
                 filtro.ofertaId(),
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_TIPO_ASSIDUIDADE, filtro.tipoAssiduidade()),
+                filtro.data(),
+                filtro.horaEntrada(),
+                filtro.horaSaida(),
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_ESTADO_ASSIDUIDADE, filtro.estado())
         );
     }

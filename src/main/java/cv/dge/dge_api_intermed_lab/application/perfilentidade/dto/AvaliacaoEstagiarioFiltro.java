@@ -5,8 +5,10 @@ import java.time.LocalDate;
 public record AvaliacaoEstagiarioFiltro(
         Integer entidadeId,
         Long pessoaId,
+        String estagiario,
         String tipoAvaliacao,
         String periodoReferencia,
+        LocalDate dataRegistro,
         LocalDate dataInicio,
         LocalDate dataFim
 ) {

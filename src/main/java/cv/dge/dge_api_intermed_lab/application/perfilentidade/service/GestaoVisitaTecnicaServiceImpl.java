@@ -194,7 +194,7 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
 
     private VisitaTecnicaFiltro normalizarFiltro(VisitaTecnicaFiltro filtro) {
         if (filtro == null) {
-            return new VisitaTecnicaFiltro(null, null, null, null, null, null, null);
+            return new VisitaTecnicaFiltro(null, null, null, null, null, null, null, null);
         }
         if (filtro.dataInicio() != null && filtro.dataFim() != null && filtro.dataFim().isBefore(filtro.dataInicio())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -205,6 +205,7 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_ESTADO_VISITA_TECNICA, filtro.estado()),
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_AGENDADO_POR, filtro.agendadoPor()),
                 filtro.cefpId(),
+                texto(filtro.cefp()),
                 filtro.dataVisita(),
                 filtro.dataInicio(),
                 filtro.dataFim()

@@ -37,6 +37,7 @@ public class ColocacaoCandidatoController {
             @RequestParam(value = "tipoOferta", required = false) String tipoOferta,
             @RequestParam(value = "codigoReferencia", required = false) String codigoReferencia,
             @RequestParam(value = "pessoaId", required = false) Long pessoaId,
+            @RequestParam(value = "candidato", required = false) String candidato,
             @RequestParam(value = "tipoContrato", required = false) String tipoContrato,
             @RequestParam(value = "dataInicioPrevisto", required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicioPrevisto,
@@ -52,6 +53,7 @@ public class ColocacaoCandidatoController {
                         tipoOferta,
                         codigoReferencia,
                         pessoaId,
+                        candidato,
                         tipoContrato,
                         dataInicioPrevisto,
                         dataRegistoInicio,
@@ -73,12 +75,13 @@ public class ColocacaoCandidatoController {
     }
 
     @GetMapping("candidatos")
-    public EmpregoApiResponse<List<ColocacaoCandidatoSelectResponse>> listarCandidatosPorOferta(
-            @RequestParam("ofertaId") Integer ofertaId
+    public EmpregoApiResponse<List<ColocacaoCandidatoSelectResponse>> listarCandidatos(
+            @RequestParam("entidadeId") Integer entidadeId,
+            @RequestParam(value = "ofertaId", required = false) Integer ofertaId
     ) {
         return EmpregoApiResponse.sucesso(
-                "Candidatos da oferta listados com sucesso.",
-                colocacaoCandidatoService.listarCandidatosPorOferta(ofertaId)
+                "Candidatos da entidade listados com sucesso.",
+                colocacaoCandidatoService.listarCandidatos(entidadeId, ofertaId)
         );
     }
 

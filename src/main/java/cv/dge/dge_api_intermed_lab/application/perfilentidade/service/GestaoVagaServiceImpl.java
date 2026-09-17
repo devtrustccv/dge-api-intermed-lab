@@ -179,15 +179,16 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
         return new VagaFiltro(
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_TIPO_OFERTA, filtro.tipoOferta()),
                 filtro.entidadeId(),
-                filtro.ilha(),
-                filtro.concelho(),
+                texto(filtro.entidade()),
+                texto(filtro.ilha()),
+                texto(filtro.concelho()),
                 normalizarEstadoOfertaOpcional(filtro.estado()),
-                filtro.codigoReferencia(),
+                texto(filtro.codigoReferencia()),
                 filtro.orientadorId(),
                 filtro.coordenadorId(),
                 filtro.dataInicio(),
                 filtro.dataFim(),
-                filtro.pesquisa()
+                texto(filtro.pesquisa())
         );
     }
 

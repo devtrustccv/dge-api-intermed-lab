@@ -63,10 +63,12 @@ public class GestaoVagaController {
     public EmpregoApiResponse<List<VagaListaResponse>> listar(
             @RequestParam(value = "tipoOferta", required = false) String tipoOferta,
             @RequestParam(value = "entidadeId", required = false) Integer entidadeId,
+            @RequestParam(value = "entidade", required = false) String entidade,
             @RequestParam(value = "ilha", required = false) String ilha,
             @RequestParam(value = "concelho", required = false) String concelho,
             @RequestParam(value = "estado", required = false) String estado,
             @RequestParam(value = "codigoReferencia", required = false) String codigoReferencia,
+            @RequestParam(value = "referencia", required = false) String referencia,
             @RequestParam(value = "orientadorId", required = false) Integer orientadorId,
             @RequestParam(value = "coordenadorId", required = false) Integer coordenadorId,
             @RequestParam(value = "dataInicio", required = false)
@@ -80,10 +82,11 @@ public class GestaoVagaController {
                 gestaoVagaService.listar(new VagaFiltro(
                         tipoOferta,
                         entidadeId,
+                        entidade,
                         ilha,
                         concelho,
                         estado,
-                        codigoReferencia,
+                        codigoReferencia != null ? codigoReferencia : referencia,
                         orientadorId,
                         coordenadorId,
                         dataInicio,

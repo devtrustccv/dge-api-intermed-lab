@@ -306,6 +306,10 @@ public class GestaoVisitaTecnicaRepository {
             where.append(" AND v.cefp_id = ?");
             params.add(filtro.cefpId());
         }
+        if (temTexto(filtro.cefp())) {
+            where.append(" AND UPPER(COALESCE(v.cefp, '')) LIKE UPPER(?)");
+            params.add("%" + filtro.cefp().trim() + "%");
+        }
         if (filtro.dataVisita() != null) {
             where.append(" AND v.data_visita = ?");
             params.add(filtro.dataVisita());

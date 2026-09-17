@@ -1,7 +1,8 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public record AvaliacaoEstagiarioListaResponse(
         Integer id,
@@ -11,6 +12,7 @@ public record AvaliacaoEstagiarioListaResponse(
         String tipoAvaliacaoDescricao,
         String periodoReferencia,
         BigDecimal classificacao,
-        LocalDateTime dataRegisto
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+        LocalDate dataRegisto
 ) {
 }

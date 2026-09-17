@@ -6,6 +6,7 @@ public record ColocacaoCandidatoFiltro(
         String tipoOferta,
         String codigoReferencia,
         Long pessoaId,
+        String candidato,
         String tipoContrato,
         LocalDate dataInicioPrevisto,
         LocalDate dataRegistoInicio,

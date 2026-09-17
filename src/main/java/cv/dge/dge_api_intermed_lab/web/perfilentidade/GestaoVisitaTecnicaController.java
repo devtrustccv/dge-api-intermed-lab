@@ -41,6 +41,7 @@ public class GestaoVisitaTecnicaController {
             @RequestParam(value = "estado", required = false) String estado,
             @RequestParam(value = "agendadoPor", required = false) String agendadoPor,
             @RequestParam(value = "cefpId", required = false) Integer cefpId,
+            @RequestParam(value = "cefp", required = false) String cefp,
             @RequestParam(value = "dataVisita", required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataVisita,
             @RequestParam(value = "dataInicio", required = false)
@@ -55,6 +56,7 @@ public class GestaoVisitaTecnicaController {
                         estado,
                         agendadoPor,
                         cefpId,
+                        cefp,
                         dataVisita,
                         dataInicio,
                         dataFim

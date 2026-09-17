@@ -10,7 +10,7 @@
       "name": "Coordenadores e Orientadores",
       "item": [
         {
-          "name": "Listar Todos",
+          "name": "Listar",
           "request": {
             "method": "GET",
             "header": [],
@@ -22,45 +22,37 @@
               "path": [
                 "v1",
                 "coordenadores-orientadores"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Listar com Filtros",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/v1/coordenadores-orientadores?nome=Jose&tipo=ORIENTADOR&estado=A&dataInicio=2026-08-01&dataFim=2026-08-31",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "v1",
-                "coordenadores-orientadores"
               ],
               "query": [
                 {
+                  "key": "entidadeId",
+                  "value": "{{entidadeId}}",
+                  "disabled": true
+                },
+                {
                   "key": "nome",
-                  "value": "Jose"
+                  "value": "Jose",
+                  "disabled": true
                 },
                 {
                   "key": "tipo",
-                  "value": "ORIENTADOR"
+                  "value": "ORIENTADOR",
+                  "disabled": true
                 },
                 {
                   "key": "estado",
-                  "value": "A"
+                  "value": "A",
+                  "disabled": true
                 },
                 {
                   "key": "dataInicio",
-                  "value": "2026-08-01"
+                  "value": "2026-08-01",
+                  "disabled": true
                 },
                 {
                   "key": "dataFim",
-                  "value": "2026-08-31"
+                  "value": "2026-08-31",
+                  "disabled": true
                 }
               ]
             }

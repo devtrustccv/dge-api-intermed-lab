@@ -127,9 +127,9 @@ public class ColocacaoCandidatoRepository {
         );
     }
 
-    public List<ColocacaoCandidatoSelectResponse> listarCandidatosPorOferta(Integer ofertaId) {
-        return jdbcTemplate.query(
-                """
+    public List<ColocacaoCandidatoSelectResponse> listarCandidatos(Integer entidadeId, Integer ofertaId) {
+        List<Object> params = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("""
                 SELECT
                     c.pessoa_id,
                     c.nome,
@@ -138,9 +138,16 @@ public class ColocacaoCandidatoRepository {
                     o.codigo_referencia
                 FROM emprego_t_candidatura_oferta c
                 INNER JOIN emprego_t_oferta o ON o.id = c.id_oferta
-                WHERE c.id_oferta = ?
-                ORDER BY c.nome ASC NULLS LAST, c.id ASC
-                """,
+                WHERE o.entidade_id = ?
+                """);
+        params.add(entidadeId);
+        if (ofertaId != null) {
+            sql.append(" AND c.id_oferta = ?");
+            params.add(ofertaId);
+        }
+        sql.append(" ORDER BY c.nome ASC NULLS LAST, c.id ASC");
+        return jdbcTemplate.query(
+                sql.toString(),
                 (rs, rowNum) -> new ColocacaoCandidatoSelectResponse(
                         getLong(rs, "pessoa_id"),
                         rs.getString("nome"),
@@ -148,7 +155,7 @@ public class ColocacaoCandidatoRepository {
                         getInteger(rs, "oferta_id"),
                         rs.getString("codigo_referencia")
                 ),
-                ofertaId
+                params.toArray()
         );
     }
 
@@ -318,6 +325,7 @@ public class ColocacaoCandidatoRepository {
         adicionarFiltroTexto(where, params, "tipo_oferta", filtro.tipoOferta());
         adicionarFiltroTexto(where, params, "codigo_referencia", filtro.codigoReferencia());
         adicionarFiltroLong(where, params, "pessoa_id", filtro.pessoaId());
+        adicionarFiltroTextoParcial(where, params, "nome", filtro.candidato());
         adicionarFiltroTexto(where, params, "tipo_contrato", filtro.tipoContrato());
         adicionarFiltroNumero(where, params, "entidade_id", filtro.entidadeId());
 
@@ -343,6 +351,14 @@ public class ColocacaoCandidatoRepository {
         }
         where.append(" AND UPPER(").append(coluna).append(") = UPPER(?)");
         params.add(valor.trim());
+    }
+
+    private void adicionarFiltroTextoParcial(StringBuilder where, List<Object> params, String coluna, String valor) {
+        if (!temTexto(valor)) {
+            return;
+        }
+        where.append(" AND UPPER(COALESCE(").append(coluna).append(", '')) LIKE UPPER(?)");
+        params.add("%" + valor.trim() + "%");
     }
 
     private void adicionarFiltroNumero(StringBuilder where, List<Object> params, String coluna, Integer valor) {

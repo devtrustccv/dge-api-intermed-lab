@@ -8,6 +8,7 @@
     { "key": "baseUrl", "value": "http://localhost:9001/api" },
     { "key": "entidadeId", "value": "1" },
     { "key": "pessoaId", "value": "2001101700869" },
+    { "key": "estagiario", "value": "Kevin" },
     { "key": "avaliacaoId", "value": "1" }
   ],
   "item": [
@@ -15,7 +16,7 @@
       "name": "Listar avaliacoes",
       "request": {
         "method": "GET",
-        "url": "{{baseUrl}}/v1/avaliacoes-estagiarios?entidadeId={{entidadeId}}&pessoaId={{pessoaId}}&tipoAvaliacao=MENSAL&periodoReferencia=Agosto&dataInicio=2026-08-01&dataFim=2026-08-31"
+        "url": "{{baseUrl}}/v1/avaliacoes-estagiarios?entidadeId={{entidadeId}}&estagiario={{estagiario}}&tipoAvaliacao=MENSAL&periodoRef=Agosto&dataRegistro=2026-08-15"
       }
     },
     {

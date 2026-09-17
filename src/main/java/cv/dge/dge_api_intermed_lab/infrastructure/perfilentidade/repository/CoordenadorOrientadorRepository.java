@@ -244,6 +244,10 @@ public class CoordenadorOrientadorRepository {
     private String construirWhere(CoordenadorOrientadorFiltro filtro, List<Object> params) {
         StringBuilder where = new StringBuilder(" WHERE 1 = 1");
 
+        if (filtro.entidadeId() != null) {
+            where.append(" AND c.entidade_id = ?");
+            params.add(filtro.entidadeId());
+        }
         if (temTexto(filtro.nome())) {
             where.append(" AND c.nome ILIKE ?");
             params.add("%" + filtro.nome().trim() + "%");

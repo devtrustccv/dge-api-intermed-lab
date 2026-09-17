@@ -38,24 +38,40 @@ public class GestaoAvaliacaoEstagiarioRepository {
     public List<AvaliacaoEstagiarioListaResponse> listar(AvaliacaoEstagiarioFiltro filtro) {
         List<Object> params = new ArrayList<>();
         StringBuilder sql = new StringBuilder("""
-                SELECT a.id, a.pessoa_id, a.nome, a.tipo_avaliacao, a.periodo_referencia,
+                SELECT a.id, a.pessoa_id,
+                       COALESCE(NULLIF(TRIM(a.nome), ''), colocacao.nome) AS nome,
+                       a.tipo_avaliacao, a.periodo_referencia,
                        a.classificacao, a.date_create
                 FROM emprego_t_avaliacao_estagiario a
-                WHERE EXISTS (
-                    SELECT 1 FROM emprego_t_colocacao_candidato c
-                    WHERE c.pessoa_id = a.pessoa_id AND c.entidade_id = ? AND
-                """ + CONDICAO_OFERTA_ESTAGIO + ")");
+                JOIN LATERAL (
+                    SELECT c.nome
+                    FROM emprego_t_colocacao_candidato c
+                    WHERE c.pessoa_id = a.pessoa_id
+                      AND c.entidade_id = ? AND
+                """ + CONDICAO_OFERTA_ESTAGIO + """
+                    ORDER BY (NULLIF(TRIM(c.nome), '') IS NOT NULL) DESC, c.id DESC
+                    LIMIT 1
+                ) colocacao ON TRUE
+                WHERE 1 = 1
+                """);
         params.add(filtro.entidadeId());
         if (filtro.pessoaId() != null) { sql.append(" AND a.pessoa_id = ?"); params.add(filtro.pessoaId()); }
+        if (filtro.estagiario() != null) {
+            sql.append(" AND UPPER(COALESCE(NULLIF(TRIM(a.nome), ''), colocacao.nome, '')) LIKE UPPER(?)");
+            params.add("%" + filtro.estagiario() + "%");
+        }
         if (filtro.tipoAvaliacao() != null) { sql.append(" AND a.tipo_avaliacao = ?"); params.add(filtro.tipoAvaliacao()); }
         if (filtro.periodoReferencia() != null) { sql.append(" AND UPPER(a.periodo_referencia) LIKE UPPER(?)"); params.add("%" + filtro.periodoReferencia() + "%"); }
+        if (filtro.dataRegistro() != null) { sql.append(" AND a.date_create::date = ?"); params.add(filtro.dataRegistro()); }
         if (filtro.dataInicio() != null) { sql.append(" AND a.date_create >= ?"); params.add(filtro.dataInicio().atStartOfDay()); }
         if (filtro.dataFim() != null) { sql.append(" AND a.date_create < ?"); params.add(filtro.dataFim().plusDays(1).atStartOfDay()); }
         sql.append(" ORDER BY a.date_create DESC, a.id DESC");
         return jdbcTemplate.query(sql.toString(), (rs, n) -> new AvaliacaoEstagiarioListaResponse(
                 rs.getInt("id"), getLong(rs, "pessoa_id"), rs.getString("nome"), rs.getString("tipo_avaliacao"),
                 rs.getString("tipo_avaliacao"), rs.getString("periodo_referencia"), decimal(rs.getString("classificacao")),
-                rs.getTimestamp("date_create") == null ? null : rs.getTimestamp("date_create").toLocalDateTime()), params.toArray());
+                rs.getTimestamp("date_create") == null
+                        ? null
+                        : rs.getTimestamp("date_create").toLocalDateTime().toLocalDate()), params.toArray());
     }
 
     public Optional<AvaliacaoEstagiarioDetalheResponse> buscarPorId(Integer id, Integer entidadeId) {

@@ -132,6 +132,7 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
                 null,
                 null,
                 null,
+                null,
                 orientadorId,
                 coordenadorId,
                 null,
@@ -141,7 +142,11 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
     }
 
     private CoordenadorOrientadorFiltro normalizarFiltro(CoordenadorOrientadorFiltro filtro) {
+        if (filtro.entidadeId() != null && filtro.entidadeId() <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe uma entidade válida.");
+        }
         return new CoordenadorOrientadorFiltro(
+                filtro.entidadeId(),
                 filtro.nome(),
                 normalizarTipoOpcional(filtro.tipo()),
                 normalizarEstadoOpcional(filtro.estado()),

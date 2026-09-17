@@ -22,57 +22,51 @@
               "path": [
                 "v1",
                 "candidaturas"
-              ]
-            },
-            "description": "Lista as candidaturas. sexoCandidato contém a descrição (por exemplo, Masculino ou Feminino). anexo contém o primeiro documento e anexos contém a lista completa com tipo, nome, path e url de visualização no SGF. entrevistaId identifica a entrevista pendente mais recente. Enquanto existir uma entrevista pendente, podeAgendarEntrevista é false e podeRegistarResultadoEntrevista é true. Depois de a entrevista ser realizada, pode ser agendada uma nova."
-          },
-          "response": []
-        },
-        {
-          "name": "Listar Candidaturas com Filtros",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/v1/candidaturas?candidatoId={{pessoaId}}&estado=TRIAGEM&tipoOferta=OFERTA_EMPREGO&ofertaId={{ofertaId}}&canal=PORTAL&dataInicio=2026-08-01&dataFim=2026-08-31",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "v1",
-                "candidaturas"
               ],
               "query": [
                 {
                   "key": "candidatoId",
-                  "value": "{{pessoaId}}"
+                  "value": "{{pessoaId}}",
+                  "disabled": true
+                },
+                {
+                  "key": "candidato",
+                  "value": "Kevin Sousa",
+                  "disabled": true
                 },
                 {
                   "key": "estado",
-                  "value": "TRIAGEM"
+                  "value": "TRIAGEM",
+                  "disabled": true
                 },
                 {
                   "key": "tipoOferta",
-                  "value": "OFERTA_EMPREGO"
+                  "value": "OFERTA_EMPREGO",
+                  "disabled": true
                 },
                 {
                   "key": "ofertaId",
-                  "value": "{{ofertaId}}"
+                  "value": "{{ofertaId}}",
+                  "disabled": true
                 },
                 {
                   "key": "canal",
-                  "value": "PORTAL"
+                  "value": "PORTAL",
+                  "disabled": true
                 },
                 {
                   "key": "dataInicio",
-                  "value": "2026-08-01"
+                  "value": "2026-08-01",
+                  "disabled": true
                 },
                 {
                   "key": "dataFim",
-                  "value": "2026-08-31"
+                  "value": "2026-08-31",
+                  "disabled": true
                 }
               ]
-            }
+            },
+            "description": "Lista as candidaturas. sexoCandidato contém a descrição (por exemplo, Masculino ou Feminino). anexo contém o primeiro documento e anexos contém a lista completa com tipo, nome, path e url de visualização no SGF. entrevistaId identifica a entrevista pendente mais recente. Enquanto existir uma entrevista pendente, podeAgendarEntrevista é false e podeRegistarResultadoEntrevista é true. Depois de a entrevista ser realizada, pode ser agendada uma nova."
           },
           "response": []
         },

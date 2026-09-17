@@ -39,7 +39,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/v1/visitas-tecnicas?entidadeId={{entidadeId}}&estado=PENDENTE&agendadoPor=ENTIDADE_ACOLHEDORA&cefpId={{cefpId}}&dataVisita=2026-09-15&dataInicio=2026-08-01&dataFim=2026-08-31",
+              "raw": "{{baseUrl}}/v1/visitas-tecnicas?entidadeId={{entidadeId}}&estado=PENDENTE&agendadoPor=ENTIDADE_ACOLHEDORA&cefp={{cefp}}&dataVisita=2026-09-15&dataInicio=2026-08-01&dataFim=2026-08-31",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -61,8 +61,8 @@
                   "value": "ENTIDADE_ACOLHEDORA"
                 },
                 {
-                  "key": "cefpId",
-                  "value": "{{cefpId}}"
+                  "key": "cefp",
+                  "value": "{{cefp}}"
                 },
                 {
                   "key": "dataVisita",
@@ -388,6 +388,10 @@
     {
       "key": "cefpId",
       "value": "1"
+    },
+    {
+      "key": "cefp",
+      "value": "CEFP de teste"
     }
   ]
 }
