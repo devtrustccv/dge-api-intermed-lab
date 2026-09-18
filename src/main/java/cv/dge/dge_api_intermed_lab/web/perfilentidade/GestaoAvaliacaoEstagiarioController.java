@@ -15,7 +15,7 @@ public class GestaoAvaliacaoEstagiarioController {
 
     @GetMapping
     public EmpregoApiResponse<List<AvaliacaoEstagiarioListaResponse>> listar(
-            @RequestParam Integer entidadeId, @RequestParam(required=false) Long pessoaId,
+            @RequestParam Integer entidadeId,
             @RequestParam(required=false) String estagiario,
             @RequestParam(required=false) String nomeEstagiario,
             @RequestParam(required=false) String tipoAvaliacao,
@@ -27,7 +27,7 @@ public class GestaoAvaliacaoEstagiarioController {
         String nome = estagiario == null || estagiario.isBlank() ? nomeEstagiario : estagiario;
         String periodo = periodoRef == null || periodoRef.isBlank() ? periodoReferencia : periodoRef;
         return EmpregoApiResponse.sucesso("Avaliacoes de estagiarios listadas com sucesso.",
-                service.listar(new AvaliacaoEstagiarioFiltro(entidadeId, pessoaId, nome, tipoAvaliacao,
+                service.listar(new AvaliacaoEstagiarioFiltro(entidadeId, nome, tipoAvaliacao,
                         periodo, dataRegistro, dataInicio, dataFim)));
     }
 

@@ -55,7 +55,6 @@ public class GestaoAvaliacaoEstagiarioRepository {
                 WHERE 1 = 1
                 """);
         params.add(filtro.entidadeId());
-        if (filtro.pessoaId() != null) { sql.append(" AND a.pessoa_id = ?"); params.add(filtro.pessoaId()); }
         if (filtro.estagiario() != null) {
             sql.append(" AND UPPER(COALESCE(NULLIF(TRIM(a.nome), ''), colocacao.nome, '')) LIKE UPPER(?)");
             params.add("%" + filtro.estagiario() + "%");

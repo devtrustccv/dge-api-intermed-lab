@@ -53,6 +53,18 @@ class GestaoAvaliacaoEstagiarioControllerTest {
     }
 
     @Test
+    void deveIgnorarPessoaIdNaListagem() throws Exception {
+        when(service.listar(any())).thenReturn(List.of());
+
+        mockMvc.perform(get("/v1/avaliacoes-estagiarios")
+                        .param("entidadeId", "23")
+                        .param("pessoaId", "100"))
+                .andExpect(status().isOk());
+
+        verify(service).listar(any(AvaliacaoEstagiarioFiltro.class));
+    }
+
+    @Test
     void deveDevolverDataRegistoSemHora() throws Exception {
         when(service.listar(any())).thenReturn(List.of(new AvaliacaoEstagiarioListaResponse(
                 10,

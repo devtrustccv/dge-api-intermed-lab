@@ -24,7 +24,7 @@ public class GestaoAvaliacaoEstagiarioServiceImpl implements GestaoAvaliacaoEsta
             throw erro("A data final da pesquisa não pode ser anterior à data inicial.");
         }
         AvaliacaoEstagiarioFiltro dados = new AvaliacaoEstagiarioFiltro(
-                filtro.entidadeId(), filtro.pessoaId(), texto(filtro.estagiario()),
+                filtro.entidadeId(), texto(filtro.estagiario()),
                 dominioOpcional(EmpregoDominio.DOMINIO_TIPO_AVALIACAO, filtro.tipoAvaliacao()),
                 texto(filtro.periodoReferencia()), filtro.dataRegistro(), filtro.dataInicio(), filtro.dataFim());
         return repository.listar(dados).stream().map(this::enriquecerLista).toList();
