@@ -42,10 +42,12 @@ public class PerfilCandidatoVagaController {
     public PerfilCandidatoApiResponse<ConsultaVagasResponse> listar(
             @RequestParam(required = false) String tipoOferta,
             @RequestParam(required = false) Integer entidadeId,
+            @RequestParam(required = false) String entidade,
             @RequestParam(required = false) String ilha,
             @RequestParam(required = false) String concelho,
             @RequestParam(required = false) String estado,
             @RequestParam(required = false) String codigoReferencia,
+            @RequestParam(required = false) String referencia,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
             @RequestParam(required = false)
@@ -57,10 +59,11 @@ public class PerfilCandidatoVagaController {
                 consultaVagaService.listar(new ConsultaVagaFiltro(
                         tipoOferta,
                         entidadeId,
+                        entidade,
                         ilha,
                         concelho,
                         estado,
-                        codigoReferencia,
+                        codigoReferencia != null ? codigoReferencia : referencia,
                         dataInicio,
                         dataFim,
                         pesquisa

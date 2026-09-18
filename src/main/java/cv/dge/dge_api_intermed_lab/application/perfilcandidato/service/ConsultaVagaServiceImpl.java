@@ -3,6 +3,7 @@ package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocRelacaoDTO;
 import cv.dge.dge_api_intermed_lab.application.document.service.ComboboxService;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
+import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaDocumentoResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaVagaFormularioResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaVagaRequest;
@@ -55,6 +56,7 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
     private final ConsultaVagaRepository vagaRepository;
     private final DocumentService documentService;
     private final ComboboxService comboboxService;
+    private final GlobalGeografiaService globalGeografiaService;
 
     @Value("${document.candidatura.app-code:interm_laboral}")
     private String appCodeDocumento;
@@ -75,9 +77,12 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
     @Transactional(readOnly = true)
     public ConsultaVagasResponse listar(ConsultaVagaFiltro filtro) {
         ConsultaVagaFiltro dados = normalizarFiltro(filtro);
+        ConsultaVagaFiltro filtroBanco = semFiltrosGeografia(dados);
         Map<String, String> geografias = new LinkedHashMap<>();
-        List<ConsultaVagaListaResponse> ofertas = vagaRepository.listar(dados).stream()
+        List<ConsultaVagaListaResponse> ofertas = vagaRepository.listar(filtroBanco).stream()
                 .map(oferta -> enriquecerResumo(oferta, geografias))
+                .filter(oferta -> correspondeGeografia(dados.ilha(), oferta.ilha(), oferta.ilhaDesc()))
+                .filter(oferta -> correspondeGeografia(dados.concelho(), oferta.concelho(), oferta.concelhoDesc()))
                 .toList();
 
         long totalEmprego = ofertas.stream()
@@ -263,6 +268,7 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_TIPO_OFERTA, filtro.tipoOferta(),
                         "Selecione um tipo de oferta válido."),
                 filtro.entidadeId(),
+                textoOpcional(filtro.entidade()),
                 textoOpcional(filtro.ilha()),
                 textoOpcional(filtro.concelho()),
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_ESTADO_OFERTA, filtro.estado(),
@@ -271,6 +277,21 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
                 filtro.dataInicio(),
                 filtro.dataFim(),
                 textoOpcional(filtro.pesquisa())
+        );
+    }
+
+    private ConsultaVagaFiltro semFiltrosGeografia(ConsultaVagaFiltro filtro) {
+        return new ConsultaVagaFiltro(
+                filtro.tipoOferta(),
+                filtro.entidadeId(),
+                filtro.entidade(),
+                null,
+                null,
+                filtro.estado(),
+                filtro.codigoReferencia(),
+                filtro.dataInicio(),
+                filtro.dataFim(),
+                filtro.pesquisa()
         );
     }
 
@@ -707,7 +728,24 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
         if (!temTexto(codigo)) {
             return null;
         }
-        return cache.computeIfAbsent(codigo, chave -> chave);
+        return cache.computeIfAbsent(codigo, chave -> {
+            try {
+                return globalGeografiaService.buscarNomePorCodigo(chave).orElse(chave);
+            } catch (Exception ex) {
+                return chave;
+            }
+        });
+    }
+
+    private boolean correspondeGeografia(String filtro, String codigo, String descricao) {
+        if (!temTexto(filtro)) {
+            return true;
+        }
+        String procurado = normalizarParaPesquisa(filtro);
+        String codigoNormalizado = normalizarParaPesquisa(codigo);
+        String descricaoNormalizada = normalizarParaPesquisa(descricao);
+        return procurado.equals(codigoNormalizado)
+                || (descricaoNormalizada != null && descricaoNormalizada.contains(procurado));
     }
 
     private boolean podeCandidatar(

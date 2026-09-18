@@ -68,6 +68,6 @@ class GestaoAvaliacaoEstagiarioControllerTest {
         mockMvc.perform(get("/v1/avaliacoes-estagiarios")
                         .param("entidadeId", "23"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.dados[0].dataRegisto").value("2026-09-17"));
+                .andExpect(jsonPath("$.dados[0].dataRegisto").value("17/09/2026"));
     }
 }

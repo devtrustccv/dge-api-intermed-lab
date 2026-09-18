@@ -10,10 +10,13 @@ import static org.mockito.Mockito.when;
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocRelacaoDTO;
 import cv.dge.dge_api_intermed_lab.application.document.service.ComboboxService;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
+import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaVagaRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaFiltro;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ConsultaVagaRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ConsultaVagaRepository.OfertaDetalhe;
+import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ConsultaVagaRepository.OfertaResumo;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -40,6 +43,9 @@ class ConsultaVagaServiceImplTest {
 
     @Mock
     private ComboboxService comboboxService;
+
+    @Mock
+    private GlobalGeografiaService globalGeografiaService;
 
     @InjectMocks
     private ConsultaVagaServiceImpl service;
@@ -212,6 +218,7 @@ class ConsultaVagaServiceImplTest {
                 null,
                 null,
                 null,
+                null,
                 null
         ));
 
@@ -232,6 +239,7 @@ class ConsultaVagaServiceImplTest {
                 null,
                 null,
                 null,
+                null,
                 null
         );
         when(vagaRepository.listar(any())).thenReturn(List.of());
@@ -240,6 +248,49 @@ class ConsultaVagaServiceImplTest {
 
         assertThat(resultado.totalOfertas()).isZero();
         verify(vagaRepository).listar(org.mockito.ArgumentMatchers.argThat(item -> item.entidadeId() == null));
+    }
+
+    @Test
+    void deveFiltrarIlhaEConcelhoPelasDescricoes() {
+        when(vagaRepository.listar(any())).thenReturn(List.of(new OfertaResumo(
+                22,
+                "Programador",
+                "OFERTA_EMPREGO",
+                "1",
+                "11",
+                2,
+                40,
+                "Empresa XPTO",
+                "REF-22",
+                "ATIVA",
+                LocalDate.of(2026, 9, 1),
+                LocalDate.of(2026, 9, 30),
+                false
+        )));
+        when(globalGeografiaService.buscarNomePorCodigo("1")).thenReturn(Optional.of("Santiago"));
+        when(globalGeografiaService.buscarNomePorCodigo("11")).thenReturn(Optional.of("Praia"));
+
+        var resultado = service.listar(new ConsultaVagaFiltro(
+                null,
+                null,
+                "Empresa XPTO",
+                "Santiago",
+                "Praia",
+                null,
+                "REF-22",
+                null,
+                null,
+                null
+        ));
+
+        assertThat(resultado.ofertas()).hasSize(1);
+        assertThat(resultado.ofertas().get(0).ilhaDesc()).isEqualTo("Santiago");
+        assertThat(resultado.ofertas().get(0).concelhoDesc()).isEqualTo("Praia");
+        verify(vagaRepository).listar(org.mockito.ArgumentMatchers.argThat(item ->
+                "Empresa XPTO".equals(item.entidade())
+                        && item.ilha() == null
+                        && item.concelho() == null
+        ));
     }
 
     private Map<String, Object> tipoDocumento(Integer id, String descricao) {

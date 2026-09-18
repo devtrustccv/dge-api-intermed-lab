@@ -11,8 +11,10 @@ import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaValidacaoR
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.GestaoVagaRepository;
+import java.text.Normalizer;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -35,8 +37,11 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
     @Override
     @Transactional(readOnly = true)
     public List<VagaListaResponse> listar(VagaFiltro filtro) {
-        return vagaRepository.listar(normalizarFiltro(filtro)).stream()
+        VagaFiltro dados = normalizarFiltro(filtro);
+        return vagaRepository.listar(semFiltrosGeografia(dados)).stream()
                 .map(this::enriquecerLista)
+                .filter(vaga -> correspondeGeografia(dados.ilha(), vaga.ilha(), vaga.ilhaDesc()))
+                .filter(vaga -> correspondeGeografia(dados.concelho(), vaga.concelho(), vaga.concelhoDesc()))
                 .toList();
     }
 
@@ -176,6 +181,11 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
     }
 
     private VagaFiltro normalizarFiltro(VagaFiltro filtro) {
+        if (filtro == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Não foi possível carregar as vagas. Atualize a página e tente novamente.");
+        }
+        validarIntervaloDatas(filtro.dataInicio(), filtro.dataFim());
         return new VagaFiltro(
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_TIPO_OFERTA, filtro.tipoOferta()),
                 filtro.entidadeId(),
@@ -189,6 +199,23 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
                 filtro.dataInicio(),
                 filtro.dataFim(),
                 texto(filtro.pesquisa())
+        );
+    }
+
+    private VagaFiltro semFiltrosGeografia(VagaFiltro filtro) {
+        return new VagaFiltro(
+                filtro.tipoOferta(),
+                filtro.entidadeId(),
+                filtro.entidade(),
+                null,
+                null,
+                filtro.estado(),
+                filtro.codigoReferencia(),
+                filtro.orientadorId(),
+                filtro.coordenadorId(),
+                filtro.dataInicio(),
+                filtro.dataFim(),
+                filtro.pesquisa()
         );
     }
 
@@ -347,6 +374,27 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
         } catch (Exception ex) {
             return codigo;
         }
+    }
+
+    private boolean correspondeGeografia(String filtro, String codigo, String descricao) {
+        if (filtro == null || filtro.isBlank()) {
+            return true;
+        }
+        String procurado = normalizarParaPesquisa(filtro);
+        String codigoNormalizado = normalizarParaPesquisa(codigo);
+        String descricaoNormalizada = normalizarParaPesquisa(descricao);
+        return procurado.equals(codigoNormalizado)
+                || (descricaoNormalizada != null && descricaoNormalizada.contains(procurado));
+    }
+
+    private String normalizarParaPesquisa(String valor) {
+        if (valor == null || valor.isBlank()) {
+            return null;
+        }
+        return Normalizer.normalize(valor, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "")
+                .trim()
+                .toUpperCase(Locale.ROOT);
     }
 
     private String normalizarEstadoOfertaObrigatorio(String estado) {

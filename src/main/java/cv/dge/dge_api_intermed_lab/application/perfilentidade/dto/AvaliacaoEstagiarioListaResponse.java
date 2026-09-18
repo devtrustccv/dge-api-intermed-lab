@@ -12,7 +12,7 @@ public record AvaliacaoEstagiarioListaResponse(
         String tipoAvaliacaoDescricao,
         String periodoReferencia,
         BigDecimal classificacao,
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
         LocalDate dataRegisto
 ) {
 }

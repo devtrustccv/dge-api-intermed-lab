@@ -302,6 +302,7 @@ public class ConsultaVagaRepository {
             where.append(" AND o.entidade_id = ?");
             parametros.add(filtro.entidadeId());
         }
+        adicionarFiltroParcial(where, parametros, "o.denominacao_entidade", filtro.entidade());
         adicionarFiltroTexto(where, parametros, "o.ilha", filtro.ilha());
         adicionarFiltroTexto(where, parametros, "o.concelho", filtro.concelho());
         if (temTexto(filtro.estado())) {
@@ -344,6 +345,19 @@ public class ConsultaVagaRepository {
         }
         where.append(" AND UPPER(TRIM(").append(coluna).append(")) = UPPER(TRIM(?))");
         parametros.add(valor.trim());
+    }
+
+    private void adicionarFiltroParcial(
+            StringBuilder where,
+            List<Object> parametros,
+            String coluna,
+            String valor
+    ) {
+        if (!temTexto(valor)) {
+            return;
+        }
+        where.append(" AND ").append(coluna).append(" ILIKE ?");
+        parametros.add("%" + valor.trim() + "%");
     }
 
     private OfertaResumo mapResumo(java.sql.ResultSet rs, int rowNum) throws java.sql.SQLException {

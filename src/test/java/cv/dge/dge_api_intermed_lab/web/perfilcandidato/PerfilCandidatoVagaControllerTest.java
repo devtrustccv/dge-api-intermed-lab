@@ -74,6 +74,34 @@ class PerfilCandidatoVagaControllerTest {
     }
 
     @Test
+    void deveEncaminharFiltrosDaListagemDeOfertas() throws Exception {
+        when(consultaVagaService.listar(argThat(filtro ->
+                "Empresa XPTO".equals(filtro.entidade())
+                        && "Santiago".equals(filtro.ilha())
+                        && "Praia".equals(filtro.concelho())
+                        && "REF-22".equals(filtro.codigoReferencia())
+        ))).thenReturn(new ConsultaVagasResponse(0L, 0L, 0L, List.of(), List.of()));
+
+        mockMvc.perform(get("/v1/perfil-candidato/vagas")
+                        .param("entidade", "Empresa XPTO")
+                        .param("ilha", "Santiago")
+                        .param("concelho", "Praia")
+                        .param("referencia", "REF-22")
+                        .param("dataInicio", "2026-09-01")
+                        .param("dataFim", "2026-09-30"))
+                .andExpect(status().isOk());
+
+        verify(consultaVagaService).listar(argThat(filtro ->
+                "Empresa XPTO".equals(filtro.entidade())
+                        && "Santiago".equals(filtro.ilha())
+                        && "Praia".equals(filtro.concelho())
+                        && "REF-22".equals(filtro.codigoReferencia())
+                        && java.time.LocalDate.of(2026, 9, 1).equals(filtro.dataInicio())
+                        && java.time.LocalDate.of(2026, 9, 30).equals(filtro.dataFim())
+        ));
+    }
+
+    @Test
     void deveAceitarNomesMultipartEnviadosPeloFrontend() throws Exception {
         MockMultipartFile dados = new MockMultipartFile(
                 "dados",
