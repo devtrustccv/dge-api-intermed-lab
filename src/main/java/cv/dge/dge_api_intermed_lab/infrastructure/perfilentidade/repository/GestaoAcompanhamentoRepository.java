@@ -60,7 +60,7 @@ public class GestaoAcompanhamentoRepository {
         return jdbcTemplate.query(sql, this::mapLista, params.toArray());
     }
 
-    public List<AcompanhamentoEstagiarioSelectResponse> listarEstagiariosSelecionadosParaFiltro() {
+    public List<AcompanhamentoEstagiarioSelectResponse> listarEstagiariosSelecionadosParaFiltro(Integer entidadeId) {
         String sql = """
                 SELECT DISTINCT
                     c.pessoa_id AS estagiario_id,
@@ -68,16 +68,17 @@ public class GestaoAcompanhamentoRepository {
                 """ + FROM_ESTAGIARIOS_SELECIONADOS + """
                   AND c.pessoa_id IS NOT NULL
                   AND NULLIF(TRIM(c.nome), '') IS NOT NULL
+                  AND o.entidade_id = ?
                 ORDER BY c.nome ASC NULLS LAST, c.pessoa_id ASC
                 """;
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> new AcompanhamentoEstagiarioSelectResponse(
                 getLong(rs, "estagiario_id"),
                 rs.getString("estagiario")
-        ));
+        ), entidadeId);
     }
 
-    public List<AcompanhamentoOfertaSelectResponse> listarOfertasComEstagiariosSelecionados() {
+    public List<AcompanhamentoOfertaSelectResponse> listarOfertasComEstagiariosSelecionados(Integer entidadeId) {
         String sql = """
                 SELECT DISTINCT
                     o.id AS oferta_id,
@@ -85,19 +86,24 @@ public class GestaoAcompanhamentoRepository {
                 """ + FROM_ESTAGIARIOS_SELECIONADOS + """
                   AND o.id IS NOT NULL
                   AND NULLIF(TRIM(o.titulo), '') IS NOT NULL
+                  AND o.entidade_id = ?
                 ORDER BY o.titulo ASC NULLS LAST, o.id ASC
                 """;
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> new AcompanhamentoOfertaSelectResponse(
                 getInteger(rs, "oferta_id"),
                 rs.getString("oferta")
-        ));
+        ), entidadeId);
     }
 
     private String construirWhereFiltro(AcompanhamentoEstagiarioFiltro filtro, List<Object> params) {
         StringBuilder where = new StringBuilder();
         if (filtro == null) {
             return where.toString();
+        }
+        if (filtro.entidadeId() != null) {
+            where.append(" AND o.entidade_id = ?");
+            params.add(filtro.entidadeId());
         }
         if (filtro.estagiarioId() != null) {
             where.append(" AND c.pessoa_id = ?");

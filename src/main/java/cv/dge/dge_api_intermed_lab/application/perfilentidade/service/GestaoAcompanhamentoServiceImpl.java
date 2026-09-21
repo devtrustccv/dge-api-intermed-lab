@@ -22,6 +22,7 @@ public class GestaoAcompanhamentoServiceImpl implements GestaoAcompanhamentoServ
     public List<AcompanhamentoEstagiarioListaResponse> listarEstagiariosSelecionados(
             AcompanhamentoEstagiarioFiltro filtro
     ) {
+        validarEntidade(filtro == null ? null : filtro.entidadeId());
         return acompanhamentoRepository.listarEstagiariosSelecionados(filtro).stream()
                 .map(this::enriquecer)
                 .toList();
@@ -29,14 +30,16 @@ public class GestaoAcompanhamentoServiceImpl implements GestaoAcompanhamentoServ
 
     @Override
     @Transactional(readOnly = true)
-    public List<AcompanhamentoEstagiarioSelectResponse> listarEstagiariosSelecionadosParaFiltro() {
-        return acompanhamentoRepository.listarEstagiariosSelecionadosParaFiltro();
+    public List<AcompanhamentoEstagiarioSelectResponse> listarEstagiariosSelecionadosParaFiltro(Integer entidadeId) {
+        validarEntidade(entidadeId);
+        return acompanhamentoRepository.listarEstagiariosSelecionadosParaFiltro(entidadeId);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<AcompanhamentoOfertaSelectResponse> listarOfertasComEstagiariosSelecionados() {
-        return acompanhamentoRepository.listarOfertasComEstagiariosSelecionados();
+    public List<AcompanhamentoOfertaSelectResponse> listarOfertasComEstagiariosSelecionados(Integer entidadeId) {
+        validarEntidade(entidadeId);
+        return acompanhamentoRepository.listarOfertasComEstagiariosSelecionados(entidadeId);
     }
 
     private AcompanhamentoEstagiarioListaResponse enriquecer(AcompanhamentoEstagiarioListaResponse item) {
@@ -58,5 +61,14 @@ public class GestaoAcompanhamentoServiceImpl implements GestaoAcompanhamentoServ
 
     private String valorDominio(String dominio, String valor) {
         return EmpregoDominio.valorOficial(dominio, valor).orElse(valor);
+    }
+
+    private void validarEntidade(Integer entidadeId) {
+        if (entidadeId == null || entidadeId <= 0) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST,
+                    "Nao foi possivel identificar a entidade selecionada."
+            );
+        }
     }
 }

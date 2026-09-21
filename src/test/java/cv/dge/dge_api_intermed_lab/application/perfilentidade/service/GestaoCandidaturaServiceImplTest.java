@@ -104,7 +104,7 @@ class GestaoCandidaturaServiceImplTest {
     }
 
     private CandidaturaFiltro filtroVazio() {
-        return new CandidaturaFiltro(null, null, null, null, null, null, null, null);
+        return new CandidaturaFiltro(23, null, null, null, null, null, null, null, null);
     }
 
     private CandidaturaListaResponse candidatura(Object anexos) {

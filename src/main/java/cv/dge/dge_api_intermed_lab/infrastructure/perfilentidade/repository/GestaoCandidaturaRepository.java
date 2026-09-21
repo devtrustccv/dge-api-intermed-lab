@@ -438,6 +438,10 @@ public class GestaoCandidaturaRepository {
     private String construirWhere(CandidaturaFiltro filtro, List<Object> params) {
         StringBuilder where = new StringBuilder(" WHERE 1 = 1");
 
+        if (filtro.entidadeId() != null) {
+            where.append(" AND c.entidade_id = ?");
+            params.add(filtro.entidadeId());
+        }
         if (filtro.candidatoId() != null) {
             where.append(" AND c.pessoa_id = ?");
             params.add(filtro.candidatoId());

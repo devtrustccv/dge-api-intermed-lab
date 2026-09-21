@@ -33,6 +33,7 @@ public class GestaoCandidaturaController {
 
     @GetMapping
     public EmpregoApiResponse<List<CandidaturaListaResponse>> listar(
+            @RequestParam("entidadeId") Integer entidadeId,
             @RequestParam(value = "candidatoId", required = false) Long candidatoId,
             @RequestParam(value = "candidato", required = false) String candidato,
             @RequestParam(value = "estado", required = false) String estado,
@@ -47,6 +48,7 @@ public class GestaoCandidaturaController {
         return EmpregoApiResponse.sucesso(
                 "Candidaturas listadas com sucesso.",
                 gestaoCandidaturaService.listar(new CandidaturaFiltro(
+                        entidadeId,
                         candidatoId,
                         candidato,
                         estado,
@@ -60,7 +62,10 @@ public class GestaoCandidaturaController {
     }
 
     @GetMapping("{id}")
-    public EmpregoApiResponse<CandidaturaDetalheResponse> buscarPorId(@PathVariable Integer id) {
+    public EmpregoApiResponse<CandidaturaDetalheResponse> buscarPorId(
+            @PathVariable Integer id,
+            @RequestParam("entidadeId") Integer entidadeId
+    ) {
         return EmpregoApiResponse.sucesso(
                 "Candidatura encontrada com sucesso.",
                 gestaoCandidaturaService.buscarPorId(id)
@@ -70,6 +75,7 @@ public class GestaoCandidaturaController {
     @PatchMapping("{id}/avaliacao")
     public EmpregoApiResponse<CandidaturaDetalheResponse> avaliar(
             @PathVariable Integer id,
+            @RequestParam("entidadeId") Integer entidadeId,
             @RequestBody CandidaturaAvaliacaoRequest request
     ) {
         return EmpregoApiResponse.sucesso(
@@ -79,7 +85,10 @@ public class GestaoCandidaturaController {
     }
 
     @GetMapping("{id}/entrevistas")
-    public EmpregoApiResponse<List<EntrevistaResponse>> listarEntrevistas(@PathVariable Integer id) {
+    public EmpregoApiResponse<List<EntrevistaResponse>> listarEntrevistas(
+            @PathVariable Integer id,
+            @RequestParam("entidadeId") Integer entidadeId
+    ) {
         return EmpregoApiResponse.sucesso(
                 "Entrevistas listadas com sucesso.",
                 gestaoCandidaturaService.listarEntrevistas(id)
@@ -90,6 +99,7 @@ public class GestaoCandidaturaController {
     @ResponseStatus(HttpStatus.CREATED)
     public EmpregoApiResponse<EntrevistaResponse> agendarEntrevista(
             @PathVariable Integer id,
+            @RequestParam("entidadeId") Integer entidadeId,
             @RequestBody EntrevistaAgendamentoRequest request
     ) {
         return EmpregoApiResponse.sucesso(
@@ -102,6 +112,7 @@ public class GestaoCandidaturaController {
     public EmpregoApiResponse<EntrevistaResponse> registarResultadoEntrevista(
             @PathVariable Integer id,
             @PathVariable Integer entrevistaId,
+            @RequestParam("entidadeId") Integer entidadeId,
             @RequestBody EntrevistaResultadoRequest request
     ) {
         return EmpregoApiResponse.sucesso(

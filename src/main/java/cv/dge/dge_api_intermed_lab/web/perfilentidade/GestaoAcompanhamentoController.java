@@ -22,30 +22,35 @@ public class GestaoAcompanhamentoController {
 
     @GetMapping("estagiarios-selecionados")
     public EmpregoApiResponse<List<AcompanhamentoEstagiarioListaResponse>> listarEstagiariosSelecionados(
+            @RequestParam("entidadeId") Integer entidadeId,
             @RequestParam(value = "estagiarioId", required = false) Long estagiarioId,
             @RequestParam(value = "ofertaId", required = false) Integer ofertaId
     ) {
         return EmpregoApiResponse.sucesso(
                 "Estagiarios selecionados listados com sucesso.",
                 gestaoAcompanhamentoService.listarEstagiariosSelecionados(
-                        new AcompanhamentoEstagiarioFiltro(estagiarioId, ofertaId)
+                        new AcompanhamentoEstagiarioFiltro(entidadeId, estagiarioId, ofertaId)
                 )
         );
     }
 
     @GetMapping("estagiarios-selecionados/opcoes/estagiarios")
-    public EmpregoApiResponse<List<AcompanhamentoEstagiarioSelectResponse>> listarEstagiariosParaFiltro() {
+    public EmpregoApiResponse<List<AcompanhamentoEstagiarioSelectResponse>> listarEstagiariosParaFiltro(
+            @RequestParam("entidadeId") Integer entidadeId
+    ) {
         return EmpregoApiResponse.sucesso(
                 "Estagiarios listados com sucesso.",
-                gestaoAcompanhamentoService.listarEstagiariosSelecionadosParaFiltro()
+                gestaoAcompanhamentoService.listarEstagiariosSelecionadosParaFiltro(entidadeId)
         );
     }
 
     @GetMapping("estagiarios-selecionados/opcoes/ofertas")
-    public EmpregoApiResponse<List<AcompanhamentoOfertaSelectResponse>> listarOfertasParaFiltro() {
+    public EmpregoApiResponse<List<AcompanhamentoOfertaSelectResponse>> listarOfertasParaFiltro(
+            @RequestParam("entidadeId") Integer entidadeId
+    ) {
         return EmpregoApiResponse.sucesso(
                 "Ofertas listadas com sucesso.",
-                gestaoAcompanhamentoService.listarOfertasComEstagiariosSelecionados()
+                gestaoAcompanhamentoService.listarOfertasComEstagiariosSelecionados(entidadeId)
         );
     }
 }

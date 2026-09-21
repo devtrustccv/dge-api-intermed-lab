@@ -18,7 +18,7 @@ public class IntermediacaoLaboralDashboardController {
 
     @GetMapping
     public EmpregoApiResponse<IntermediacaoLaboralDashboardResponse> buscarResumo(
-            @RequestParam(value = "entidadeId", required = false) Integer entidadeId
+            @RequestParam("entidadeId") Integer entidadeId
     ) {
         return EmpregoApiResponse.sucesso(
                 "Dashboard carregado com sucesso.",

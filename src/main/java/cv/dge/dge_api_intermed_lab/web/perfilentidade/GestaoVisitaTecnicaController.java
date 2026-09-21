@@ -37,7 +37,7 @@ public class GestaoVisitaTecnicaController {
 
     @GetMapping
     public EmpregoApiResponse<List<VisitaTecnicaListaResponse>> listar(
-            @RequestParam(value = "entidadeId", required = false) Integer entidadeId,
+            @RequestParam("entidadeId") Integer entidadeId,
             @RequestParam(value = "estado", required = false) String estado,
             @RequestParam(value = "agendadoPor", required = false) String agendadoPor,
             @RequestParam(value = "cefpId", required = false) Integer cefpId,
@@ -65,7 +65,10 @@ public class GestaoVisitaTecnicaController {
     }
 
     @GetMapping("{id}")
-    public EmpregoApiResponse<VisitaTecnicaDetalheResponse> buscarPorId(@PathVariable Integer id) {
+    public EmpregoApiResponse<VisitaTecnicaDetalheResponse> buscarPorId(
+            @PathVariable Integer id,
+            @RequestParam("entidadeId") Integer entidadeId
+    ) {
         return EmpregoApiResponse.sucesso(
                 "Visita tecnica encontrada com sucesso.",
                 gestaoVisitaTecnicaService.buscarPorId(id)
@@ -74,7 +77,10 @@ public class GestaoVisitaTecnicaController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EmpregoApiResponse<VisitaTecnicaDetalheResponse> criar(@RequestBody VisitaTecnicaRequest request) {
+    public EmpregoApiResponse<VisitaTecnicaDetalheResponse> criar(
+            @RequestParam("entidadeId") Integer entidadeId,
+            @RequestBody VisitaTecnicaRequest request
+    ) {
         return EmpregoApiResponse.sucesso(
                 "Visita tecnica criada com sucesso.",
                 gestaoVisitaTecnicaService.criar(request)
@@ -84,6 +90,7 @@ public class GestaoVisitaTecnicaController {
     @PutMapping("{id}")
     public EmpregoApiResponse<VisitaTecnicaDetalheResponse> atualizar(
             @PathVariable Integer id,
+            @RequestParam("entidadeId") Integer entidadeId,
             @RequestBody VisitaTecnicaAtualizacaoRequest request
     ) {
         return EmpregoApiResponse.sucesso(
@@ -95,6 +102,7 @@ public class GestaoVisitaTecnicaController {
     @PatchMapping("{id}/validacao")
     public EmpregoApiResponse<VisitaTecnicaDetalheResponse> validar(
             @PathVariable Integer id,
+            @RequestParam("entidadeId") Integer entidadeId,
             @RequestBody VisitaTecnicaValidacaoRequest request
     ) {
         return EmpregoApiResponse.sucesso(
@@ -106,6 +114,7 @@ public class GestaoVisitaTecnicaController {
     @PatchMapping("{id}/executado")
     public EmpregoApiResponse<VisitaTecnicaDetalheResponse> marcarComoExecutado(
             @PathVariable Integer id,
+            @RequestParam("entidadeId") Integer entidadeId,
             @RequestBody VisitaTecnicaExecutadoRequest request
     ) {
         return EmpregoApiResponse.sucesso(
@@ -117,6 +126,7 @@ public class GestaoVisitaTecnicaController {
     @PatchMapping("{id}/observacoes")
     public EmpregoApiResponse<VisitaTecnicaDetalheResponse> registarObservacoes(
             @PathVariable Integer id,
+            @RequestParam("entidadeId") Integer entidadeId,
             @RequestBody VisitaTecnicaObservacaoRequest request
     ) {
         return EmpregoApiResponse.sucesso(
@@ -136,7 +146,9 @@ public class GestaoVisitaTecnicaController {
     }
 
     @GetMapping("opcoes/cefps")
-    public EmpregoApiResponse<List<VisitaTecnicaCefpSelectResponse>> listarCefps() {
+    public EmpregoApiResponse<List<VisitaTecnicaCefpSelectResponse>> listarCefps(
+            @RequestParam("entidadeId") Integer entidadeId
+    ) {
         return EmpregoApiResponse.sucesso(
                 "CEFPs listados com sucesso.",
                 gestaoVisitaTecnicaService.listarCefps()

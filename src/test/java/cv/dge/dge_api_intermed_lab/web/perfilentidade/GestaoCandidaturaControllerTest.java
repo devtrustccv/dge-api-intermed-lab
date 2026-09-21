@@ -83,7 +83,7 @@ class GestaoCandidaturaControllerTest {
                 LocalDateTime.of(2026, 8, 31, 15, 14, 50)
         )));
 
-        mockMvc.perform(get("/v1/candidaturas"))
+        mockMvc.perform(get("/v1/candidaturas").param("entidadeId", "23"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.dados[0].dataNascCandidato").value("1995-04-12"))
                 .andExpect(jsonPath("$.dados[0].sexoCandidato").value("Feminino"))

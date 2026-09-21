@@ -30,7 +30,7 @@ public class GestaoRelatorioAcompanhamentoController {
 
     @GetMapping
     public EmpregoApiResponse<List<RelatorioAcompanhamentoListaResponse>> listar(
-            @RequestParam(required = false) Integer entidadeId,
+            @RequestParam Integer entidadeId,
             @RequestParam(required = false) Long pessoaId,
             @RequestParam(required = false) String codigoReferencia,
             @RequestParam(required = false) LocalDate dataInicio,
@@ -45,7 +45,7 @@ public class GestaoRelatorioAcompanhamentoController {
     @GetMapping("{id}")
     public EmpregoApiResponse<RelatorioAcompanhamentoDetalheResponse> buscarPorId(
             @PathVariable Integer id,
-            @RequestParam(required = false) Integer entidadeId
+            @RequestParam Integer entidadeId
     ) {
         return EmpregoApiResponse.sucesso(
                 "Relatorio de acompanhamento encontrado com sucesso.",
@@ -54,7 +54,7 @@ public class GestaoRelatorioAcompanhamentoController {
 
     @PostMapping
     public EmpregoApiResponse<RelatorioAcompanhamentoDetalheResponse> criar(
-            @RequestParam(required = false) Integer entidadeId,
+            @RequestParam Integer entidadeId,
             @RequestBody RelatorioAcompanhamentoRequest request
     ) {
         return EmpregoApiResponse.sucesso(
@@ -65,7 +65,7 @@ public class GestaoRelatorioAcompanhamentoController {
     @PutMapping("{id}")
     public EmpregoApiResponse<RelatorioAcompanhamentoDetalheResponse> atualizar(
             @PathVariable Integer id,
-            @RequestParam(required = false) Integer entidadeId,
+            @RequestParam Integer entidadeId,
             @RequestBody RelatorioAcompanhamentoRequest request
     ) {
         return EmpregoApiResponse.sucesso(
@@ -76,7 +76,7 @@ public class GestaoRelatorioAcompanhamentoController {
     @PatchMapping("{id}/remover")
     public EmpregoApiResponse<RelatorioAcompanhamentoDetalheResponse> remover(
             @PathVariable Integer id,
-            @RequestParam(required = false) Integer entidadeId,
+            @RequestParam Integer entidadeId,
             @RequestBody RelatorioAcompanhamentoRemoverRequest request
     ) {
         return EmpregoApiResponse.sucesso(
@@ -86,7 +86,7 @@ public class GestaoRelatorioAcompanhamentoController {
 
     @GetMapping("opcoes")
     public EmpregoApiResponse<List<RelatorioAcompanhamentoOfertaSelectResponse>> listarOpcoes(
-            @RequestParam(required = false) Integer entidadeId
+            @RequestParam Integer entidadeId
     ) {
         return EmpregoApiResponse.sucesso(
                 "Ofertas de estágio e estagiários associados listados com sucesso.",

@@ -35,6 +35,7 @@ public class GestaoVagaController {
 
     @GetMapping("opcoes/colaboradores")
     public EmpregoApiResponse<List<VagaColaboradorSelectResponse>> listarColaboradores(
+            @RequestParam("entidadeId") Integer entidadeId,
             @RequestParam("tipo") String tipo
     ) {
         return EmpregoApiResponse.sucesso(
@@ -44,7 +45,9 @@ public class GestaoVagaController {
     }
 
     @GetMapping("opcoes/orientadores")
-    public EmpregoApiResponse<List<VagaColaboradorSelectResponse>> listarOrientadores() {
+    public EmpregoApiResponse<List<VagaColaboradorSelectResponse>> listarOrientadores(
+            @RequestParam("entidadeId") Integer entidadeId
+    ) {
         return EmpregoApiResponse.sucesso(
                 "Orientadores listados com sucesso.",
                 gestaoVagaService.listarOrientadores()
@@ -52,7 +55,9 @@ public class GestaoVagaController {
     }
 
     @GetMapping("opcoes/coordenadores")
-    public EmpregoApiResponse<List<VagaColaboradorSelectResponse>> listarCoordenadores() {
+    public EmpregoApiResponse<List<VagaColaboradorSelectResponse>> listarCoordenadores(
+            @RequestParam("entidadeId") Integer entidadeId
+    ) {
         return EmpregoApiResponse.sucesso(
                 "Coordenadores listados com sucesso.",
                 gestaoVagaService.listarCoordenadores()
@@ -62,7 +67,7 @@ public class GestaoVagaController {
     @GetMapping
     public EmpregoApiResponse<List<VagaListaResponse>> listar(
             @RequestParam(value = "tipoOferta", required = false) String tipoOferta,
-            @RequestParam(value = "entidadeId", required = false) Integer entidadeId,
+            @RequestParam("entidadeId") Integer entidadeId,
             @RequestParam(value = "entidade", required = false) String entidade,
             @RequestParam(value = "ilha", required = false) String ilha,
             @RequestParam(value = "concelho", required = false) String concelho,
@@ -97,7 +102,10 @@ public class GestaoVagaController {
     }
 
     @GetMapping("{id}")
-    public EmpregoApiResponse<VagaResponse> buscarPorId(@PathVariable Integer id) {
+    public EmpregoApiResponse<VagaResponse> buscarPorId(
+            @PathVariable Integer id,
+            @RequestParam("entidadeId") Integer entidadeId
+    ) {
         return EmpregoApiResponse.sucesso(
                 "Vaga encontrada com sucesso.",
                 gestaoVagaService.buscarPorId(id)
@@ -106,7 +114,10 @@ public class GestaoVagaController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EmpregoApiResponse<VagaResponse> criar(@RequestBody VagaRequest request) {
+    public EmpregoApiResponse<VagaResponse> criar(
+            @RequestParam("entidadeId") Integer entidadeId,
+            @RequestBody VagaRequest request
+    ) {
         return EmpregoApiResponse.sucesso(
                 "Vaga criada com sucesso.",
                 gestaoVagaService.criar(request)
@@ -115,7 +126,10 @@ public class GestaoVagaController {
 
     @PostMapping("rascunho")
     @ResponseStatus(HttpStatus.CREATED)
-    public EmpregoApiResponse<VagaResponse> criarRascunho(@RequestBody VagaRequest request) {
+    public EmpregoApiResponse<VagaResponse> criarRascunho(
+            @RequestParam("entidadeId") Integer entidadeId,
+            @RequestBody VagaRequest request
+    ) {
         return EmpregoApiResponse.sucesso(
                 "Rascunho da vaga criado com sucesso.",
                 gestaoVagaService.criarRascunho(request)
@@ -123,7 +137,11 @@ public class GestaoVagaController {
     }
 
     @PutMapping("{id}")
-    public EmpregoApiResponse<VagaResponse> atualizar(@PathVariable Integer id, @RequestBody VagaRequest request) {
+    public EmpregoApiResponse<VagaResponse> atualizar(
+            @PathVariable Integer id,
+            @RequestParam("entidadeId") Integer entidadeId,
+            @RequestBody VagaRequest request
+    ) {
         return EmpregoApiResponse.sucesso(
                 "Vaga atualizada com sucesso.",
                 gestaoVagaService.atualizar(id, request)
@@ -131,7 +149,11 @@ public class GestaoVagaController {
     }
 
     @PatchMapping("{id}/estado")
-    public EmpregoApiResponse<VagaResponse> alterarEstado(@PathVariable Integer id, @RequestBody VagaEstadoRequest request) {
+    public EmpregoApiResponse<VagaResponse> alterarEstado(
+            @PathVariable Integer id,
+            @RequestParam("entidadeId") Integer entidadeId,
+            @RequestBody VagaEstadoRequest request
+    ) {
         return EmpregoApiResponse.sucesso(
                 "Estado da vaga atualizado com sucesso.",
                 gestaoVagaService.alterarEstado(id, request)
@@ -139,7 +161,11 @@ public class GestaoVagaController {
     }
 
     @PatchMapping("{id}/validar")
-    public EmpregoApiResponse<VagaResponse> validar(@PathVariable Integer id, @RequestBody VagaValidacaoRequest request) {
+    public EmpregoApiResponse<VagaResponse> validar(
+            @PathVariable Integer id,
+            @RequestParam("entidadeId") Integer entidadeId,
+            @RequestBody VagaValidacaoRequest request
+    ) {
         return EmpregoApiResponse.sucesso(
                 "Vaga validada com sucesso.",
                 gestaoVagaService.validar(id, request)
@@ -147,7 +173,10 @@ public class GestaoVagaController {
     }
 
     @GetMapping("{id}/duplicar")
-    public EmpregoApiResponse<VagaDuplicacaoResponse> prepararDuplicacao(@PathVariable Integer id) {
+    public EmpregoApiResponse<VagaDuplicacaoResponse> prepararDuplicacao(
+            @PathVariable Integer id,
+            @RequestParam("entidadeId") Integer entidadeId
+    ) {
         return EmpregoApiResponse.sucesso(
                 "Dados da vaga preparados para duplicacao com sucesso.",
                 gestaoVagaService.prepararDuplicacao(id)

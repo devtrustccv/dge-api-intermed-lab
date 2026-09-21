@@ -45,7 +45,7 @@ public class ColocacaoCandidatoController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataRegistoInicio,
             @RequestParam(value = "dataRegistoFim", required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataRegistoFim,
-            @RequestParam(value = "entidadeId", required = false) Integer entidadeId
+            @RequestParam("entidadeId") Integer entidadeId
     ) {
         return EmpregoApiResponse.sucesso(
                 "Colocacoes listadas com sucesso.",
@@ -86,7 +86,10 @@ public class ColocacaoCandidatoController {
     }
 
     @GetMapping("{id}")
-    public EmpregoApiResponse<ColocacaoCandidatoResponse> buscarPorId(@PathVariable Integer id) {
+    public EmpregoApiResponse<ColocacaoCandidatoResponse> buscarPorId(
+            @PathVariable Integer id,
+            @RequestParam("entidadeId") Integer entidadeId
+    ) {
         return EmpregoApiResponse.sucesso(
                 "Colocacao encontrada com sucesso.",
                 colocacaoCandidatoService.buscarPorId(id)
@@ -95,7 +98,10 @@ public class ColocacaoCandidatoController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EmpregoApiResponse<ColocacaoCandidatoResponse> criar(@RequestBody ColocacaoCandidatoRequest request) {
+    public EmpregoApiResponse<ColocacaoCandidatoResponse> criar(
+            @RequestParam("entidadeId") Integer entidadeId,
+            @RequestBody ColocacaoCandidatoRequest request
+    ) {
         return EmpregoApiResponse.sucesso(
                 "Colocacao criada com sucesso.",
                 colocacaoCandidatoService.criar(request)
@@ -105,6 +111,7 @@ public class ColocacaoCandidatoController {
     @PutMapping("{id}")
     public EmpregoApiResponse<ColocacaoCandidatoResponse> atualizar(
             @PathVariable Integer id,
+            @RequestParam("entidadeId") Integer entidadeId,
             @RequestBody ColocacaoCandidatoRequest request
     ) {
         return EmpregoApiResponse.sucesso(
@@ -116,6 +123,7 @@ public class ColocacaoCandidatoController {
     @PatchMapping("{id}/remover")
     public EmpregoApiResponse<ColocacaoCandidatoResponse> remover(
             @PathVariable Integer id,
+            @RequestParam("entidadeId") Integer entidadeId,
             @RequestBody ColocacaoCandidatoRemoverRequest request
     ) {
         return EmpregoApiResponse.sucesso(

@@ -51,6 +51,7 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
     @Override
     @Transactional(readOnly = true)
     public List<CandidaturaListaResponse> listar(CandidaturaFiltro filtro) {
+        validarEntidade(filtro == null ? null : filtro.entidadeId());
         return candidaturaRepository.listar(normalizarFiltro(filtro)).stream()
                 .map(this::enriquecerLista)
                 .toList();
@@ -195,6 +196,7 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
 
     private CandidaturaFiltro normalizarFiltro(CandidaturaFiltro filtro) {
         return new CandidaturaFiltro(
+                filtro.entidadeId(),
                 filtro.candidatoId(),
                 texto(filtro.candidato()),
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, filtro.estado()),
@@ -502,6 +504,13 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
     private void validarId(Integer id, String mensagem) {
         if (id == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, mensagem);
+        }
+    }
+
+    private void validarEntidade(Integer entidadeId) {
+        if (entidadeId == null || entidadeId <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Nao foi possivel identificar a entidade selecionada.");
         }
     }
 

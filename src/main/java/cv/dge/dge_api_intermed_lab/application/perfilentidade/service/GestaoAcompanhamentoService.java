@@ -12,7 +12,7 @@ public interface GestaoAcompanhamentoService {
             AcompanhamentoEstagiarioFiltro filtro
     );
 
-    List<AcompanhamentoEstagiarioSelectResponse> listarEstagiariosSelecionadosParaFiltro();
+    List<AcompanhamentoEstagiarioSelectResponse> listarEstagiariosSelecionadosParaFiltro(Integer entidadeId);
 
-    List<AcompanhamentoOfertaSelectResponse> listarOfertasComEstagiariosSelecionados();
+    List<AcompanhamentoOfertaSelectResponse> listarOfertasComEstagiariosSelecionados(Integer entidadeId);
 }

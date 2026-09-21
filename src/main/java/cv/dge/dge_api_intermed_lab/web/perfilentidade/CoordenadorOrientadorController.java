@@ -34,7 +34,7 @@ public class CoordenadorOrientadorController {
 
     @GetMapping
     public EmpregoApiResponse<List<CoordenadorOrientadorListaResponse>> listar(
-            @RequestParam(value = "entidadeId", required = false) Integer entidadeId,
+            @RequestParam("entidadeId") Integer entidadeId,
             @RequestParam(value = "nome", required = false) String nome,
             @RequestParam(value = "tipo", required = false) String tipo,
             @RequestParam(value = "estado", required = false) String estado,
@@ -58,6 +58,7 @@ public class CoordenadorOrientadorController {
 
     @GetMapping("pessoa")
     public EmpregoApiResponse<PessoaGlobalResponse> buscarPessoa(
+            @RequestParam("entidadeId") Integer entidadeId,
             @RequestParam(value = "tipoDocumento", required = false) String tipoDocumento,
             @RequestParam("numeroDocumento") String numeroDocumento
     ) {
@@ -68,7 +69,10 @@ public class CoordenadorOrientadorController {
     }
 
     @GetMapping("{id}")
-    public EmpregoApiResponse<CoordenadorOrientadorResponse> buscarPorId(@PathVariable Integer id) {
+    public EmpregoApiResponse<CoordenadorOrientadorResponse> buscarPorId(
+            @PathVariable Integer id,
+            @RequestParam("entidadeId") Integer entidadeId
+    ) {
         return EmpregoApiResponse.sucesso(
                 "Coordenador/orientador encontrado com sucesso.",
                 coordenadorOrientadorService.buscarPorId(id)
@@ -76,7 +80,10 @@ public class CoordenadorOrientadorController {
     }
 
     @GetMapping("{id}/ofertas")
-    public EmpregoApiResponse<List<VagaListaResponse>> listarOfertasAssociadas(@PathVariable Integer id) {
+    public EmpregoApiResponse<List<VagaListaResponse>> listarOfertasAssociadas(
+            @PathVariable Integer id,
+            @RequestParam("entidadeId") Integer entidadeId
+    ) {
         return EmpregoApiResponse.sucesso(
                 "Ofertas associadas listadas com sucesso.",
                 coordenadorOrientadorService.listarOfertasAssociadas(id)
@@ -85,7 +92,10 @@ public class CoordenadorOrientadorController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EmpregoApiResponse<CoordenadorOrientadorResponse> criar(@RequestBody CoordenadorOrientadorRequest request) {
+    public EmpregoApiResponse<CoordenadorOrientadorResponse> criar(
+            @RequestParam("entidadeId") Integer entidadeId,
+            @RequestBody CoordenadorOrientadorRequest request
+    ) {
         return EmpregoApiResponse.sucesso(
                 "Coordenador/orientador criado com sucesso.",
                 coordenadorOrientadorService.criar(request)
@@ -95,6 +105,7 @@ public class CoordenadorOrientadorController {
     @PutMapping("{id}")
     public EmpregoApiResponse<CoordenadorOrientadorResponse> atualizar(
             @PathVariable Integer id,
+            @RequestParam("entidadeId") Integer entidadeId,
             @RequestBody CoordenadorOrientadorRequest request
     ) {
         return EmpregoApiResponse.sucesso(
@@ -106,6 +117,7 @@ public class CoordenadorOrientadorController {
     @PatchMapping("{id}/remover")
     public EmpregoApiResponse<CoordenadorOrientadorResponse> remover(
             @PathVariable Integer id,
+            @RequestParam("entidadeId") Integer entidadeId,
             @RequestBody CoordenadorOrientadorRemoverRequest request
     ) {
         return EmpregoApiResponse.sucesso(
