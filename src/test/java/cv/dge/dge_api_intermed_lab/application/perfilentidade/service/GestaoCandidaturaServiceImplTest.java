@@ -1,8 +1,10 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
@@ -20,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class GestaoCandidaturaServiceImplTest {
@@ -101,6 +104,18 @@ class GestaoCandidaturaServiceImplTest {
         });
         assertThat(resultado.anexo()).isEqualTo(resultado.anexos().get(0));
         verify(documentService).getDocumentosPorRelacao(1, TIPO_RELACAO, APP_CODE);
+    }
+
+    @Test
+    void deveRecusarDataFimAnteriorADataInicio() {
+        CandidaturaFiltro filtro = new CandidaturaFiltro(
+                23, null, null, null, null, null, null,
+                LocalDate.of(2026, 9, 30), LocalDate.of(2026, 9, 1));
+
+        assertThatThrownBy(() -> service.listar(filtro))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("data final");
+        verifyNoInteractions(candidaturaRepository);
     }
 
     private CandidaturaFiltro filtroVazio() {

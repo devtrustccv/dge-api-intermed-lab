@@ -1,6 +1,8 @@
 package cv.dge.dge_api_intermed_lab.web.perfilentidade;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -18,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
@@ -99,5 +102,23 @@ class GestaoCandidaturaControllerTest {
                 .andExpect(jsonPath("$.dados[0].anexos[0].url")
                         .value("http://localhost/documentos?path_url=%2Fcandidaturas%2F1%2Fcv.pdf"))
                 .andExpect(jsonPath("$.dados[0].motivoRecusa").doesNotExist());
+    }
+
+    @Test
+    void deveEncaminharDataInicioEDataFimParaOFiltro() throws Exception {
+        when(candidaturaService.listar(any())).thenReturn(List.of());
+
+        mockMvc.perform(get("/v1/candidaturas")
+                        .param("entidadeId", "23")
+                        .param("dataInicio", "2026-09-01")
+                        .param("dataFim", "2026-09-30"))
+                .andExpect(status().isOk());
+
+        ArgumentCaptor<cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaFiltro> captor =
+                ArgumentCaptor.forClass(
+                        cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaFiltro.class);
+        verify(candidaturaService).listar(captor.capture());
+        assertEquals(LocalDate.of(2026, 9, 1), captor.getValue().dataInicio());
+        assertEquals(LocalDate.of(2026, 9, 30), captor.getValue().dataFim());
     }
 }

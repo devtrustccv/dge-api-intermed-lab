@@ -12,7 +12,6 @@ import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EntrevistaResp
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EntrevistaResultadoRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.GestaoCandidaturaRepository;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -52,6 +51,11 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
     @Transactional(readOnly = true)
     public List<CandidaturaListaResponse> listar(CandidaturaFiltro filtro) {
         validarEntidade(filtro == null ? null : filtro.entidadeId());
+        if (filtro.dataInicio() != null && filtro.dataFim() != null
+                && filtro.dataFim().isBefore(filtro.dataInicio())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "A data final da pesquisa nao pode ser anterior a data inicial.");
+        }
         return candidaturaRepository.listar(normalizarFiltro(filtro)).stream()
                 .map(this::enriquecerLista)
                 .toList();
