@@ -156,6 +156,10 @@ public class GestaoAssiduidadeRepository {
             where.append(" AND cc.id_oferta = ?");
             params.add(filtro.ofertaId());
         }
+        if (temTexto(filtro.oferta())) {
+            where.append(" AND UPPER(COALESCE(o.titulo, '')) LIKE UPPER(?)");
+            params.add("%" + filtro.oferta() + "%");
+        }
         if (temTexto(filtro.tipoAssiduidade())) {
             where.append(" AND UPPER(a.tipo_assiduidade) = UPPER(?)");
             params.add(filtro.tipoAssiduidade());

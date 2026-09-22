@@ -109,9 +109,17 @@ public class GestaoAcompanhamentoRepository {
             where.append(" AND c.pessoa_id = ?");
             params.add(filtro.estagiarioId());
         }
+        if (filtro.estagiario() != null) {
+            where.append(" AND UPPER(COALESCE(c.nome, '')) LIKE UPPER(?)");
+            params.add("%" + filtro.estagiario() + "%");
+        }
         if (filtro.ofertaId() != null) {
             where.append(" AND c.id_oferta = ?");
             params.add(filtro.ofertaId());
+        }
+        if (filtro.oferta() != null) {
+            where.append(" AND UPPER(COALESCE(o.titulo, '')) LIKE UPPER(?)");
+            params.add("%" + filtro.oferta() + "%");
         }
         return where.toString();
     }

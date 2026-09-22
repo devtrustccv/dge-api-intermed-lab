@@ -23,7 +23,10 @@ public class GestaoAcompanhamentoServiceImpl implements GestaoAcompanhamentoServ
             AcompanhamentoEstagiarioFiltro filtro
     ) {
         validarEntidade(filtro == null ? null : filtro.entidadeId());
-        return acompanhamentoRepository.listarEstagiariosSelecionados(filtro).stream()
+        AcompanhamentoEstagiarioFiltro dados = new AcompanhamentoEstagiarioFiltro(
+                filtro.entidadeId(), filtro.estagiarioId(), texto(filtro.estagiario()),
+                filtro.ofertaId(), texto(filtro.oferta()));
+        return acompanhamentoRepository.listarEstagiariosSelecionados(dados).stream()
                 .map(this::enriquecer)
                 .toList();
     }
@@ -61,6 +64,10 @@ public class GestaoAcompanhamentoServiceImpl implements GestaoAcompanhamentoServ
 
     private String valorDominio(String dominio, String valor) {
         return EmpregoDominio.valorOficial(dominio, valor).orElse(valor);
+    }
+
+    private String texto(String valor) {
+        return valor == null || valor.trim().isEmpty() ? null : valor.trim();
     }
 
     private void validarEntidade(Integer entidadeId) {

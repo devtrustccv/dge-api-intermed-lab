@@ -8,6 +8,7 @@ public record AssiduidadeEstagiarioFiltro(
         Long estagiarioId,
         String estagiario,
         Integer ofertaId,
+        String oferta,
         String tipoAssiduidade,
         LocalDate data,
         LocalTime horaEntrada,
