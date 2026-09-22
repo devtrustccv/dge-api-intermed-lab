@@ -32,6 +32,7 @@ public class GestaoRelatorioAcompanhamentoController {
     public EmpregoApiResponse<List<RelatorioAcompanhamentoListaResponse>> listar(
             @RequestParam Integer entidadeId,
             @RequestParam(required = false) Long pessoaId,
+            @RequestParam(required = false) String estagiario,
             @RequestParam(required = false) String codigoReferencia,
             @RequestParam(required = false) LocalDate dataInicio,
             @RequestParam(required = false) LocalDate dataFim
@@ -39,7 +40,7 @@ public class GestaoRelatorioAcompanhamentoController {
         return EmpregoApiResponse.sucesso(
                 "Relatorios de acompanhamento listados com sucesso.",
                 service.listar(new RelatorioAcompanhamentoFiltro(
-                        entidadeId, pessoaId, codigoReferencia, dataInicio, dataFim)));
+                        entidadeId, pessoaId, estagiario, codigoReferencia, dataInicio, dataFim)));
     }
 
     @GetMapping("{id}")

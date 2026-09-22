@@ -6,6 +6,7 @@ import java.time.LocalTime;
 public record AssiduidadeEstagiarioFiltro(
         Integer entidadeId,
         Long estagiarioId,
+        String estagiario,
         Integer ofertaId,
         String tipoAssiduidade,
         LocalDate data,

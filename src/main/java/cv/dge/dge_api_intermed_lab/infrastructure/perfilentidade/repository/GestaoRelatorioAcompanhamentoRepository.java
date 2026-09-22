@@ -65,6 +65,10 @@ public class GestaoRelatorioAcompanhamentoRepository {
             where.append(" AND r.pessoa_id = ?");
             params.add(filtro.pessoaId());
         }
+        if (filtro.estagiario() != null) {
+            where.append(" AND UPPER(COALESCE(r.nome, '')) LIKE UPPER(?)");
+            params.add("%" + filtro.estagiario() + "%");
+        }
         if (filtro.codigoReferencia() != null) {
             where.append(" AND UPPER(COALESCE(NULLIF(TRIM(o.codigo_referencia), ''), c.codigo_referencia)) = UPPER(?)");
             params.add(filtro.codigoReferencia());

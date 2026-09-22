@@ -117,6 +117,7 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
         return new AssiduidadeEstagiarioFiltro(
                 filtro.entidadeId(),
                 filtro.estagiarioId(),
+                texto(filtro.estagiario()),
                 filtro.ofertaId(),
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_TIPO_ASSIDUIDADE, filtro.tipoAssiduidade()),
                 filtro.data(),

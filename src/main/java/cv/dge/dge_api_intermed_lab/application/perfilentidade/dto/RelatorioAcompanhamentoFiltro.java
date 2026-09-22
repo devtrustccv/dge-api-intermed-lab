@@ -5,6 +5,7 @@ import java.time.LocalDate;
 public record RelatorioAcompanhamentoFiltro(
         Integer entidadeId,
         Long pessoaId,
+        String estagiario,
         String codigoReferencia,
         LocalDate dataInicio,
         LocalDate dataFim

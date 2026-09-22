@@ -35,7 +35,8 @@ public class GestaoRelatorioAcompanhamentoServiceImpl implements GestaoRelatorio
         validarIntervalo(filtro.dataInicio(), filtro.dataFim(),
                 "A data final da pesquisa não pode ser anterior à data inicial.");
         RelatorioAcompanhamentoFiltro dados = new RelatorioAcompanhamentoFiltro(
-                filtro.entidadeId(), filtro.pessoaId(), texto(filtro.codigoReferencia()),
+                filtro.entidadeId(), filtro.pessoaId(), texto(filtro.estagiario()),
+                texto(filtro.codigoReferencia()),
                 filtro.dataInicio(), filtro.dataFim());
         return repository.listar(dados).stream().map(this::enriquecerLista).toList();
     }

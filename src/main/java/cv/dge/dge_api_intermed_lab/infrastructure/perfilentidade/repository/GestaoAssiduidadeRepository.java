@@ -27,7 +27,7 @@ public class GestaoAssiduidadeRepository {
                 a.entidade_id,
                 a.denominacao_entidade,
                 a.pessoa_id AS estagiario_id,
-                a.nome AS estagiario,
+                COALESCE(NULLIF(TRIM(a.nome), ''), cc.nome) AS estagiario,
                 a.data,
                 a.hora_entrada,
                 a.hora_saida,
@@ -147,6 +147,10 @@ public class GestaoAssiduidadeRepository {
         if (filtro.estagiarioId() != null) {
             where.append(" AND a.pessoa_id = ?");
             params.add(filtro.estagiarioId());
+        }
+        if (temTexto(filtro.estagiario())) {
+            where.append(" AND UPPER(COALESCE(NULLIF(TRIM(a.nome), ''), cc.nome, '')) LIKE UPPER(?)");
+            params.add("%" + filtro.estagiario() + "%");
         }
         if (filtro.ofertaId() != null) {
             where.append(" AND cc.id_oferta = ?");

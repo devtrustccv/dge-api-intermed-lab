@@ -31,6 +31,7 @@ public class GestaoAssiduidadeController {
     public EmpregoApiResponse<List<AssiduidadeEstagiarioListaResponse>> listar(
             @RequestParam("entidadeId") Integer entidadeId,
             @RequestParam(value = "estagiarioId", required = false) Long estagiarioId,
+            @RequestParam(value = "estagiario", required = false) String estagiario,
             @RequestParam(value = "ofertaId", required = false) Integer ofertaId,
             @RequestParam(value = "tipoAssiduidade", required = false) String tipoAssiduidade,
             @RequestParam(value = "data", required = false) LocalDate data,
@@ -43,6 +44,7 @@ public class GestaoAssiduidadeController {
                 gestaoAssiduidadeService.listar(new AssiduidadeEstagiarioFiltro(
                         entidadeId,
                         estagiarioId,
+                        estagiario,
                         ofertaId,
                         tipoAssiduidade,
                         data,
