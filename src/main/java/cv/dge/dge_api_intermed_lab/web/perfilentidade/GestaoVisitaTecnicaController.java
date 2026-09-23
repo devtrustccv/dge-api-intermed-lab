@@ -71,7 +71,7 @@ public class GestaoVisitaTecnicaController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Visita tecnica encontrada com sucesso.",
-                gestaoVisitaTecnicaService.buscarPorId(id)
+                gestaoVisitaTecnicaService.buscarPorId(id, entidadeId)
         );
     }
 
@@ -83,7 +83,7 @@ public class GestaoVisitaTecnicaController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Visita tecnica criada com sucesso.",
-                gestaoVisitaTecnicaService.criar(request)
+                gestaoVisitaTecnicaService.criar(entidadeId, request)
         );
     }
 
@@ -95,7 +95,7 @@ public class GestaoVisitaTecnicaController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Visita tecnica atualizada com sucesso.",
-                gestaoVisitaTecnicaService.atualizar(id, request)
+                gestaoVisitaTecnicaService.atualizar(id, entidadeId, request)
         );
     }
 
@@ -107,7 +107,7 @@ public class GestaoVisitaTecnicaController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Agendamento de visita tecnica validado com sucesso.",
-                gestaoVisitaTecnicaService.validar(id, request)
+                gestaoVisitaTecnicaService.validar(id, entidadeId, request)
         );
     }
 
@@ -119,7 +119,7 @@ public class GestaoVisitaTecnicaController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Visita tecnica marcada como executada com sucesso.",
-                gestaoVisitaTecnicaService.marcarComoExecutado(id, request)
+                gestaoVisitaTecnicaService.marcarComoExecutado(id, entidadeId, request)
         );
     }
 
@@ -131,7 +131,7 @@ public class GestaoVisitaTecnicaController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Observacoes da visita tecnica registadas com sucesso.",
-                gestaoVisitaTecnicaService.registarObservacoes(id, request)
+                gestaoVisitaTecnicaService.registarObservacoes(id, entidadeId, request)
         );
     }
 
@@ -151,7 +151,7 @@ public class GestaoVisitaTecnicaController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "CEFPs listados com sucesso.",
-                gestaoVisitaTecnicaService.listarCefps()
+                gestaoVisitaTecnicaService.listarCefps(entidadeId)
         );
     }
 }

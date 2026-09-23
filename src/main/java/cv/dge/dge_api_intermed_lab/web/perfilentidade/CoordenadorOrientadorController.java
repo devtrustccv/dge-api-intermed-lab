@@ -64,7 +64,7 @@ public class CoordenadorOrientadorController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Pessoa encontrada com sucesso.",
-                coordenadorOrientadorService.buscarPessoa(tipoDocumento, numeroDocumento)
+                coordenadorOrientadorService.buscarPessoa(entidadeId, tipoDocumento, numeroDocumento)
         );
     }
 
@@ -75,7 +75,7 @@ public class CoordenadorOrientadorController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Coordenador/orientador encontrado com sucesso.",
-                coordenadorOrientadorService.buscarPorId(id)
+                coordenadorOrientadorService.buscarPorId(id, entidadeId)
         );
     }
 
@@ -86,7 +86,7 @@ public class CoordenadorOrientadorController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Ofertas associadas listadas com sucesso.",
-                coordenadorOrientadorService.listarOfertasAssociadas(id)
+                coordenadorOrientadorService.listarOfertasAssociadas(id, entidadeId)
         );
     }
 
@@ -98,7 +98,7 @@ public class CoordenadorOrientadorController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Coordenador/orientador criado com sucesso.",
-                coordenadorOrientadorService.criar(request)
+                coordenadorOrientadorService.criar(entidadeId, request)
         );
     }
 
@@ -110,7 +110,7 @@ public class CoordenadorOrientadorController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Coordenador/orientador atualizado com sucesso.",
-                coordenadorOrientadorService.atualizar(id, request)
+                coordenadorOrientadorService.atualizar(id, entidadeId, request)
         );
     }
 
@@ -122,7 +122,7 @@ public class CoordenadorOrientadorController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Coordenador/orientador inativado com sucesso.",
-                coordenadorOrientadorService.remover(id, request)
+                coordenadorOrientadorService.remover(id, entidadeId, request)
         );
     }
 }

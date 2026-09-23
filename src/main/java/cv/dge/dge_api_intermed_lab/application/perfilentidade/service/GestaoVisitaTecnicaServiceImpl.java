@@ -54,9 +54,10 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
 
     @Override
     @Transactional(readOnly = true)
-    public VisitaTecnicaDetalheResponse buscarPorId(Integer id) {
+    public VisitaTecnicaDetalheResponse buscarPorId(Integer id, Integer entidadeId) {
         validarId(id);
-        return visitaRepository.buscarPorId(id)
+        validarEntidadeId(entidadeId);
+        return visitaRepository.buscarPorId(id, entidadeId)
                 .map(this::enriquecerDetalhe)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "A visita técnica selecionada não foi encontrada. Atualize a página e tente novamente."));
@@ -64,38 +65,55 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
 
     @Override
     @Transactional
-    public VisitaTecnicaDetalheResponse criar(VisitaTecnicaRequest request) {
-        VisitaTecnicaRequest dados = validarENormalizarCriacao(request);
+    public VisitaTecnicaDetalheResponse criar(Integer entidadeId, VisitaTecnicaRequest request) {
+        validarEntidadeId(entidadeId);
+        VisitaTecnicaRequest dados = validarENormalizarCriacao(entidadeId, request);
         String utilizador = utilizadorObrigatorio(dados.utilizador());
-        Integer id = visitaRepository.inserir(dados, ESTADO_PENDENTE, AGENDADO_POR_ENTIDADE_ACOLHEDORA, utilizador);
-        return buscarPorId(id);
+        Integer id = visitaRepository.inserir(
+                entidadeId,
+                dados,
+                ESTADO_PENDENTE,
+                AGENDADO_POR_ENTIDADE_ACOLHEDORA,
+                utilizador
+        );
+        return buscarPorId(id, entidadeId);
     }
 
     @Override
     @Transactional
-    public VisitaTecnicaDetalheResponse atualizar(Integer id, VisitaTecnicaAtualizacaoRequest request) {
+    public VisitaTecnicaDetalheResponse atualizar(
+            Integer id,
+            Integer entidadeId,
+            VisitaTecnicaAtualizacaoRequest request
+    ) {
         validarId(id);
+        validarEntidadeId(entidadeId);
         if (request == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Preencha os dados da visita técnica antes de gravar.");
         }
-        buscarPorId(id);
-        VisitaTecnicaAtualizacaoRequest dados = validarENormalizarAtualizacao(request);
+        buscarPorId(id, entidadeId);
+        VisitaTecnicaAtualizacaoRequest dados = validarENormalizarAtualizacao(entidadeId, request);
         String utilizador = utilizadorObrigatorio(dados.utilizador());
-        visitaRepository.atualizar(id, dados, utilizador);
-        return buscarPorId(id);
+        visitaRepository.atualizar(id, entidadeId, dados, utilizador);
+        return buscarPorId(id, entidadeId);
     }
 
     @Override
     @Transactional
-    public VisitaTecnicaDetalheResponse validar(Integer id, VisitaTecnicaValidacaoRequest request) {
+    public VisitaTecnicaDetalheResponse validar(
+            Integer id,
+            Integer entidadeId,
+            VisitaTecnicaValidacaoRequest request
+    ) {
         validarId(id);
+        validarEntidadeId(entidadeId);
         if (request == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Selecione um parecer antes de confirmar a validação.");
         }
 
-        VisitaTecnicaDetalheResponse atual = buscarPorId(id);
+        VisitaTecnicaDetalheResponse atual = buscarPorId(id, entidadeId);
         String estadoAtual = valorDominio(EmpregoDominio.DOMINIO_ESTADO_VISITA_TECNICA, atual.estado());
         String agendadoPor = valorDominio(EmpregoDominio.DOMINIO_AGENDADO_POR, atual.agendadoPor());
         if (ESTADO_REALIZADO.equals(estadoAtual)) {
@@ -131,38 +149,48 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
             novaData = request.novaData();
         }
 
-        visitaRepository.validar(id, novoEstado, novaData, motivoIndeferimento, utilizador);
-        return buscarPorId(id);
+        visitaRepository.validar(id, entidadeId, novoEstado, novaData, motivoIndeferimento, utilizador);
+        return buscarPorId(id, entidadeId);
     }
 
     @Override
     @Transactional
-    public VisitaTecnicaDetalheResponse marcarComoExecutado(Integer id, VisitaTecnicaExecutadoRequest request) {
+    public VisitaTecnicaDetalheResponse marcarComoExecutado(
+            Integer id,
+            Integer entidadeId,
+            VisitaTecnicaExecutadoRequest request
+    ) {
         validarId(id);
+        validarEntidadeId(entidadeId);
         if (request == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Não foi possível confirmar a realização da visita. Tente novamente.");
         }
         String utilizador = utilizadorObrigatorio(request.utilizador());
-        VisitaTecnicaDetalheResponse atual = buscarPorId(id);
+        VisitaTecnicaDetalheResponse atual = buscarPorId(id, entidadeId);
         String estadoAtual = valorDominio(EmpregoDominio.DOMINIO_ESTADO_VISITA_TECNICA, atual.estado());
         if (ESTADO_REALIZADO.equals(estadoAtual)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Esta visita já está marcada como realizada.");
         }
-        visitaRepository.alterarEstado(id, ESTADO_REALIZADO, utilizador);
-        return buscarPorId(id);
+        visitaRepository.alterarEstado(id, entidadeId, ESTADO_REALIZADO, utilizador);
+        return buscarPorId(id, entidadeId);
     }
 
     @Override
     @Transactional
-    public VisitaTecnicaDetalheResponse registarObservacoes(Integer id, VisitaTecnicaObservacaoRequest request) {
+    public VisitaTecnicaDetalheResponse registarObservacoes(
+            Integer id,
+            Integer entidadeId,
+            VisitaTecnicaObservacaoRequest request
+    ) {
         validarId(id);
+        validarEntidadeId(entidadeId);
         if (request == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Preencha as observações antes de gravar.");
         }
         String utilizador = utilizadorObrigatorio(request.utilizador());
-        VisitaTecnicaDetalheResponse atual = buscarPorId(id);
+        VisitaTecnicaDetalheResponse atual = buscarPorId(id, entidadeId);
         String estadoAtual = valorDominio(EmpregoDominio.DOMINIO_ESTADO_VISITA_TECNICA, atual.estado());
         if (!ESTADO_REALIZADO.equals(estadoAtual)) {
             throw new ResponseStatusException(
@@ -172,11 +200,12 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
         }
         visitaRepository.registarObservacoes(
                 id,
+                entidadeId,
                 texto(request.observacoesEntidade()),
                 texto(request.supervisorParticipante()),
                 utilizador
         );
-        return buscarPorId(id);
+        return buscarPorId(id, entidadeId);
     }
 
     @Override
@@ -188,14 +217,17 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
 
     @Override
     @Transactional(readOnly = true)
-    public List<VisitaTecnicaCefpSelectResponse> listarCefps() {
+    public List<VisitaTecnicaCefpSelectResponse> listarCefps(Integer entidadeId) {
+        validarEntidadeId(entidadeId);
         return visitaRepository.listarCefps();
     }
 
     private VisitaTecnicaFiltro normalizarFiltro(VisitaTecnicaFiltro filtro) {
         if (filtro == null) {
-            return new VisitaTecnicaFiltro(null, null, null, null, null, null, null, null);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Não foi possível identificar a entidade selecionada. Selecione uma entidade e tente novamente.");
         }
+        validarEntidadeId(filtro.entidadeId());
         if (filtro.dataInicio() != null && filtro.dataFim() != null && filtro.dataFim().isBefore(filtro.dataInicio())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "A data final da pesquisa não pode ser anterior à data inicial.");
@@ -212,12 +244,14 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
         );
     }
 
-    private VisitaTecnicaRequest validarENormalizarCriacao(VisitaTecnicaRequest request) {
+    private VisitaTecnicaRequest validarENormalizarCriacao(
+            Integer entidadeId,
+            VisitaTecnicaRequest request
+    ) {
         if (request == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Preencha os dados da visita técnica antes de gravar.");
         }
-        validarEntidadeId(request.entidadeId());
         if (request.dataVisita() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe a data da visita.");
         }
@@ -235,7 +269,7 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
                     "Selecione o Centro de Emprego e Formação Profissional responsável.");
         }
         List<VisitaTecnicaCandidatoRequest> candidatos = normalizarCandidatosObrigatorios(
-                request.entidadeId(),
+                entidadeId,
                 request.candidatos()
         );
 
@@ -244,7 +278,6 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
                 visitaRepository.buscarCefpDenominacao(request.cefpId()).orElse(null)
         );
         return new VisitaTecnicaRequest(
-                request.entidadeId(),
                 request.dataVisita(),
                 texto(request.visitante()),
                 candidatos,
@@ -257,7 +290,10 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
         );
     }
 
-    private VisitaTecnicaAtualizacaoRequest validarENormalizarAtualizacao(VisitaTecnicaAtualizacaoRequest request) {
+    private VisitaTecnicaAtualizacaoRequest validarENormalizarAtualizacao(
+            Integer entidadeId,
+            VisitaTecnicaAtualizacaoRequest request
+    ) {
         validarIntervaloHoras(request.horaInicio(), request.horaFim());
         return new VisitaTecnicaAtualizacaoRequest(
                 request.dataVisita(),
@@ -265,11 +301,11 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
                 request.horaInicio(),
                 request.horaFim(),
                 texto(request.objetivos()),
-                normalizarCandidatosOpcionais(request.candidatos()),
+                normalizarCandidatosAssociados(entidadeId, request.candidatos(), false),
                 texto(request.observacoesEntidade()),
                 texto(request.supervisorParticipante()),
                 texto(request.observacoesIefp()),
-                normalizarDetalhesAvaliacao(request.detalhesAvaliacao()),
+                normalizarDetalhesAvaliacao(entidadeId, request.detalhesAvaliacao()),
                 texto(request.utilizador())
         );
     }
@@ -278,9 +314,20 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
             Integer entidadeId,
             List<VisitaTecnicaCandidatoRequest> candidatos
     ) {
+        return normalizarCandidatosAssociados(entidadeId, candidatos, true);
+    }
+
+    private List<VisitaTecnicaCandidatoRequest> normalizarCandidatosAssociados(
+            Integer entidadeId,
+            List<VisitaTecnicaCandidatoRequest> candidatos,
+            boolean obrigatorios
+    ) {
         List<VisitaTecnicaCandidatoRequest> normalizados = normalizarCandidatosOpcionais(candidatos);
-        if (normalizados.isEmpty()) {
+        if (obrigatorios && normalizados.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione pelo menos um candidato.");
+        }
+        if (normalizados.isEmpty()) {
+            return normalizados;
         }
 
         Map<Long, VisitaTecnicaCandidatoSelectResponse> candidatosDisponiveis = visitaRepository.listarCandidatos(entidadeId)
@@ -328,6 +375,7 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
     }
 
     private List<VisitaTecnicaAvaliacaoItemRequest> normalizarDetalhesAvaliacao(
+            Integer entidadeId,
             List<VisitaTecnicaAvaliacaoItemRequest> detalhes
     ) {
         if (detalhes == null) {
@@ -340,7 +388,7 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
                                 "Existe uma avaliação incompleta. Reveja os dados antes de gravar.");
                     }
                     return new VisitaTecnicaAvaliacaoItemRequest(
-                            normalizarCandidatosOpcionais(item.candidatos()),
+                            normalizarCandidatosAssociados(entidadeId, item.candidatos(), false),
                             normalizarDominioObrigatorio(
                                     EmpregoDominio.DOMINIO_CRITERIO_AVALIACAO,
                                     item.criterio(),
@@ -511,7 +559,7 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
     }
 
     private void validarEntidadeId(Integer entidadeId) {
-        if (entidadeId == null) {
+        if (entidadeId == null || entidadeId <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Não foi possível identificar a entidade selecionada. Selecione uma entidade e tente novamente.");
         }

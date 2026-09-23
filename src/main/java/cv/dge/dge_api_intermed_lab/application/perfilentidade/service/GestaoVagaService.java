@@ -14,23 +14,23 @@ public interface GestaoVagaService {
 
     List<VagaListaResponse> listar(VagaFiltro filtro);
 
-    List<VagaColaboradorSelectResponse> listarColaboradores(String tipo);
+    List<VagaColaboradorSelectResponse> listarColaboradores(Integer entidadeId, String tipo);
 
-    List<VagaColaboradorSelectResponse> listarOrientadores();
+    List<VagaColaboradorSelectResponse> listarOrientadores(Integer entidadeId);
 
-    List<VagaColaboradorSelectResponse> listarCoordenadores();
+    List<VagaColaboradorSelectResponse> listarCoordenadores(Integer entidadeId);
 
-    VagaResponse buscarPorId(Integer id);
+    VagaResponse buscarPorId(Integer id, Integer entidadeId);
 
-    VagaResponse criar(VagaRequest request);
+    VagaResponse criar(Integer entidadeId, VagaRequest request);
 
-    VagaResponse criarRascunho(VagaRequest request);
+    VagaResponse criarRascunho(Integer entidadeId, VagaRequest request);
 
-    VagaResponse atualizar(Integer id, VagaRequest request);
+    VagaResponse atualizar(Integer id, Integer entidadeId, VagaRequest request);
 
-    VagaResponse alterarEstado(Integer id, VagaEstadoRequest request);
+    VagaResponse alterarEstado(Integer id, Integer entidadeId, VagaEstadoRequest request);
 
-    VagaResponse validar(Integer id, VagaValidacaoRequest request);
+    VagaResponse validar(Integer id, Integer entidadeId, VagaValidacaoRequest request);
 
-    VagaDuplicacaoResponse prepararDuplicacao(Integer id);
+    VagaDuplicacaoResponse prepararDuplicacao(Integer id, Integer entidadeId);
 }

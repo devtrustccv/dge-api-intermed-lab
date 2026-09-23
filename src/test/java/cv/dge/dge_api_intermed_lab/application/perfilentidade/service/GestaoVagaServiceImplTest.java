@@ -64,7 +64,7 @@ class GestaoVagaServiceImplTest {
 
         List<VagaListaResponse> resultado = service.listar(new VagaFiltro(
                 null,
-                null,
+                40,
                 "Empresa XPTO",
                 "Santiago",
                 "Praia",

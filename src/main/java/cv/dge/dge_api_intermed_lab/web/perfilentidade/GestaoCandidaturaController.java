@@ -68,7 +68,7 @@ public class GestaoCandidaturaController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Candidatura encontrada com sucesso.",
-                gestaoCandidaturaService.buscarPorId(id)
+                gestaoCandidaturaService.buscarPorId(id, entidadeId)
         );
     }
 
@@ -80,7 +80,7 @@ public class GestaoCandidaturaController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Candidatura avaliada com sucesso.",
-                gestaoCandidaturaService.avaliar(id, request)
+                gestaoCandidaturaService.avaliar(id, entidadeId, request)
         );
     }
 
@@ -91,7 +91,7 @@ public class GestaoCandidaturaController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Entrevistas listadas com sucesso.",
-                gestaoCandidaturaService.listarEntrevistas(id)
+                gestaoCandidaturaService.listarEntrevistas(id, entidadeId)
         );
     }
 
@@ -104,7 +104,7 @@ public class GestaoCandidaturaController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Entrevista agendada com sucesso.",
-                gestaoCandidaturaService.agendarEntrevista(id, request)
+                gestaoCandidaturaService.agendarEntrevista(id, entidadeId, request)
         );
     }
 
@@ -117,7 +117,7 @@ public class GestaoCandidaturaController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Resultado da entrevista registado com sucesso.",
-                gestaoCandidaturaService.registarResultadoEntrevista(id, entrevistaId, request)
+                gestaoCandidaturaService.registarResultadoEntrevista(id, entrevistaId, entidadeId, request)
         );
     }
 }

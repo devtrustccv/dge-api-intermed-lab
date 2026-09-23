@@ -1,6 +1,7 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.dto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 public record AssiduidadeEstagiarioListaResponse(
@@ -18,6 +19,11 @@ public record AssiduidadeEstagiarioListaResponse(
         String horario,
         String estado,
         String estadoDesc,
-        Boolean podeValidar
+        Boolean podeValidar,
+        String justificacao,
+        String observacao,
+        String comprovativo,
+        String utilizadorRegisto,
+        LocalDateTime dataRegistro
 ) {
 }

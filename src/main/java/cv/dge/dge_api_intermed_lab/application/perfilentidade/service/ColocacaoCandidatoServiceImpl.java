@@ -37,9 +37,10 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
 
     @Override
     @Transactional(readOnly = true)
-    public ColocacaoCandidatoResponse buscarPorId(Integer id) {
+    public ColocacaoCandidatoResponse buscarPorId(Integer id, Integer entidadeId) {
         validarId(id);
-        return colocacaoRepository.buscarPorId(id)
+        validarEntidade(entidadeId);
+        return colocacaoRepository.buscarPorId(id, entidadeId)
                 .map(this::enriquecerDetalhe)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "A colocação selecionada não foi encontrada. Atualize a página e tente novamente."));
@@ -53,7 +54,7 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
                 tipoOferta,
                 "Selecione o tipo de oferta."
         );
-        if (entidadeId == null) {
+        if (entidadeId == null || entidadeId <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Não foi possível identificar a entidade selecionada. Selecione uma entidade e tente novamente.");
         }
@@ -85,47 +86,59 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
 
     @Override
     @Transactional
-    public ColocacaoCandidatoResponse criar(ColocacaoCandidatoRequest request) {
+    public ColocacaoCandidatoResponse criar(Integer entidadeId, ColocacaoCandidatoRequest request) {
+        validarEntidade(entidadeId);
         ColocacaoCandidatoRequest dados = validarENormalizarRequest(request);
         String utilizador = utilizadorObrigatorio(dados.utilizador());
-        ColocacaoCandidatoVinculo vinculo = resolverVinculoObrigatorio(dados);
+        ColocacaoCandidatoVinculo vinculo = resolverVinculoObrigatorio(entidadeId, dados);
         validarTipoOferta(dados.tipoOferta(), vinculo.tipoOferta());
 
         Integer id = colocacaoRepository.inserir(dados, vinculo, ESTADO_ATIVO, false, utilizador);
-        return buscarPorId(id);
+        return buscarPorId(id, entidadeId);
     }
 
     @Override
     @Transactional
-    public ColocacaoCandidatoResponse atualizar(Integer id, ColocacaoCandidatoRequest request) {
+    public ColocacaoCandidatoResponse atualizar(
+            Integer id,
+            Integer entidadeId,
+            ColocacaoCandidatoRequest request
+    ) {
         validarId(id);
-        ColocacaoCandidatoResponse atual = buscarPorId(id);
+        validarEntidade(entidadeId);
+        ColocacaoCandidatoResponse atual = buscarPorId(id, entidadeId);
         garantirAtivo(atual);
 
         ColocacaoCandidatoRequest dados = validarENormalizarRequest(request);
         String utilizador = utilizadorObrigatorio(dados.utilizador());
-        ColocacaoCandidatoVinculo vinculo = resolverVinculoObrigatorio(dados);
+        ColocacaoCandidatoVinculo vinculo = resolverVinculoObrigatorio(entidadeId, dados);
         validarTipoOferta(dados.tipoOferta(), vinculo.tipoOferta());
 
-        colocacaoRepository.atualizar(id, dados, vinculo, utilizador);
-        return buscarPorId(id);
+        colocacaoRepository.atualizar(id, entidadeId, dados, vinculo, utilizador);
+        return buscarPorId(id, entidadeId);
     }
 
     @Override
     @Transactional
-    public ColocacaoCandidatoResponse remover(Integer id, ColocacaoCandidatoRemoverRequest request) {
+    public ColocacaoCandidatoResponse remover(
+            Integer id,
+            Integer entidadeId,
+            ColocacaoCandidatoRemoverRequest request
+    ) {
         validarId(id);
+        validarEntidade(entidadeId);
         if (request == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Não foi possível confirmar a eliminação da colocação. Tente novamente.");
         }
         String utilizador = utilizadorObrigatorio(request.utilizador());
-        buscarPorId(id);
-        colocacaoRepository.remover(id, ESTADO_INATIVO, utilizador);
-        return buscarPorId(id);
+        buscarPorId(id, entidadeId);
+        colocacaoRepository.remover(id, entidadeId, ESTADO_INATIVO, utilizador);
+        return buscarPorId(id, entidadeId);
     }
 
     private ColocacaoCandidatoFiltro normalizarFiltro(ColocacaoCandidatoFiltro filtro) {
+        validarEntidade(filtro.entidadeId());
         return new ColocacaoCandidatoFiltro(
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_TIPO_OFERTA, filtro.tipoOferta()),
                 texto(filtro.codigoReferencia()),
@@ -183,8 +196,15 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
         );
     }
 
-    private ColocacaoCandidatoVinculo resolverVinculoObrigatorio(ColocacaoCandidatoRequest request) {
-        return colocacaoRepository.buscarVinculoCandidatura(request.ofertaId(), request.pessoaId())
+    private ColocacaoCandidatoVinculo resolverVinculoObrigatorio(
+            Integer entidadeId,
+            ColocacaoCandidatoRequest request
+    ) {
+        return colocacaoRepository.buscarVinculoCandidatura(
+                        request.ofertaId(),
+                        request.pessoaId(),
+                        entidadeId
+                )
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Não foi encontrada uma candidatura para o candidato e a oferta selecionados. "
@@ -274,6 +294,12 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
         if (id == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Não foi possível identificar a colocação selecionada. Atualize a página e tente novamente.");
+        }
+    }
+
+    private void validarEntidade(Integer entidadeId) {
+        if (entidadeId == null || entidadeId <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione uma entidade válida.");
         }
     }
 

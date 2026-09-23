@@ -1,6 +1,7 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaDuplicacaoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaDuplicacaoDadosResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaEstadoRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaFiltro;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaColaboradorSelectResponse;
@@ -47,27 +48,32 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<VagaColaboradorSelectResponse> listarColaboradores(String tipo) {
-        return vagaRepository.listarColaboradoresPorTipo(normalizarTipoColaboradorObrigatorio(tipo));
+    public List<VagaColaboradorSelectResponse> listarColaboradores(Integer entidadeId, String tipo) {
+        validarEntidade(entidadeId);
+        return vagaRepository.listarColaboradoresPorTipo(
+                entidadeId,
+                normalizarTipoColaboradorObrigatorio(tipo)
+        );
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<VagaColaboradorSelectResponse> listarOrientadores() {
-        return listarColaboradores(TIPO_ORIENTADOR);
+    public List<VagaColaboradorSelectResponse> listarOrientadores(Integer entidadeId) {
+        return listarColaboradores(entidadeId, TIPO_ORIENTADOR);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<VagaColaboradorSelectResponse> listarCoordenadores() {
-        return listarColaboradores(TIPO_COORDENADOR);
+    public List<VagaColaboradorSelectResponse> listarCoordenadores(Integer entidadeId) {
+        return listarColaboradores(entidadeId, TIPO_COORDENADOR);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public VagaResponse buscarPorId(Integer id) {
+    public VagaResponse buscarPorId(Integer id, Integer entidadeId) {
         validarId(id);
-        return vagaRepository.buscarPorId(id)
+        validarEntidade(entidadeId);
+        return vagaRepository.buscarPorId(id, entidadeId)
                 .map(this::enriquecerDetalhe)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "A oferta selecionada não foi encontrada. Atualize a página e tente novamente."));
@@ -75,75 +81,83 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
 
     @Override
     @Transactional
-    public VagaResponse criar(VagaRequest request) {
+    public VagaResponse criar(Integer entidadeId, VagaRequest request) {
+        validarEntidade(entidadeId);
         validarRequest(request, false);
         VagaRequest dados = normalizarRequest(request);
+        validarColaboradores(entidadeId, dados);
         String utilizador = utilizadorObrigatorio(dados.utilizador());
-        Integer id = vagaRepository.inserir(dados, ESTADO_ATIVA, utilizador);
-        return buscarPorId(id);
+        Integer id = vagaRepository.inserir(entidadeId, dados, ESTADO_ATIVA, utilizador);
+        return buscarPorId(id, entidadeId);
     }
 
     @Override
     @Transactional
-    public VagaResponse criarRascunho(VagaRequest request) {
+    public VagaResponse criarRascunho(Integer entidadeId, VagaRequest request) {
+        validarEntidade(entidadeId);
         validarRequest(request, true);
         VagaRequest dados = normalizarRequest(request);
+        validarColaboradores(entidadeId, dados);
         String utilizador = utilizadorObrigatorio(dados.utilizador());
-        Integer id = vagaRepository.inserir(dados, ESTADO_RASCUNHO, utilizador);
-        return buscarPorId(id);
+        Integer id = vagaRepository.inserir(entidadeId, dados, ESTADO_RASCUNHO, utilizador);
+        return buscarPorId(id, entidadeId);
     }
 
     @Override
     @Transactional
-    public VagaResponse atualizar(Integer id, VagaRequest request) {
+    public VagaResponse atualizar(Integer id, Integer entidadeId, VagaRequest request) {
         validarId(id);
+        validarEntidade(entidadeId);
         validarRequest(request, false);
-        VagaResponse atual = buscarPorId(id);
+        VagaResponse atual = buscarPorId(id, entidadeId);
         garantirEditavel(atual);
         VagaRequest dados = normalizarRequest(request);
+        validarColaboradores(entidadeId, dados);
         String utilizador = utilizadorObrigatorio(dados.utilizador());
-        vagaRepository.atualizar(id, dados, utilizador);
-        return buscarPorId(id);
+        vagaRepository.atualizar(id, entidadeId, dados, utilizador);
+        return buscarPorId(id, entidadeId);
     }
 
     @Override
     @Transactional
-    public VagaResponse alterarEstado(Integer id, VagaEstadoRequest request) {
+    public VagaResponse alterarEstado(Integer id, Integer entidadeId, VagaEstadoRequest request) {
         validarId(id);
+        validarEntidade(entidadeId);
         if (request == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Selecione o novo estado da oferta antes de confirmar.");
         }
         String novoEstado = normalizarEstadoOfertaObrigatorio(request.novoEstado());
         String utilizador = utilizadorObrigatorio(request.utilizador());
-        buscarPorId(id);
-        vagaRepository.alterarEstado(id, novoEstado, request.observacao(), utilizador);
-        return buscarPorId(id);
+        buscarPorId(id, entidadeId);
+        vagaRepository.alterarEstado(id, entidadeId, novoEstado, request.observacao(), utilizador);
+        return buscarPorId(id, entidadeId);
     }
 
     @Override
     @Transactional
-    public VagaResponse validar(Integer id, VagaValidacaoRequest request) {
+    public VagaResponse validar(Integer id, Integer entidadeId, VagaValidacaoRequest request) {
         validarId(id);
+        validarEntidade(entidadeId);
         if (request == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Não foi possível confirmar a validação da oferta. Tente novamente.");
         }
         String utilizador = utilizadorObrigatorio(request.utilizador());
-        VagaResponse atual = buscarPorId(id);
+        VagaResponse atual = buscarPorId(id, entidadeId);
         if (!ESTADO_RASCUNHO.equalsIgnoreCase(String.valueOf(atual.estado()))) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Apenas ofertas que ainda estejam em rascunho podem ser enviadas para validação.");
         }
-        vagaRepository.alterarEstado(id, ESTADO_ATIVA, atual.observacao(), utilizador);
-        return buscarPorId(id);
+        vagaRepository.alterarEstado(id, entidadeId, ESTADO_ATIVA, atual.observacao(), utilizador);
+        return buscarPorId(id, entidadeId);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public VagaDuplicacaoResponse prepararDuplicacao(Integer id) {
-        VagaResponse origem = buscarPorId(id);
-        VagaRequest dados = new VagaRequest(
+    public VagaDuplicacaoResponse prepararDuplicacao(Integer id, Integer entidadeId) {
+        VagaResponse origem = buscarPorId(id, entidadeId);
+        VagaDuplicacaoDadosResponse dados = new VagaDuplicacaoDadosResponse(
                 origem.codigoReferencia(),
                 origem.tipoOferta(),
                 origem.titulo(),
@@ -185,6 +199,7 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Não foi possível carregar as vagas. Atualize a página e tente novamente.");
         }
+        validarEntidade(filtro.entidadeId());
         validarIntervaloDatas(filtro.dataInicio(), filtro.dataFim());
         return new VagaFiltro(
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_TIPO_OFERTA, filtro.tipoOferta()),
@@ -376,6 +391,30 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
         }
     }
 
+    private void validarEntidade(Integer entidadeId) {
+        if (entidadeId == null || entidadeId <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Não foi possível identificar a entidade selecionada. Selecione uma entidade e tente novamente.");
+        }
+    }
+
+    private void validarColaboradores(Integer entidadeId, VagaRequest request) {
+        validarColaborador(entidadeId, request.orientadorId(), TIPO_ORIENTADOR, "orientador");
+        validarColaborador(entidadeId, request.coordenadorId(), TIPO_COORDENADOR, "coordenador");
+    }
+
+    private void validarColaborador(Integer entidadeId, Integer colaboradorId, String tipo, String descricao) {
+        if (colaboradorId == null) {
+            return;
+        }
+        if (!vagaRepository.existeColaborador(entidadeId, colaboradorId, tipo)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "O " + descricao + " selecionado não pertence à entidade ou não está ativo."
+            );
+        }
+    }
+
     private boolean correspondeGeografia(String filtro, String codigo, String descricao) {
         if (filtro == null || filtro.isBlank()) {
             return true;
@@ -428,7 +467,6 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
                 request.dataInicioPrevisto(),
                 request.duracaoContrato(),
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_REGIME_CONTRATO, request.regimeContrato()),
-                request.entidadeId(),
                 texto(request.denominacaoEntidade()),
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA, request.habilitacaoMinima()),
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_NIVEL_QUALIFICACAO, request.nivelQualificacao()),

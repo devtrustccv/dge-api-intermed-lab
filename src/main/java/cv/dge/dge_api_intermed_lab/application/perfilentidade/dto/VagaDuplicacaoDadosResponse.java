@@ -3,7 +3,7 @@ package cv.dge.dge_api_intermed_lab.application.perfilentidade.dto;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-public record VagaRequest(
+public record VagaDuplicacaoDadosResponse(
         String codigoReferencia,
         String tipoOferta,
         String titulo,
@@ -13,6 +13,7 @@ public record VagaRequest(
         LocalDate dataInicioPrevisto,
         Integer duracaoContrato,
         String regimeContrato,
+        Integer entidadeId,
         String denominacaoEntidade,
         String habilitacaoMinima,
         String nivelQualificacao,

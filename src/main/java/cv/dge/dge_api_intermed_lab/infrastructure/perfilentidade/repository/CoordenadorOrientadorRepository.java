@@ -55,8 +55,7 @@ public class CoordenadorOrientadorRepository {
 
     private static final String SQL_UPDATE = """
             UPDATE emprego_t_entidade_colaborador
-            SET entidade_id = ?,
-                tipo = ?,
+            SET tipo = ?,
                 nome = ?,
                 pessoa_id = ?,
                 cargo = ?,
@@ -65,6 +64,7 @@ public class CoordenadorOrientadorRepository {
                 date_update = ?,
                 user_update = ?
             WHERE id = ?
+              AND entidade_id = ?
             """;
 
     private final JdbcTemplate empregoJdbcTemplate;
@@ -115,8 +115,9 @@ public class CoordenadorOrientadorRepository {
         }, params.toArray());
     }
 
-    public Optional<CoordenadorOrientadorResponse> buscarPorId(Integer id) {
-        String sql = "SELECT " + CAMPOS_COLABORADOR + " FROM emprego_t_entidade_colaborador c WHERE c.id = ?";
+    public Optional<CoordenadorOrientadorResponse> buscarPorId(Integer id, Integer entidadeId) {
+        String sql = "SELECT " + CAMPOS_COLABORADOR
+                + " FROM emprego_t_entidade_colaborador c WHERE c.id = ? AND c.entidade_id = ?";
         List<CoordenadorOrientadorResponse> resultados = empregoJdbcTemplate.query(sql, (rs, rowNum) -> {
             return new CoordenadorOrientadorResponse(
                     rs.getInt("id"),
@@ -135,7 +136,7 @@ public class CoordenadorOrientadorRepository {
                     rs.getObject("date_update", java.time.LocalDateTime.class),
                     rs.getString("user_update")
             );
-        }, id);
+        }, id, entidadeId);
         return resultados.stream().findFirst();
     }
 
@@ -186,13 +187,19 @@ public class CoordenadorOrientadorRepository {
         return resultados.stream().findFirst();
     }
 
-    public Integer inserir(CoordenadorOrientadorRequest request, Long pessoaId, String estado, String utilizador) {
+    public Integer inserir(
+            Integer entidadeId,
+            CoordenadorOrientadorRequest request,
+            Long pessoaId,
+            String estado,
+            String utilizador
+    ) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         LocalDateTime agora = LocalDateTime.now();
 
         empregoJdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(SQL_INSERT, new String[]{"id"});
-            ps.setInt(1, request.entidadeId());
+            ps.setInt(1, entidadeId);
             ps.setString(2, request.tipo());
             ps.setString(3, request.nome());
             setLong(ps, 4, pessoaId);
@@ -209,10 +216,15 @@ public class CoordenadorOrientadorRepository {
         return id == null ? null : id.intValue();
     }
 
-    public void atualizar(Integer id, CoordenadorOrientadorRequest request, Long pessoaId, String utilizador) {
+    public void atualizar(
+            Integer id,
+            Integer entidadeId,
+            CoordenadorOrientadorRequest request,
+            Long pessoaId,
+            String utilizador
+    ) {
         empregoJdbcTemplate.update(
                 SQL_UPDATE,
-                request.entidadeId(),
                 request.tipo(),
                 request.nome(),
                 pessoaId,
@@ -221,11 +233,12 @@ public class CoordenadorOrientadorRepository {
                 request.telemovel(),
                 Timestamp.valueOf(LocalDateTime.now()),
                 utilizador,
-                id
+                id,
+                entidadeId
         );
     }
 
-    public void remover(Integer id, String utilizador, String estadoInativo) {
+    public void remover(Integer id, Integer entidadeId, String utilizador, String estadoInativo) {
         empregoJdbcTemplate.update(
                 """
                         UPDATE emprego_t_entidade_colaborador
@@ -233,11 +246,13 @@ public class CoordenadorOrientadorRepository {
                             date_update = ?,
                             user_update = ?
                         WHERE id = ?
+                          AND entidade_id = ?
                         """,
                 estadoInativo,
                 Timestamp.valueOf(LocalDateTime.now()),
                 utilizador,
-                id
+                id,
+                entidadeId
         );
     }
 

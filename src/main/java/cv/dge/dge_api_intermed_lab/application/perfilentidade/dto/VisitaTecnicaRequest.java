@@ -5,7 +5,6 @@ import java.time.LocalTime;
 import java.util.List;
 
 public record VisitaTecnicaRequest(
-        Integer entidadeId,
         LocalDate dataVisita,
         String visitante,
         List<VisitaTecnicaCandidatoRequest> candidatos,

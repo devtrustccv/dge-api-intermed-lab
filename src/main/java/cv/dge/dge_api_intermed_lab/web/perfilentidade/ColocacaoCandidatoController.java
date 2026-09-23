@@ -92,7 +92,7 @@ public class ColocacaoCandidatoController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Colocacao encontrada com sucesso.",
-                colocacaoCandidatoService.buscarPorId(id)
+                colocacaoCandidatoService.buscarPorId(id, entidadeId)
         );
     }
 
@@ -104,7 +104,7 @@ public class ColocacaoCandidatoController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Colocacao criada com sucesso.",
-                colocacaoCandidatoService.criar(request)
+                colocacaoCandidatoService.criar(entidadeId, request)
         );
     }
 
@@ -116,7 +116,7 @@ public class ColocacaoCandidatoController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Colocacao atualizada com sucesso.",
-                colocacaoCandidatoService.atualizar(id, request)
+                colocacaoCandidatoService.atualizar(id, entidadeId, request)
         );
     }
 
@@ -128,7 +128,7 @@ public class ColocacaoCandidatoController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Colocacao removida com sucesso.",
-                colocacaoCandidatoService.remover(id, request)
+                colocacaoCandidatoService.remover(id, entidadeId, request)
         );
     }
 }

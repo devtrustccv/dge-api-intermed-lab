@@ -63,9 +63,10 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
 
     @Override
     @Transactional(readOnly = true)
-    public CandidaturaDetalheResponse buscarPorId(Integer id) {
+    public CandidaturaDetalheResponse buscarPorId(Integer id, Integer entidadeId) {
         validarId(id, "Não foi possível identificar a candidatura selecionada. Atualize a página e tente novamente.");
-        return candidaturaRepository.buscarPorId(id)
+        validarEntidade(entidadeId);
+        return candidaturaRepository.buscarPorId(id, entidadeId)
                 .map(this::enriquecerDetalhe)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "A candidatura selecionada não foi encontrada. Atualize a página e tente novamente."));
@@ -73,8 +74,13 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
 
     @Override
     @Transactional
-    public CandidaturaDetalheResponse avaliar(Integer id, CandidaturaAvaliacaoRequest request) {
+    public CandidaturaDetalheResponse avaliar(
+            Integer id,
+            Integer entidadeId,
+            CandidaturaAvaliacaoRequest request
+    ) {
         validarId(id, "Não foi possível identificar a candidatura selecionada. Atualize a página e tente novamente.");
+        validarEntidade(entidadeId);
         if (request == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Selecione o resultado da avaliação antes de gravar.");
@@ -92,7 +98,7 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
             );
         }
 
-        CandidaturaDetalheResponse atual = buscarPorId(id);
+        CandidaturaDetalheResponse atual = buscarPorId(id, entidadeId);
         if (!Boolean.TRUE.equals(atual.selecaoIefp())) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
@@ -108,17 +114,28 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
             );
         }
 
-        candidaturaRepository.atualizarAvaliacao(id, parecer, isRecusa(parecer) ? motivoRecusa : null, utilizador);
-        return buscarPorId(id);
+        candidaturaRepository.atualizarAvaliacao(
+                id,
+                entidadeId,
+                parecer,
+                isRecusa(parecer) ? motivoRecusa : null,
+                utilizador
+        );
+        return buscarPorId(id, entidadeId);
     }
 
     @Override
     @Transactional
-    public EntrevistaResponse agendarEntrevista(Integer candidaturaId, EntrevistaAgendamentoRequest request) {
+    public EntrevistaResponse agendarEntrevista(
+            Integer candidaturaId,
+            Integer entidadeId,
+            EntrevistaAgendamentoRequest request
+    ) {
         validarId(candidaturaId,
                 "Não foi possível identificar a candidatura selecionada. Atualize a página e tente novamente.");
+        validarEntidade(entidadeId);
         validarAgendamento(request);
-        CandidaturaDetalheResponse candidatura = buscarPorId(candidaturaId);
+        CandidaturaDetalheResponse candidatura = buscarPorId(candidaturaId, entidadeId);
         if (!podeAgendarEntrevista(candidatura.statusCandidatura())) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
@@ -147,10 +164,11 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<EntrevistaResponse> listarEntrevistas(Integer candidaturaId) {
+    public List<EntrevistaResponse> listarEntrevistas(Integer candidaturaId, Integer entidadeId) {
         validarId(candidaturaId,
                 "Não foi possível identificar a candidatura selecionada. Atualize a página e tente novamente.");
-        buscarPorId(candidaturaId);
+        validarEntidade(entidadeId);
+        buscarPorId(candidaturaId, entidadeId);
         return candidaturaRepository.listarEntrevistas(candidaturaId).stream()
                 .map(this::enriquecerEntrevista)
                 .toList();
@@ -161,12 +179,14 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
     public EntrevistaResponse registarResultadoEntrevista(
             Integer candidaturaId,
             Integer entrevistaId,
+            Integer entidadeId,
             EntrevistaResultadoRequest request
     ) {
         validarId(candidaturaId,
                 "Não foi possível identificar a candidatura selecionada. Atualize a página e tente novamente.");
         validarId(entrevistaId,
                 "Não foi possível identificar a entrevista selecionada. Atualize a página e tente novamente.");
+        validarEntidade(entidadeId);
         if (request == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Preencha o resultado da entrevista antes de gravar.");
@@ -177,7 +197,7 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
                 "Selecione o parecer da entrevista."
         );
         String utilizador = utilizadorObrigatorio(request.utilizador());
-        buscarPorId(candidaturaId);
+        buscarPorId(candidaturaId, entidadeId);
         buscarEntrevistaObrigatoria(candidaturaId, entrevistaId);
 
         candidaturaRepository.atualizarResultadoEntrevista(

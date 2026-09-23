@@ -78,7 +78,7 @@ public class GestaoRelatorioAcompanhamentoServiceImpl implements GestaoRelatorio
         garantirAtivo(atual);
         RelatorioAcompanhamentoRequest dados = validarRequest(request);
         RelatorioAcompanhamentoVinculo vinculo = resolverVinculo(entidadeId, dados);
-        repository.atualizar(id, vinculo, dados, dados.utilizador());
+        repository.atualizar(id, entidadeId, vinculo, dados, dados.utilizador());
         return buscarPorId(id, entidadeId);
     }
 
@@ -96,7 +96,7 @@ public class GestaoRelatorioAcompanhamentoServiceImpl implements GestaoRelatorio
         }
         String utilizador = obrigatorio(request.utilizador(),
                 "Não foi possível identificar o utilizador. Inicie sessão novamente e repita a operação.");
-        repository.remover(id, utilizador);
+        repository.remover(id, entidadeId, utilizador);
         return buscarPorId(id, entidadeId);
     }
 

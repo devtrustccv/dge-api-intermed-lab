@@ -87,9 +87,15 @@ public class ColocacaoCandidatoRepository {
         ), params.toArray());
     }
 
-    public Optional<ColocacaoCandidatoResponse> buscarPorId(Integer id) {
-        String sql = "SELECT " + CAMPOS_DETALHE + " FROM emprego_t_colocacao_candidato WHERE id = ?";
-        List<ColocacaoCandidatoResponse> resultados = jdbcTemplate.query(sql, this::mapDetalhe, id);
+    public Optional<ColocacaoCandidatoResponse> buscarPorId(Integer id, Integer entidadeId) {
+        String sql = "SELECT " + CAMPOS_DETALHE
+                + " FROM emprego_t_colocacao_candidato WHERE id = ? AND entidade_id = ?";
+        List<ColocacaoCandidatoResponse> resultados = jdbcTemplate.query(
+                sql,
+                this::mapDetalhe,
+                id,
+                entidadeId
+        );
         return resultados.stream().findFirst();
     }
 
@@ -161,7 +167,8 @@ public class ColocacaoCandidatoRepository {
 
     public Optional<ColocacaoCandidatoVinculo> buscarVinculoCandidatura(
             Integer ofertaId,
-            Long pessoaId
+            Long pessoaId,
+            Integer entidadeId
     ) {
         String sql = """
                 SELECT
@@ -177,6 +184,7 @@ public class ColocacaoCandidatoRepository {
                 INNER JOIN emprego_t_oferta o ON o.id = c.id_oferta
                 WHERE c.id_oferta = ?
                   AND c.pessoa_id = ?
+                  AND o.entidade_id = ?
                 ORDER BY c.id DESC
                 FETCH FIRST 1 ROWS ONLY
                 """;
@@ -193,7 +201,8 @@ public class ColocacaoCandidatoRepository {
                         rs.getString("denominacao_entidade")
                 ),
                 ofertaId,
-                pessoaId
+                pessoaId,
+                entidadeId
         );
         return resultados.stream().findFirst();
     }
@@ -258,7 +267,13 @@ public class ColocacaoCandidatoRepository {
         return generatedId(keyHolder);
     }
 
-    public void atualizar(Integer id, ColocacaoCandidatoRequest request, ColocacaoCandidatoVinculo vinculo, String utilizador) {
+    public void atualizar(
+            Integer id,
+            Integer entidadeId,
+            ColocacaoCandidatoRequest request,
+            ColocacaoCandidatoVinculo vinculo,
+            String utilizador
+    ) {
         jdbcTemplate.update(
                 """
                         UPDATE emprego_t_colocacao_candidato
@@ -279,6 +294,7 @@ public class ColocacaoCandidatoRepository {
                             date_update = ?,
                             user_update = ?
                         WHERE id = ?
+                          AND entidade_id = ?
                         """,
                 vinculo.ofertaId(),
                 request.tipoOferta(),
@@ -296,11 +312,12 @@ public class ColocacaoCandidatoRepository {
                 request.contratoPath(),
                 Timestamp.valueOf(LocalDateTime.now()),
                 utilizador,
-                id
+                id,
+                entidadeId
         );
     }
 
-    public void remover(Integer id, String estado, String utilizador) {
+    public void remover(Integer id, Integer entidadeId, String estado, String utilizador) {
         jdbcTemplate.update(
                 """
                         UPDATE emprego_t_colocacao_candidato
@@ -308,11 +325,13 @@ public class ColocacaoCandidatoRepository {
                             date_update = ?,
                             user_update = ?
                         WHERE id = ?
+                          AND entidade_id = ?
                         """,
                 estado,
                 Timestamp.valueOf(LocalDateTime.now()),
                 utilizador,
-                id
+                id,
+                entidadeId
         );
     }
 

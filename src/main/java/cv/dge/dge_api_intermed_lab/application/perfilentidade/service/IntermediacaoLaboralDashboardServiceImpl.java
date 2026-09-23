@@ -7,8 +7,10 @@ import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDomin
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.IntermediacaoLaboralDashboardRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +21,10 @@ public class IntermediacaoLaboralDashboardServiceImpl implements IntermediacaoLa
     @Override
     @Transactional(readOnly = true)
     public IntermediacaoLaboralDashboardResponse buscarResumo(Integer entidadeId) {
+        if (entidadeId == null || entidadeId <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Não foi possível identificar a entidade selecionada.");
+        }
         return new IntermediacaoLaboralDashboardResponse(
                 dashboardRepository.contarOfertas(entidadeId),
                 dashboardRepository.contarCandidaturas(entidadeId),

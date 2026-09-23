@@ -114,7 +114,6 @@ public class GestaoVagaRepository {
                 data_inicio_previsto = ?,
                 duracao_contrato = ?,
                 regime_contrato = ?,
-                entidade_id = ?,
                 denominacao_entidade = ?,
                 habilitacao_minima = ?,
                 nivel_qualificacao = ?,
@@ -137,6 +136,7 @@ public class GestaoVagaRepository {
                 date_update = ?,
                 user_update = ?
             WHERE id = ?
+              AND entidade_id = ?
             """;
 
     private final JdbcTemplate jdbcTemplate;
@@ -191,12 +191,13 @@ public class GestaoVagaRepository {
         return total == null ? 0L : total;
     }
 
-    public List<VagaColaboradorSelectResponse> listarColaboradoresPorTipo(String tipo) {
+    public List<VagaColaboradorSelectResponse> listarColaboradoresPorTipo(Integer entidadeId, String tipo) {
         return jdbcTemplate.query(
                 """
                         SELECT id, COALESCE(tipo, cargo) AS tipo, nome, email, telemovel
                         FROM emprego_t_entidade_colaborador
-                        WHERE UPPER(COALESCE(tipo, cargo, '')) = UPPER(?)
+                        WHERE entidade_id = ?
+                          AND UPPER(COALESCE(tipo, cargo, '')) = UPPER(?)
                           AND UPPER(COALESCE(estado, 'A')) IN ('A', 'ATIVO')
                         ORDER BY nome ASC NULLS LAST, id ASC
                         """,
@@ -207,11 +208,12 @@ public class GestaoVagaRepository {
                         rs.getString("email"),
                         rs.getString("telemovel")
                 ),
+                entidadeId,
                 tipo
         );
     }
 
-    public Optional<VagaResponse> buscarPorId(Integer id) {
+    public Optional<VagaResponse> buscarPorId(Integer id, Integer entidadeId) {
         String sql = """
                 SELECT
                 """ + CAMPOS_DETALHE + """
@@ -219,18 +221,19 @@ public class GestaoVagaRepository {
                 LEFT JOIN emprego_t_entidade_colaborador orientador ON orientador.id = o.orientador_id
                 LEFT JOIN emprego_t_entidade_colaborador coordenador ON coordenador.id = o.coordenador_id
                 WHERE o.id = ?
+                  AND o.entidade_id = ?
                 """;
-        List<VagaResponse> resultados = jdbcTemplate.query(sql, this::mapDetalhe, id);
+        List<VagaResponse> resultados = jdbcTemplate.query(sql, this::mapDetalhe, id, entidadeId);
         return resultados.stream().findFirst();
     }
 
-    public Integer inserir(VagaRequest request, String estado, String utilizador) {
+    public Integer inserir(Integer entidadeId, VagaRequest request, String estado, String utilizador) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         LocalDateTime agora = LocalDateTime.now();
 
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(SQL_INSERT, new String[]{"id"});
-            preencherCamposGravacao(ps, request, 1);
+            preencherCamposGravacao(ps, entidadeId, request, 1);
             ps.setString(30, estado);
             ps.setTimestamp(31, Timestamp.valueOf(agora));
             ps.setString(32, utilizador);
@@ -241,18 +244,25 @@ public class GestaoVagaRepository {
         return id == null ? null : id.intValue();
     }
 
-    public void atualizar(Integer id, VagaRequest request, String utilizador) {
+    public void atualizar(Integer id, Integer entidadeId, VagaRequest request, String utilizador) {
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(SQL_UPDATE);
-            int index = preencherCamposGravacao(ps, request, 1);
+            int index = preencherCamposGravacao(ps, entidadeId, request, 1, false);
             ps.setTimestamp(index++, Timestamp.valueOf(LocalDateTime.now()));
             ps.setString(index++, utilizador);
-            ps.setInt(index, id);
+            ps.setInt(index++, id);
+            ps.setInt(index, entidadeId);
             return ps;
         });
     }
 
-    public void alterarEstado(Integer id, String estado, String observacao, String utilizador) {
+    public void alterarEstado(
+            Integer id,
+            Integer entidadeId,
+            String estado,
+            String observacao,
+            String utilizador
+    ) {
         jdbcTemplate.update(
                 """
                         UPDATE emprego_t_oferta
@@ -261,13 +271,33 @@ public class GestaoVagaRepository {
                             date_update = ?,
                             user_update = ?
                         WHERE id = ?
+                          AND entidade_id = ?
                         """,
                 estado,
                 observacao,
                 Timestamp.valueOf(LocalDateTime.now()),
                 utilizador,
-                id
+                id,
+                entidadeId
         );
+    }
+
+    public boolean existeColaborador(Integer entidadeId, Integer colaboradorId, String tipo) {
+        Integer total = jdbcTemplate.queryForObject(
+                """
+                        SELECT COUNT(*)
+                        FROM emprego_t_entidade_colaborador
+                        WHERE id = ?
+                          AND entidade_id = ?
+                          AND UPPER(COALESCE(tipo, cargo, '')) = UPPER(?)
+                          AND UPPER(COALESCE(estado, 'A')) IN ('A', 'ATIVO')
+                        """,
+                Integer.class,
+                colaboradorId,
+                entidadeId,
+                tipo
+        );
+        return total != null && total > 0;
     }
 
     private String construirWhere(VagaFiltro filtro, List<Object> params) {
@@ -336,7 +366,22 @@ public class GestaoVagaRepository {
         params.add(valor);
     }
 
-    private int preencherCamposGravacao(PreparedStatement ps, VagaRequest request, int index) throws java.sql.SQLException {
+    private int preencherCamposGravacao(
+            PreparedStatement ps,
+            Integer entidadeId,
+            VagaRequest request,
+            int index
+    ) throws java.sql.SQLException {
+        return preencherCamposGravacao(ps, entidadeId, request, index, true);
+    }
+
+    private int preencherCamposGravacao(
+            PreparedStatement ps,
+            Integer entidadeId,
+            VagaRequest request,
+            int index,
+            boolean incluirEntidade
+    ) throws java.sql.SQLException {
         ps.setString(index++, request.codigoReferencia());
         ps.setString(index++, request.tipoOferta());
         ps.setString(index++, request.titulo());
@@ -346,7 +391,9 @@ public class GestaoVagaRepository {
         ps.setObject(index++, request.dataInicioPrevisto());
         setInteger(ps, index++, request.duracaoContrato());
         ps.setString(index++, request.regimeContrato());
-        setInteger(ps, index++, request.entidadeId());
+        if (incluirEntidade) {
+            setInteger(ps, index++, entidadeId);
+        }
         ps.setString(index++, request.denominacaoEntidade());
         ps.setString(index++, request.habilitacaoMinima());
         ps.setString(index++, request.nivelQualificacao());

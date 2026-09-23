@@ -233,6 +233,7 @@ public class GestaoRelatorioAcompanhamentoRepository {
 
     public void atualizar(
             Integer id,
+            Integer entidadeId,
             RelatorioAcompanhamentoVinculo vinculo,
             RelatorioAcompanhamentoRequest request,
             String utilizador
@@ -244,19 +245,21 @@ public class GestaoRelatorioAcompanhamentoRepository {
                     dificuldades = ?, recomendacoes = ?, relatorio_anexo = ?,
                     date_update = ?, user_update = ?
                 WHERE id = ?
+                  AND entidade_id = ?
                 """,
                 vinculo.ofertaId(), vinculo.colocacaoId(), vinculo.entidadeId(), vinculo.denominacaoEntidade(),
                 vinculo.pessoaId(), vinculo.estagiario(), request.dataInicio(), request.dataFim(),
                 request.atividadesRealizadas(), request.dificuldades(), request.recomendacoes(),
-                request.relatorioAnexo(), Timestamp.valueOf(LocalDateTime.now()), utilizador, id);
+                request.relatorioAnexo(), Timestamp.valueOf(LocalDateTime.now()), utilizador, id, entidadeId);
     }
 
-    public void remover(Integer id, String utilizador) {
+    public void remover(Integer id, Integer entidadeId, String utilizador) {
         jdbcTemplate.update("""
                 UPDATE emprego_t_relatorio_acomp
                 SET estado = 'I', date_update = ?, user_update = ?
                 WHERE id = ?
-                """, Timestamp.valueOf(LocalDateTime.now()), utilizador, id);
+                  AND entidade_id = ?
+                """, Timestamp.valueOf(LocalDateTime.now()), utilizador, id, entidadeId);
     }
 
     private RelatorioAcompanhamentoDetalheResponse mapDetalhe(

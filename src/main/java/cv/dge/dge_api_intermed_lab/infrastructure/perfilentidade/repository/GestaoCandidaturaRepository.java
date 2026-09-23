@@ -141,13 +141,14 @@ public class GestaoCandidaturaRepository {
         }, params.toArray());
     }
 
-    public Optional<CandidaturaDetalheResponse> buscarPorId(Integer id) {
+    public Optional<CandidaturaDetalheResponse> buscarPorId(Integer id, Integer entidadeId) {
         String sql = """
                 SELECT
                 """ + CAMPOS_CANDIDATURA_DETALHE + """
                 FROM emprego_t_candidatura_oferta c
                 LEFT JOIN emprego_t_oferta o ON o.id = c.id_oferta
                 WHERE c.id = ?
+                  AND c.entidade_id = ?
                 """;
 
         List<CandidaturaDetalheResponse> resultados = empregoJdbcTemplate.query(sql, (rs, rowNum) -> {
@@ -177,12 +178,18 @@ public class GestaoCandidaturaRepository {
                     rs.getObject("date_update", LocalDateTime.class),
                     rs.getString("user_update")
             );
-        }, id);
+        }, id, entidadeId);
 
         return resultados.stream().findFirst();
     }
 
-    public void atualizarAvaliacao(Integer id, String status, String motivoRecusa, String utilizador) {
+    public void atualizarAvaliacao(
+            Integer id,
+            Integer entidadeId,
+            String status,
+            String motivoRecusa,
+            String utilizador
+    ) {
         empregoJdbcTemplate.update(
                 """
                         UPDATE emprego_t_candidatura_oferta
@@ -191,12 +198,14 @@ public class GestaoCandidaturaRepository {
                             date_update = ?,
                             user_update = ?
                         WHERE id = ?
+                          AND entidade_id = ?
                         """,
                 status,
                 motivoRecusa,
                 Timestamp.valueOf(LocalDateTime.now()),
                 utilizador,
-                id
+                id,
+                entidadeId
         );
     }
 

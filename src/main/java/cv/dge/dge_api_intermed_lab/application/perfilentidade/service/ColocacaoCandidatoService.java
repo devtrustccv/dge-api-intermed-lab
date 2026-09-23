@@ -13,15 +13,15 @@ public interface ColocacaoCandidatoService {
 
     List<ColocacaoCandidatoListaResponse> listar(ColocacaoCandidatoFiltro filtro);
 
-    ColocacaoCandidatoResponse buscarPorId(Integer id);
+    ColocacaoCandidatoResponse buscarPorId(Integer id, Integer entidadeId);
 
     List<ColocacaoOfertaSelectResponse> listarOfertasPorTipoEEntidade(String tipoOferta, Integer entidadeId);
 
     List<ColocacaoCandidatoSelectResponse> listarCandidatos(Integer entidadeId, Integer ofertaId);
 
-    ColocacaoCandidatoResponse criar(ColocacaoCandidatoRequest request);
+    ColocacaoCandidatoResponse criar(Integer entidadeId, ColocacaoCandidatoRequest request);
 
-    ColocacaoCandidatoResponse atualizar(Integer id, ColocacaoCandidatoRequest request);
+    ColocacaoCandidatoResponse atualizar(Integer id, Integer entidadeId, ColocacaoCandidatoRequest request);
 
-    ColocacaoCandidatoResponse remover(Integer id, ColocacaoCandidatoRemoverRequest request);
+    ColocacaoCandidatoResponse remover(Integer id, Integer entidadeId, ColocacaoCandidatoRemoverRequest request);
 }

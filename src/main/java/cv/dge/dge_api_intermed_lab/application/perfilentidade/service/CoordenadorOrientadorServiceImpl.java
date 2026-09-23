@@ -39,9 +39,10 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
 
     @Override
     @Transactional(readOnly = true)
-    public CoordenadorOrientadorResponse buscarPorId(Integer id) {
+    public CoordenadorOrientadorResponse buscarPorId(Integer id, Integer entidadeId) {
         validarId(id);
-        return coordenadorOrientadorRepository.buscarPorId(id)
+        validarEntidade(entidadeId);
+        return coordenadorOrientadorRepository.buscarPorId(id, entidadeId)
                 .map(this::enriquecerDetalhe)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
@@ -51,7 +52,8 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
 
     @Override
     @Transactional(readOnly = true)
-    public PessoaGlobalResponse buscarPessoa(String tipoDocumento, String numeroDocumento) {
+    public PessoaGlobalResponse buscarPessoa(Integer entidadeId, String tipoDocumento, String numeroDocumento) {
+        validarEntidade(entidadeId);
         String numero = textoObrigatorio(numeroDocumento, "Informe o número do documento.");
         return coordenadorOrientadorRepository.buscarPessoaPorNumeroDocumento(numero)
                 .map(pessoa -> new PessoaGlobalResponse(
@@ -70,51 +72,69 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
 
     @Override
     @Transactional
-    public CoordenadorOrientadorResponse criar(CoordenadorOrientadorRequest request) {
+    public CoordenadorOrientadorResponse criar(Integer entidadeId, CoordenadorOrientadorRequest request) {
+        validarEntidade(entidadeId);
         validarRequest(request);
         String utilizador = utilizadorObrigatorio(request.utilizador());
         String tipo = normalizarTipoObrigatorio(request.tipo());
         CoordenadorOrientadorRequest dados = normalizarRequest(request, tipo);
-        Integer id = coordenadorOrientadorRepository.inserir(dados, request.pessoaId(), ESTADO_ATIVO, utilizador);
-        return buscarPorId(id);
+        Integer id = coordenadorOrientadorRepository.inserir(
+                entidadeId,
+                dados,
+                request.pessoaId(),
+                ESTADO_ATIVO,
+                utilizador
+        );
+        return buscarPorId(id, entidadeId);
     }
 
     @Override
     @Transactional
-    public CoordenadorOrientadorResponse atualizar(Integer id, CoordenadorOrientadorRequest request) {
+    public CoordenadorOrientadorResponse atualizar(
+            Integer id,
+            Integer entidadeId,
+            CoordenadorOrientadorRequest request
+    ) {
         validarId(id);
+        validarEntidade(entidadeId);
         validarRequest(request);
         String utilizador = utilizadorObrigatorio(request.utilizador());
         String tipo = normalizarTipoObrigatorio(request.tipo());
-        buscarPorId(id);
+        buscarPorId(id, entidadeId);
 
         coordenadorOrientadorRepository.atualizar(
                 id,
+                entidadeId,
                 normalizarRequest(request, tipo),
                 request.pessoaId(),
                 utilizador
         );
-        return buscarPorId(id);
+        return buscarPorId(id, entidadeId);
     }
 
     @Override
     @Transactional
-    public CoordenadorOrientadorResponse remover(Integer id, CoordenadorOrientadorRemoverRequest request) {
+    public CoordenadorOrientadorResponse remover(
+            Integer id,
+            Integer entidadeId,
+            CoordenadorOrientadorRemoverRequest request
+    ) {
         validarId(id);
+        validarEntidade(entidadeId);
         if (request == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Não foi possível confirmar a eliminação do colaborador. Tente novamente.");
         }
         String utilizador = utilizadorObrigatorio(request.utilizador());
-        buscarPorId(id);
-        coordenadorOrientadorRepository.remover(id, utilizador, ESTADO_INATIVO);
-        return buscarPorId(id);
+        buscarPorId(id, entidadeId);
+        coordenadorOrientadorRepository.remover(id, entidadeId, utilizador, ESTADO_INATIVO);
+        return buscarPorId(id, entidadeId);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<VagaListaResponse> listarOfertasAssociadas(Integer id) {
-        CoordenadorOrientadorResponse colaborador = buscarPorId(id);
+    public List<VagaListaResponse> listarOfertasAssociadas(Integer id, Integer entidadeId) {
+        CoordenadorOrientadorResponse colaborador = buscarPorId(id, entidadeId);
         Integer orientadorId = TIPO_ORIENTADOR.equalsIgnoreCase(String.valueOf(colaborador.tipo())) ? id : null;
         Integer coordenadorId = TIPO_COORDENADOR.equalsIgnoreCase(String.valueOf(colaborador.tipo())) ? id : null;
 
@@ -127,7 +147,7 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
 
         return gestaoVagaService.listar(new VagaFiltro(
                 null,
-                null,
+                entidadeId,
                 null,
                 null,
                 null,
@@ -142,9 +162,7 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
     }
 
     private CoordenadorOrientadorFiltro normalizarFiltro(CoordenadorOrientadorFiltro filtro) {
-        if (filtro.entidadeId() != null && filtro.entidadeId() <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe uma entidade válida.");
-        }
+        validarEntidade(filtro.entidadeId());
         return new CoordenadorOrientadorFiltro(
                 filtro.entidadeId(),
                 filtro.nome(),
@@ -163,10 +181,6 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
         utilizadorObrigatorio(request.utilizador());
         normalizarTipoObrigatorio(request.tipo());
 
-        if (request.entidadeId() == null || request.entidadeId() <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe a entidade.");
-        }
-
         textoObrigatorio(request.numeroDocumento(), "Informe o número do documento.");
         if (!temTexto(request.nome())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe o nome do colaborador.");
@@ -175,7 +189,6 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
 
     private CoordenadorOrientadorRequest normalizarRequest(CoordenadorOrientadorRequest request, String tipo) {
         return new CoordenadorOrientadorRequest(
-                request.entidadeId(),
                 texto(request.numeroDocumento()),
                 request.pessoaId(),
                 texto(request.nome()),
@@ -191,6 +204,12 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
         if (id == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Não foi possível identificar o colaborador selecionado. Atualize a página e tente novamente.");
+        }
+    }
+
+    private void validarEntidade(Integer entidadeId) {
+        if (entidadeId == null || entidadeId <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe uma entidade válida.");
         }
     }
 

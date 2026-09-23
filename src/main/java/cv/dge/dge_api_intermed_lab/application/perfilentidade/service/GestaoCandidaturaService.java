@@ -13,17 +13,22 @@ public interface GestaoCandidaturaService {
 
     List<CandidaturaListaResponse> listar(CandidaturaFiltro filtro);
 
-    CandidaturaDetalheResponse buscarPorId(Integer id);
+    CandidaturaDetalheResponse buscarPorId(Integer id, Integer entidadeId);
 
-    CandidaturaDetalheResponse avaliar(Integer id, CandidaturaAvaliacaoRequest request);
+    CandidaturaDetalheResponse avaliar(Integer id, Integer entidadeId, CandidaturaAvaliacaoRequest request);
 
-    EntrevistaResponse agendarEntrevista(Integer candidaturaId, EntrevistaAgendamentoRequest request);
+    EntrevistaResponse agendarEntrevista(
+            Integer candidaturaId,
+            Integer entidadeId,
+            EntrevistaAgendamentoRequest request
+    );
 
-    List<EntrevistaResponse> listarEntrevistas(Integer candidaturaId);
+    List<EntrevistaResponse> listarEntrevistas(Integer candidaturaId, Integer entidadeId);
 
     EntrevistaResponse registarResultadoEntrevista(
             Integer candidaturaId,
             Integer entrevistaId,
+            Integer entidadeId,
             EntrevistaResultadoRequest request
     );
 }

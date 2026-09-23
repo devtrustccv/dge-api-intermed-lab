@@ -202,7 +202,12 @@ public class GestaoAssiduidadeRepository {
                 null,
                 rs.getString("estado"),
                 rs.getString("estado"),
-                null
+                null,
+                rs.getString("justificacao"),
+                rs.getString("observacao"),
+                rs.getString("comprovativo"),
+                rs.getString("user_create"),
+                rs.getObject("date_create", LocalDateTime.class)
         );
     }
 

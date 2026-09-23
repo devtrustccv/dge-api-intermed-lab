@@ -145,7 +145,12 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
                 formatarHorario(item.horaEntrada(), item.horaSaida()),
                 estado,
                 EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO_ASSIDUIDADE, item.estado()),
-                !ESTADO_APROVADO.equals(estado)
+                !ESTADO_APROVADO.equals(estado),
+                item.justificacao(),
+                item.observacao(),
+                item.comprovativo(),
+                item.utilizadorRegisto(),
+                item.dataRegistro()
         );
     }
 
@@ -243,7 +248,7 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
     }
 
     private void validarEntidadeId(Integer entidadeId) {
-        if (entidadeId == null) {
+        if (entidadeId == null || entidadeId <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Não foi possível identificar a entidade selecionada. Selecione uma entidade e tente novamente.");
         }

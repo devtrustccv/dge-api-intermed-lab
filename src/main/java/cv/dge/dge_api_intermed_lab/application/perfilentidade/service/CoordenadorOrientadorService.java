@@ -13,15 +13,15 @@ public interface CoordenadorOrientadorService {
 
     List<CoordenadorOrientadorListaResponse> listar(CoordenadorOrientadorFiltro filtro);
 
-    CoordenadorOrientadorResponse buscarPorId(Integer id);
+    CoordenadorOrientadorResponse buscarPorId(Integer id, Integer entidadeId);
 
-    PessoaGlobalResponse buscarPessoa(String tipoDocumento, String numeroDocumento);
+    PessoaGlobalResponse buscarPessoa(Integer entidadeId, String tipoDocumento, String numeroDocumento);
 
-    CoordenadorOrientadorResponse criar(CoordenadorOrientadorRequest request);
+    CoordenadorOrientadorResponse criar(Integer entidadeId, CoordenadorOrientadorRequest request);
 
-    CoordenadorOrientadorResponse atualizar(Integer id, CoordenadorOrientadorRequest request);
+    CoordenadorOrientadorResponse atualizar(Integer id, Integer entidadeId, CoordenadorOrientadorRequest request);
 
-    CoordenadorOrientadorResponse remover(Integer id, CoordenadorOrientadorRemoverRequest request);
+    CoordenadorOrientadorResponse remover(Integer id, Integer entidadeId, CoordenadorOrientadorRemoverRequest request);
 
-    List<VagaListaResponse> listarOfertasAssociadas(Integer id);
+    List<VagaListaResponse> listarOfertasAssociadas(Integer id, Integer entidadeId);
 }

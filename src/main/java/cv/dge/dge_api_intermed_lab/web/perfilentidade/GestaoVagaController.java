@@ -40,7 +40,7 @@ public class GestaoVagaController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Colaboradores listados com sucesso.",
-                gestaoVagaService.listarColaboradores(tipo)
+                gestaoVagaService.listarColaboradores(entidadeId, tipo)
         );
     }
 
@@ -50,7 +50,7 @@ public class GestaoVagaController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Orientadores listados com sucesso.",
-                gestaoVagaService.listarOrientadores()
+                gestaoVagaService.listarOrientadores(entidadeId)
         );
     }
 
@@ -60,7 +60,7 @@ public class GestaoVagaController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Coordenadores listados com sucesso.",
-                gestaoVagaService.listarCoordenadores()
+                gestaoVagaService.listarCoordenadores(entidadeId)
         );
     }
 
@@ -108,7 +108,7 @@ public class GestaoVagaController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Vaga encontrada com sucesso.",
-                gestaoVagaService.buscarPorId(id)
+                gestaoVagaService.buscarPorId(id, entidadeId)
         );
     }
 
@@ -120,7 +120,7 @@ public class GestaoVagaController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Vaga criada com sucesso.",
-                gestaoVagaService.criar(request)
+                gestaoVagaService.criar(entidadeId, request)
         );
     }
 
@@ -132,7 +132,7 @@ public class GestaoVagaController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Rascunho da vaga criado com sucesso.",
-                gestaoVagaService.criarRascunho(request)
+                gestaoVagaService.criarRascunho(entidadeId, request)
         );
     }
 
@@ -144,7 +144,7 @@ public class GestaoVagaController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Vaga atualizada com sucesso.",
-                gestaoVagaService.atualizar(id, request)
+                gestaoVagaService.atualizar(id, entidadeId, request)
         );
     }
 
@@ -156,7 +156,7 @@ public class GestaoVagaController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Estado da vaga atualizado com sucesso.",
-                gestaoVagaService.alterarEstado(id, request)
+                gestaoVagaService.alterarEstado(id, entidadeId, request)
         );
     }
 
@@ -168,7 +168,7 @@ public class GestaoVagaController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Vaga validada com sucesso.",
-                gestaoVagaService.validar(id, request)
+                gestaoVagaService.validar(id, entidadeId, request)
         );
     }
 
@@ -179,7 +179,7 @@ public class GestaoVagaController {
     ) {
         return EmpregoApiResponse.sucesso(
                 "Dados da vaga preparados para duplicacao com sucesso.",
-                gestaoVagaService.prepararDuplicacao(id)
+                gestaoVagaService.prepararDuplicacao(id, entidadeId)
         );
     }
 }

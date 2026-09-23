@@ -88,6 +88,7 @@ public class GestaoVisitaTecnicaRepository {
                 date_update = ?,
                 user_update = ?
             WHERE id = ?
+              AND entidade_id = ?
             """;
 
     private final JdbcTemplate empregoJdbcTemplate;
@@ -112,16 +113,18 @@ public class GestaoVisitaTecnicaRepository {
         return empregoJdbcTemplate.query(sql, this::mapLista, params.toArray());
     }
 
-    public Optional<VisitaTecnicaDetalheResponse> buscarPorId(Integer id) {
+    public Optional<VisitaTecnicaDetalheResponse> buscarPorId(Integer id, Integer entidadeId) {
         List<VisitaTecnicaDetalheResponse> resultados = empregoJdbcTemplate.query(
-                SELECT_BASE + " WHERE v.id = ?",
+                SELECT_BASE + " WHERE v.id = ? AND v.entidade_id = ?",
                 this::mapDetalhe,
-                id
+                id,
+                entidadeId
         );
         return resultados.stream().findFirst();
     }
 
     public Integer inserir(
+            Integer entidadeId,
             VisitaTecnicaRequest request,
             String estado,
             String agendadoPor,
@@ -133,7 +136,7 @@ public class GestaoVisitaTecnicaRepository {
         empregoJdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(SQL_INSERT, new String[]{"id"});
             int index = 1;
-            setInteger(ps, index++, request.entidadeId());
+            setInteger(ps, index++, entidadeId);
             ps.setString(index++, request.visitante());
             ps.setObject(index++, request.dataVisita());
             ps.setObject(index++, request.horaInicio());
@@ -153,7 +156,12 @@ public class GestaoVisitaTecnicaRepository {
         return id == null ? null : id.intValue();
     }
 
-    public void atualizar(Integer id, VisitaTecnicaAtualizacaoRequest request, String utilizador) {
+    public void atualizar(
+            Integer id,
+            Integer entidadeId,
+            VisitaTecnicaAtualizacaoRequest request,
+            String utilizador
+    ) {
         empregoJdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(SQL_UPDATE);
             int index = 1;
@@ -169,13 +177,15 @@ public class GestaoVisitaTecnicaRepository {
             setJsonb(ps, index++, request.detalhesAvaliacao());
             ps.setTimestamp(index++, Timestamp.valueOf(LocalDateTime.now()));
             ps.setString(index++, utilizador);
-            ps.setInt(index, id);
+            ps.setInt(index++, id);
+            ps.setInt(index, entidadeId);
             return ps;
         });
     }
 
     public void validar(
             Integer id,
+            Integer entidadeId,
             String estado,
             java.time.LocalDateTime novaData,
             String motivoIndeferimento,
@@ -190,17 +200,19 @@ public class GestaoVisitaTecnicaRepository {
                     date_update = ?,
                     user_update = ?
                 WHERE id = ?
+                  AND entidade_id = ?
                 """,
                 estado,
                 novaData,
                 motivoIndeferimento,
                 Timestamp.valueOf(LocalDateTime.now()),
                 utilizador,
-                id
+                id,
+                entidadeId
         );
     }
 
-    public void alterarEstado(Integer id, String estado, String utilizador) {
+    public void alterarEstado(Integer id, Integer entidadeId, String estado, String utilizador) {
         empregoJdbcTemplate.update(
                 """
                 UPDATE emprego_t_visitas
@@ -208,16 +220,19 @@ public class GestaoVisitaTecnicaRepository {
                     date_update = ?,
                     user_update = ?
                 WHERE id = ?
+                  AND entidade_id = ?
                 """,
                 estado,
                 Timestamp.valueOf(LocalDateTime.now()),
                 utilizador,
-                id
+                id,
+                entidadeId
         );
     }
 
     public void registarObservacoes(
             Integer id,
+            Integer entidadeId,
             String observacoesEntidade,
             String supervisorParticipante,
             String utilizador
@@ -230,12 +245,14 @@ public class GestaoVisitaTecnicaRepository {
                     date_update = ?,
                     user_update = ?
                 WHERE id = ?
+                  AND entidade_id = ?
                 """,
                 observacoesEntidade,
                 supervisorParticipante,
                 Timestamp.valueOf(LocalDateTime.now()),
                 utilizador,
-                id
+                id,
+                entidadeId
         );
     }
 
