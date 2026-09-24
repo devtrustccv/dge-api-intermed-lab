@@ -13,6 +13,7 @@ import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContra
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteOpcoesResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.service.ServicoContratanteService;
+import cv.dge.dge_api_intermed_lab.web.ApiErrorMessageResolver;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -272,7 +273,7 @@ public class PerfilCandidatoServicoContratanteController {
         } catch (JsonProcessingException ex) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Não foi possível interpretar os dados do serviço. Reveja os campos e tente novamente.",
+                    ApiErrorMessageResolver.corpoInvalido(ex, "dados do serviço do contratante"),
                     ex
             );
         }

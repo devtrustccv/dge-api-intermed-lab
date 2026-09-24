@@ -3,6 +3,7 @@ package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.*;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.GestaoAvaliacaoEstagiarioRepository;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,7 +20,8 @@ public class GestaoAvaliacaoEstagiarioServiceImpl implements GestaoAvaliacaoEsta
     @Override
     @Transactional(readOnly = true)
     public List<AvaliacaoEstagiarioListaResponse> listar(AvaliacaoEstagiarioFiltro filtro) {
-        validarEntidade(filtro == null ? null : filtro.entidadeId());
+        if (filtro == null) throw erro("Os filtros da pesquisa de avaliações não foram enviados.");
+        validarEntidade(filtro.entidadeId());
         if (filtro.dataInicio() != null && filtro.dataFim() != null && filtro.dataFim().isBefore(filtro.dataInicio())) {
             throw erro("A data final da pesquisa não pode ser anterior à data inicial.");
         }
@@ -83,12 +85,18 @@ public class GestaoAvaliacaoEstagiarioServiceImpl implements GestaoAvaliacaoEsta
         if (request.classificacao() == null) throw erro("Informe a classificação do estagiário.");
         if (request.avaliacaoDesempenho() == null || request.avaliacaoDesempenho().isEmpty())
             throw erro("Adicione pelo menos uma avaliação de desempenho.");
-        List<AvaliacaoDesempenhoRequest> desempenho = request.avaliacaoDesempenho().stream().map(item -> {
-            if (item == null) throw erro("Existe uma avaliação de desempenho incompleta. Reveja os dados.");
-            return new AvaliacaoDesempenhoRequest(
+        List<AvaliacaoDesempenhoRequest> desempenho = new ArrayList<>();
+        for (int indice = 0; indice < request.avaliacaoDesempenho().size(); indice++) {
+            AvaliacaoDesempenhoRequest item = request.avaliacaoDesempenho().get(indice);
+            if (item == null) {
+                throw erro("A avaliação de desempenho na posição " + (indice + 1)
+                        + " está vazia. Informe o tipo de competência e a classificação.");
+            }
+            desempenho.add(new AvaliacaoDesempenhoRequest(
                     dominioObrigatorio(EmpregoDominio.DOMINIO_TIPO_COMPETENCIA, item.tipoCompetencia()),
-                    dominioObrigatorio(EmpregoDominio.DOMINIO_AVALIACAO, item.avaliacao()));
-        }).toList();
+                    dominioObrigatorio(EmpregoDominio.DOMINIO_AVALIACAO, item.avaliacao())
+            ));
+        }
         return new AvaliacaoEstagiarioRequest(request.pessoaId(), tipo, periodo, desempenho, grau,
                 texto(request.interesseContratacao()), request.classificacao(), texto(request.observacao()), utilizador);
     }
@@ -115,14 +123,13 @@ public class GestaoAvaliacaoEstagiarioServiceImpl implements GestaoAvaliacaoEsta
 
     private String dominioObrigatorio(String dominio, String valor) {
         String resultado = dominioOpcional(dominio, valor);
-        if (resultado == null) throw erro("Preencha todas as opções obrigatórias da avaliação.");
+        if (resultado == null) throw erro(EmpregoDominio.mensagemCampoObrigatorio(dominio));
         return resultado;
     }
     private String dominioOpcional(String dominio, String valor) {
         String v = texto(valor); if (v == null) return null;
         return EmpregoDominio.valorOficial(dominio, v)
-                .orElseThrow(() -> erro(
-                        "Uma das opções selecionadas não é válida. Atualize a página e tente novamente."));
+                .orElseThrow(() -> erro(EmpregoDominio.mensagemValorInvalido(dominio, v)));
     }
     private void validarId(Integer id) { if (id == null || id <= 0) throw erro(
             "Não foi possível identificar a avaliação selecionada. Atualize a página e tente novamente."); }

@@ -79,7 +79,11 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione uma entidade.");
         }
         if (ofertaId != null && ofertaId <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione uma oferta válida.");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "O parâmetro \"ofertaId\" deve conter um identificador positivo. Valor recebido: \""
+                            + ofertaId + "\"."
+            );
         }
         return colocacaoRepository.listarCandidatos(entidadeId, ofertaId);
     }
@@ -138,6 +142,10 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
     }
 
     private ColocacaoCandidatoFiltro normalizarFiltro(ColocacaoCandidatoFiltro filtro) {
+        if (filtro == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Os filtros da pesquisa de colocações não foram enviados.");
+        }
         validarEntidade(filtro.entidadeId());
         return new ColocacaoCandidatoFiltro(
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_TIPO_OFERTA, filtro.tipoOferta()),
@@ -299,7 +307,11 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
 
     private void validarEntidade(Integer entidadeId) {
         if (entidadeId == null || entidadeId <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione uma entidade válida.");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "O campo \"entidadeId\" deve conter um identificador positivo. Valor recebido: \""
+                            + entidadeId + "\"."
+            );
         }
     }
 
@@ -337,7 +349,7 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
                         .findFirst())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        "Uma das opções selecionadas não é válida. Atualize a página e tente novamente."
+                        EmpregoDominio.mensagemValorInvalido(dominio, texto)
                 ));
     }
 

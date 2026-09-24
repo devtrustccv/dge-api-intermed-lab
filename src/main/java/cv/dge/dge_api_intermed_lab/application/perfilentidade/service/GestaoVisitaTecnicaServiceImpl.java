@@ -17,6 +17,7 @@ import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.Gest
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -225,7 +226,7 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
     private VisitaTecnicaFiltro normalizarFiltro(VisitaTecnicaFiltro filtro) {
         if (filtro == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Não foi possível identificar a entidade selecionada. Selecione uma entidade e tente novamente.");
+                    "Os filtros da pesquisa de visitas técnicas não foram enviados.");
         }
         validarEntidadeId(filtro.entidadeId());
         if (filtro.dataInicio() != null && filtro.dataFim() != null && filtro.dataFim().isBefore(filtro.dataInicio())) {
@@ -342,7 +343,8 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
             if (disponivel == null) {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        "Um dos candidatos selecionados não está associado à entidade. Reveja a seleção."
+                        "O candidato com o identificador \"" + candidato.pessoaId()
+                                + "\" não está associado à entidade ou não está disponível para a visita técnica."
                 );
             }
         }
@@ -363,15 +365,22 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
         if (candidatos == null) {
             return Collections.emptyList();
         }
-        return candidatos.stream()
-                .map(candidato -> {
-                    if (candidato == null || candidato.pessoaId() == null) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                "Existe um candidato incompleto na seleção. Remova-o e selecione novamente.");
-                    }
-                    return new VisitaTecnicaCandidatoRequest(candidato.pessoaId(), texto(candidato.nome()));
-                })
-                .toList();
+        List<VisitaTecnicaCandidatoRequest> normalizados = new ArrayList<>();
+        for (int indice = 0; indice < candidatos.size(); indice++) {
+            VisitaTecnicaCandidatoRequest candidato = candidatos.get(indice);
+            if (candidato == null || candidato.pessoaId() == null) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "O candidato na posição " + (indice + 1)
+                                + " está incompleto: o campo \"pessoaId\" é obrigatório."
+                );
+            }
+            normalizados.add(new VisitaTecnicaCandidatoRequest(
+                    candidato.pessoaId(),
+                    texto(candidato.nome())
+            ));
+        }
+        return List.copyOf(normalizados);
     }
 
     private List<VisitaTecnicaAvaliacaoItemRequest> normalizarDetalhesAvaliacao(
@@ -381,28 +390,32 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
         if (detalhes == null) {
             return Collections.emptyList();
         }
-        return detalhes.stream()
-                .map(item -> {
-                    if (item == null) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                "Existe uma avaliação incompleta. Reveja os dados antes de gravar.");
-                    }
-                    return new VisitaTecnicaAvaliacaoItemRequest(
-                            normalizarCandidatosAssociados(entidadeId, item.candidatos(), false),
-                            normalizarDominioObrigatorio(
-                                    EmpregoDominio.DOMINIO_CRITERIO_AVALIACAO,
-                                    item.criterio(),
-                                    "Selecione o critério da avaliação."
-                            ),
-                            normalizarDominioObrigatorio(
-                                    EmpregoDominio.DOMINIO_AVALIACAO,
-                                    item.avaliacao(),
-                                    "Selecione a classificação da avaliação."
-                            ),
-                            texto(item.observacao())
-                    );
-                })
-                .toList();
+        List<VisitaTecnicaAvaliacaoItemRequest> normalizados = new ArrayList<>();
+        for (int indice = 0; indice < detalhes.size(); indice++) {
+            VisitaTecnicaAvaliacaoItemRequest item = detalhes.get(indice);
+            if (item == null) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "A avaliação na posição " + (indice + 1)
+                                + " está vazia. Informe o critério e a classificação."
+                );
+            }
+            normalizados.add(new VisitaTecnicaAvaliacaoItemRequest(
+                    normalizarCandidatosAssociados(entidadeId, item.candidatos(), false),
+                    normalizarDominioObrigatorio(
+                            EmpregoDominio.DOMINIO_CRITERIO_AVALIACAO,
+                            item.criterio(),
+                            "Selecione o critério da avaliação."
+                    ),
+                    normalizarDominioObrigatorio(
+                            EmpregoDominio.DOMINIO_AVALIACAO,
+                            item.avaliacao(),
+                            "Selecione a classificação da avaliação."
+                    ),
+                    texto(item.observacao())
+            ));
+        }
+        return List.copyOf(normalizados);
     }
 
     private VisitaTecnicaListaResponse enriquecerLista(VisitaTecnicaListaResponse item) {
@@ -492,7 +505,10 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
             return ESTADO_PENDENTE;
         }
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                "O parecer selecionado não é válido. Atualize a página e tente novamente.");
+                EmpregoDominio.mensagemValorInvalido(
+                        EmpregoDominio.DOMINIO_PARECER_VISITA,
+                        parecer
+                ));
     }
 
     private String normalizarParecerObrigatorio(String parecer) {
@@ -511,7 +527,7 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
         return EmpregoDominio.valorOficial(dominio, texto)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        "Uma das opções selecionadas não é válida. Atualize a página e tente novamente."
+                        EmpregoDominio.mensagemValorInvalido(dominio, texto)
                 ));
     }
 
@@ -523,7 +539,7 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
         return EmpregoDominio.valorOficial(dominio, texto)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        "Uma das opções de pesquisa selecionadas não é válida. Atualize a página e tente novamente."
+                        EmpregoDominio.mensagemValorInvalido(dominio, texto)
                 ));
     }
 

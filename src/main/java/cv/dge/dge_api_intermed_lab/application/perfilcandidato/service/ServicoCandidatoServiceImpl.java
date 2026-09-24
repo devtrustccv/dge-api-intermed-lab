@@ -119,7 +119,8 @@ public class ServicoCandidatoServiceImpl implements ServicoCandidatoService {
 
     private ServicoCandidatoFiltro normalizarFiltro(ServicoCandidatoFiltro filtro) {
         if (filtro == null) {
-            throw erro(HttpStatus.BAD_REQUEST, "Não foi possível carregar os serviços. Atualize a página.");
+            throw erro(HttpStatus.BAD_REQUEST,
+                    "Os filtros da pesquisa de serviços do candidato não foram enviados.");
         }
         validarPessoa(filtro.pessoaId());
         validarPeriodo(filtro.dataInicio(), filtro.dataFim());
@@ -128,8 +129,7 @@ public class ServicoCandidatoServiceImpl implements ServicoCandidatoService {
                 textoOpcional(filtro.tipoServico()),
                 normalizarDominioOpcional(
                         EmpregoDominio.DOMINIO_ESTADO_SERVICO,
-                        filtro.estado(),
-                        "Selecione um estado de serviço válido."
+                        filtro.estado()
                 ),
                 filtro.dataInicio(),
                 filtro.dataFim()
@@ -256,12 +256,15 @@ public class ServicoCandidatoServiceImpl implements ServicoCandidatoService {
         return normalizado;
     }
 
-    private String normalizarDominioOpcional(String dominio, String valor, String mensagem) {
+    private String normalizarDominioOpcional(String dominio, String valor) {
         if (!temTexto(valor)) {
             return null;
         }
         return EmpregoDominio.valorOficial(dominio, valor)
-                .orElseThrow(() -> erro(HttpStatus.BAD_REQUEST, mensagem));
+                .orElseThrow(() -> erro(
+                        HttpStatus.BAD_REQUEST,
+                        EmpregoDominio.mensagemValorInvalido(dominio, valor)
+                ));
     }
 
     private void validarPeriodo(java.time.LocalDate inicio, java.time.LocalDate fim) {

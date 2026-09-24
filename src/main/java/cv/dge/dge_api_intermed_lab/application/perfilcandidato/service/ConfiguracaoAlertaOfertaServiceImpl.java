@@ -99,18 +99,15 @@ public class ConfiguracaoAlertaOfertaServiceImpl implements ConfiguracaoAlertaOf
         }
         String tipoOferta = normalizarDominioOpcional(
                 EmpregoDominio.DOMINIO_TIPO_OFERTA,
-                request.tipoOferta(),
-                "Selecione um tipo de oferta válido."
+                request.tipoOferta()
         );
         String habilitacaoLiteraria = normalizarDominioOpcional(
                 EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA,
-                request.habilitacaoLiteraria(),
-                "Selecione uma habilitação literária válida."
+                request.habilitacaoLiteraria()
         );
         String nivelQualificacao = normalizarDominioOpcional(
                 EmpregoDominio.DOMINIO_NIVEL_QUALIFICACAO,
-                request.nivelQualificacao(),
-                "Selecione um nível de qualificação válido."
+                request.nivelQualificacao()
         );
         String ilha = textoOpcional(request.ilha());
         String concelho = textoOpcional(request.concelho());
@@ -126,16 +123,18 @@ public class ConfiguracaoAlertaOfertaServiceImpl implements ConfiguracaoAlertaOf
             throw erro("Selecione primeiro a ilha correspondente ao concelho.");
         }
         if (request.entidadeId() != null && request.entidadeId() <= 0) {
-            throw erro("Selecione uma entidade válida.");
+            throw erro("O campo \"entidadeId\" deve conter um identificador positivo. Valor recebido: \""
+                    + request.entidadeId() + "\".");
         }
         if (ilha != null && !alertaRepository.existeIlha(ilha)) {
-            throw erro("A ilha selecionada não é válida. Atualize as opções e tente novamente.");
+            throw erro("A ilha com o código \"" + ilha + "\" não existe ou não está disponível.");
         }
         if (concelho != null && !alertaRepository.existeConcelho(concelho, ilha)) {
             throw erro("O concelho selecionado não pertence à ilha informada.");
         }
         if (request.entidadeId() != null && !alertaRepository.existeEntidade(request.entidadeId())) {
-            throw erro("A entidade selecionada não é válida. Atualize as opções e tente novamente.");
+            throw erro("A entidade com o identificador \"" + request.entidadeId()
+                    + "\" não existe ou não está disponível.");
         }
 
         return new AlertaOfertaRequest(
@@ -221,12 +220,12 @@ public class ConfiguracaoAlertaOfertaServiceImpl implements ConfiguracaoAlertaOf
         return globalGeografiaService.buscarNomePorCodigo(codigo.trim()).orElse(codigo.trim());
     }
 
-    private String normalizarDominioOpcional(String dominio, String valor, String mensagem) {
+    private String normalizarDominioOpcional(String dominio, String valor) {
         if (!temTexto(valor)) {
             return null;
         }
         return EmpregoDominio.valorOficial(dominio, valor)
-                .orElseThrow(() -> erro(mensagem));
+                .orElseThrow(() -> erro(EmpregoDominio.mensagemValorInvalido(dominio, valor)));
     }
 
     private String normalizarValor(String dominio, String valor) {

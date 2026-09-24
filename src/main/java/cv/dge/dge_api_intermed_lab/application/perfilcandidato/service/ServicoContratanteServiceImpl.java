@@ -267,7 +267,8 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
 
     private ServicoContratanteFiltro normalizarFiltro(ServicoContratanteFiltro filtro) {
         if (filtro == null) {
-            throw erro(HttpStatus.BAD_REQUEST, "Não foi possível carregar os serviços. Atualize a página.");
+            throw erro(HttpStatus.BAD_REQUEST,
+                    "Os filtros da pesquisa de serviços do contratante não foram enviados.");
         }
         validarPessoa(filtro.pessoaId());
         validarPeriodo(filtro.dataInicio(), filtro.dataFim());
@@ -276,8 +277,7 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
                 textoOpcional(filtro.tipoServico()),
                 normalizarDominioOpcional(
                         EmpregoDominio.DOMINIO_ESTADO_SERVICO,
-                        filtro.estado(),
-                        "Selecione um estado de serviço válido."
+                        filtro.estado()
                 ),
                 filtro.dataInicio(),
                 filtro.dataFim()
@@ -288,12 +288,15 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
             ServicoContratanteCandidatoFiltro filtro
     ) {
         if (filtro == null) {
-            throw erro(HttpStatus.BAD_REQUEST, "Não foi possível carregar os candidatos. Atualize a página.");
+            throw erro(HttpStatus.BAD_REQUEST,
+                    "Os filtros da pesquisa de candidatos ao serviço não foram enviados.");
         }
         validarServico(filtro.servicoId());
         validarPessoa(filtro.contratanteId());
         if (filtro.candidatoId() != null && filtro.candidatoId() <= 0) {
-            throw erro(HttpStatus.BAD_REQUEST, "O candidato selecionado não é válido.");
+            throw erro(HttpStatus.BAD_REQUEST,
+                    "O campo \"candidatoId\" deve conter um identificador positivo. Valor recebido: \""
+                            + filtro.candidatoId() + "\".");
         }
         validarPeriodo(filtro.dataInicio(), filtro.dataFim());
         return new ServicoContratanteCandidatoFiltro(
@@ -302,8 +305,7 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
                 filtro.candidatoId(),
                 normalizarDominioOpcional(
                         EmpregoDominio.DOMINIO_CANDIDATURA_STATUS,
-                        filtro.estado(),
-                        "Selecione um estado de candidatura válido."
+                        filtro.estado()
                 ),
                 filtro.dataInicio(),
                 filtro.dataFim()
@@ -374,7 +376,8 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
             throw erro(HttpStatus.BAD_REQUEST, "Selecione o concelho antes da zona.");
         }
         if (ilha != null && !servicoRepository.existeIlha(ilha)) {
-            throw erro(HttpStatus.BAD_REQUEST, "A ilha selecionada não é válida.");
+            throw erro(HttpStatus.BAD_REQUEST,
+                    "A ilha com o código \"" + ilha + "\" não existe ou não está disponível.");
         }
         if (concelho != null && !servicoRepository.existeConcelho(concelho, ilha)) {
             throw erro(HttpStatus.BAD_REQUEST, "O concelho selecionado não pertence à ilha indicada.");
@@ -409,7 +412,8 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
         for (String path : pathsMantidos) {
             AnexoArmazenado anexo = porPath.get(path);
             if (anexo == null) {
-                throw erro(HttpStatus.BAD_REQUEST, "Um dos anexos indicados não pertence ao serviço.");
+                throw erro(HttpStatus.BAD_REQUEST,
+                        "O anexo com o caminho \"" + path + "\" não pertence ao serviço em edição.");
             }
             mantidos.add(anexo);
         }
@@ -705,12 +709,15 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
                 .toList();
     }
 
-    private String normalizarDominioOpcional(String dominio, String valor, String mensagem) {
+    private String normalizarDominioOpcional(String dominio, String valor) {
         if (!temTexto(valor)) {
             return null;
         }
         return EmpregoDominio.valorOficial(dominio, valor)
-                .orElseThrow(() -> erro(HttpStatus.BAD_REQUEST, mensagem));
+                .orElseThrow(() -> erro(
+                        HttpStatus.BAD_REQUEST,
+                        EmpregoDominio.mensagemValorInvalido(dominio, valor)
+                ));
     }
 
     private void validarPeriodo(java.time.LocalDate inicio, java.time.LocalDate fim) {

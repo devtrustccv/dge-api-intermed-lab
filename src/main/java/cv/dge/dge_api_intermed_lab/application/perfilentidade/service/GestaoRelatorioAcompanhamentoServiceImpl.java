@@ -31,7 +31,10 @@ public class GestaoRelatorioAcompanhamentoServiceImpl implements GestaoRelatorio
     @Override
     @Transactional(readOnly = true)
     public List<RelatorioAcompanhamentoListaResponse> listar(RelatorioAcompanhamentoFiltro filtro) {
-        validarEntidade(filtro == null ? null : filtro.entidadeId());
+        if (filtro == null) {
+            throw erro("Os filtros da pesquisa de relatórios de acompanhamento não foram enviados.");
+        }
+        validarEntidade(filtro.entidadeId());
         validarIntervalo(filtro.dataInicio(), filtro.dataFim(),
                 "A data final da pesquisa não pode ser anterior à data inicial.");
         RelatorioAcompanhamentoFiltro dados = new RelatorioAcompanhamentoFiltro(

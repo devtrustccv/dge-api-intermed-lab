@@ -197,12 +197,16 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
     private VagaFiltro normalizarFiltro(VagaFiltro filtro) {
         if (filtro == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Não foi possível carregar as vagas. Atualize a página e tente novamente.");
+                    "Os filtros da pesquisa de ofertas da entidade não foram enviados.");
         }
         validarEntidade(filtro.entidadeId());
         validarIntervaloDatas(filtro.dataInicio(), filtro.dataFim());
         return new VagaFiltro(
-                normalizarDominioOpcional(EmpregoDominio.DOMINIO_TIPO_OFERTA, filtro.tipoOferta()),
+                normalizarDominioOpcional(
+                        EmpregoDominio.DOMINIO_TIPO_OFERTA,
+                        filtro.tipoOferta(),
+                        "Tipo de oferta"
+                ),
                 filtro.entidadeId(),
                 texto(filtro.entidade()),
                 texto(filtro.ilha()),
@@ -445,7 +449,11 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
     }
 
     private String normalizarTipoColaboradorObrigatorio(String tipo) {
-        String normalizado = normalizarDominioOpcional(EmpregoDominio.DOMINIO_TIPO_COLABORADOR, tipo);
+        String normalizado = normalizarDominioOpcional(
+                EmpregoDominio.DOMINIO_TIPO_COLABORADOR,
+                tipo,
+                "Tipo de colaborador"
+        );
         if (normalizado == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione o tipo de colaborador.");
         }
@@ -453,25 +461,49 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
     }
 
     private String normalizarEstadoOfertaOpcional(String estado) {
-        return normalizarDominioOpcional(EmpregoDominio.DOMINIO_ESTADO_OFERTA, estado);
+        return normalizarDominioOpcional(
+                EmpregoDominio.DOMINIO_ESTADO_OFERTA,
+                estado,
+                "Estado da oferta"
+        );
     }
 
     private VagaRequest normalizarRequest(VagaRequest request) {
         return new VagaRequest(
                 texto(request.codigoReferencia()),
-                normalizarDominioOpcional(EmpregoDominio.DOMINIO_TIPO_OFERTA, request.tipoOferta()),
+                normalizarDominioOpcional(
+                        EmpregoDominio.DOMINIO_TIPO_OFERTA,
+                        request.tipoOferta(),
+                        "Tipo de oferta"
+                ),
                 texto(request.titulo()),
                 texto(request.descricao()),
                 request.dataInicioCandidatura(),
                 request.dataFimCandidatura(),
                 request.dataInicioPrevisto(),
                 request.duracaoContrato(),
-                normalizarDominioOpcional(EmpregoDominio.DOMINIO_REGIME_CONTRATO, request.regimeContrato()),
+                normalizarDominioOpcional(
+                        EmpregoDominio.DOMINIO_REGIME_CONTRATO,
+                        request.regimeContrato(),
+                        "Regime de contrato"
+                ),
                 texto(request.denominacaoEntidade()),
-                normalizarDominioOpcional(EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA, request.habilitacaoMinima()),
-                normalizarDominioOpcional(EmpregoDominio.DOMINIO_NIVEL_QUALIFICACAO, request.nivelQualificacao()),
+                normalizarDominioOpcional(
+                        EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA,
+                        request.habilitacaoMinima(),
+                        "Habilitação mínima"
+                ),
+                normalizarDominioOpcional(
+                        EmpregoDominio.DOMINIO_NIVEL_QUALIFICACAO,
+                        request.nivelQualificacao(),
+                        "Nível de qualificação"
+                ),
                 request.numVagas(),
-                normalizarDominioOpcional(EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA, request.habilitacaoMaxima()),
+                normalizarDominioOpcional(
+                        EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA,
+                        request.habilitacaoMaxima(),
+                        "Habilitação máxima"
+                ),
                 request.conhecimentoLinguistico(),
                 request.competenciasValorizadas(),
                 request.horaInicio(),
@@ -492,7 +524,7 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
         );
     }
 
-    private String normalizarDominioOpcional(String dominio, String valor) {
+    private String normalizarDominioOpcional(String dominio, String valor, String nomeCampo) {
         String texto = texto(valor);
         if (texto == null) {
             return null;
@@ -500,7 +532,7 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
         return EmpregoDominio.valorOficial(dominio, texto)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        "Uma das opções selecionadas não é válida. Atualize a página e tente novamente."
+                        EmpregoDominio.mensagemValorInvalido(dominio, texto, nomeCampo)
                 ));
     }
 

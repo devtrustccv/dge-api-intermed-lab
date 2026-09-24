@@ -10,6 +10,7 @@ import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoRegist
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.AcolhimentoReporterResponse;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.PacCandidaturaResponse;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.dto.UtenteResponse;
+import cv.dge.dge_api_intermed_lab.web.ApiErrorMessageResolver;
 import java.util.LinkedHashMap;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.service.AcolhimentoConsultaService;
 import cv.dge.dge_api_intermed_lab.application.acolhimento.service.AcolhimentoEmpresaService;
@@ -44,10 +45,6 @@ public class AcolhimentoController {
     private static final String PARTE_DADOS = "dados";
     private static final String MSG_DADOS_OBRIGATORIOS =
             "Preencha os dados do acolhimento antes de gravar.";
-    private static final String MSG_JSON_INVALIDO =
-            "Não foi possível interpretar os dados enviados. Atualize a página e tente novamente.";
-    private static final String MSG_MULTIPART_INVALIDO =
-            "Um dos dados ou ficheiros enviados não está no formato esperado. Reveja os dados e tente novamente.";
 
     private final AcolhimentoService acolhimentoService;
     private final AcolhimentoEmpresaService acolhimentoEmpresaService;
@@ -116,7 +113,11 @@ public class AcolhimentoController {
             try {
                 return objectMapper.readValue(dadosJson, AcolhimentoRegistoRequest.class);
             } catch (Exception ex) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, MSG_JSON_INVALIDO, ex);
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        ApiErrorMessageResolver.corpoInvalido(ex, "dados do acolhimento de utente"),
+                        ex
+                );
             }
         }
 
@@ -129,7 +130,11 @@ public class AcolhimentoController {
         try {
             return objectMapper.convertValue(estrutura, AcolhimentoRegistoRequest.class);
         } catch (Exception ex) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, MSG_MULTIPART_INVALIDO, ex);
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    ApiErrorMessageResolver.corpoInvalido(ex, "campos multipart do acolhimento de utente"),
+                    ex
+            );
         }
     }
 
@@ -138,7 +143,11 @@ public class AcolhimentoController {
             try {
                 return objectMapper.readValue(dadosJson, AcolhimentoEmpresaRequest.class);
             } catch (Exception ex) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, MSG_JSON_INVALIDO, ex);
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        ApiErrorMessageResolver.corpoInvalido(ex, "dados do acolhimento de empresa"),
+                        ex
+                );
             }
         }
 
@@ -151,7 +160,11 @@ public class AcolhimentoController {
         try {
             return objectMapper.convertValue(estrutura, AcolhimentoEmpresaRequest.class);
         } catch (Exception ex) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, MSG_MULTIPART_INVALIDO, ex);
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    ApiErrorMessageResolver.corpoInvalido(ex, "campos multipart do acolhimento de empresa"),
+                    ex
+            );
         }
     }
 

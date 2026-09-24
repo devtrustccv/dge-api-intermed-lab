@@ -162,6 +162,10 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
     }
 
     private CoordenadorOrientadorFiltro normalizarFiltro(CoordenadorOrientadorFiltro filtro) {
+        if (filtro == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Os filtros da pesquisa de coordenadores e orientadores não foram enviados.");
+        }
         validarEntidade(filtro.entidadeId());
         return new CoordenadorOrientadorFiltro(
                 filtro.entidadeId(),
@@ -287,7 +291,7 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
         return EmpregoDominio.valorOficial(dominio, texto)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        "Uma das opções selecionadas não é válida. Atualize a página e tente novamente."
+                        EmpregoDominio.mensagemValorInvalido(dominio, texto)
                 ));
     }
 

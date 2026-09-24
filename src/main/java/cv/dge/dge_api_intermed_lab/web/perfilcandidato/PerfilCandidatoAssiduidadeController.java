@@ -9,6 +9,7 @@ import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAssiduid
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAssiduidadeRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.PerfilCandidatoApiResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.service.MinhaAssiduidadeService;
+import cv.dge.dge_api_intermed_lab.web.ApiErrorMessageResolver;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -130,7 +131,7 @@ public class PerfilCandidatoAssiduidadeController {
         } catch (JsonProcessingException ex) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Não foi possível interpretar os dados da assiduidade. Reveja os campos e tente novamente.",
+                    ApiErrorMessageResolver.corpoInvalido(ex, "dados da assiduidade"),
                     ex
             );
         }

@@ -2,8 +2,8 @@ package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AdesaoJovemRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AdesaoJovemResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.PerfilCandidatoAdesaoRepository;
-import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,13 +24,18 @@ public class PerfilCandidatoAdesaoServiceImpl implements PerfilCandidatoAdesaoSe
             throw erro("Selecione a sua situação profissional antes de confirmar a adesão.");
         }
 
-        String situacaoProfissional = obrigatorio(
+        String situacaoInformada = obrigatorio(
                 request.situacaoProfissional(),
                 "Selecione a sua situação profissional antes de confirmar a adesão."
-        ).toUpperCase(Locale.ROOT);
-        if (situacaoProfissional.length() > 25) {
-            throw erro("A situação profissional selecionada não é válida. Atualize a página e tente novamente.");
-        }
+        );
+        String situacaoProfissional = EmpregoDominio.valorOficial(
+                        EmpregoDominio.DOMINIO_SITUACAO_PROFISSIONAL,
+                        situacaoInformada
+                )
+                .orElseThrow(() -> erro(EmpregoDominio.mensagemValorInvalido(
+                        EmpregoDominio.DOMINIO_SITUACAO_PROFISSIONAL,
+                        situacaoInformada
+                )));
 
         String utilizador = obrigatorio(
                 request.utilizador(),

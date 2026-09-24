@@ -50,7 +50,11 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
     @Override
     @Transactional(readOnly = true)
     public List<CandidaturaListaResponse> listar(CandidaturaFiltro filtro) {
-        validarEntidade(filtro == null ? null : filtro.entidadeId());
+        if (filtro == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Os filtros da pesquisa de candidaturas da entidade não foram enviados.");
+        }
+        validarEntidade(filtro.entidadeId());
         if (filtro.dataInicio() != null && filtro.dataFim() != null
                 && filtro.dataFim().isBefore(filtro.dataInicio())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -567,7 +571,7 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
         return EmpregoDominio.valorOficial(dominio, texto)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        "Uma das opções selecionadas não é válida. Atualize a página e tente novamente."
+                        EmpregoDominio.mensagemValorInvalido(dominio, texto)
                 ));
     }
 

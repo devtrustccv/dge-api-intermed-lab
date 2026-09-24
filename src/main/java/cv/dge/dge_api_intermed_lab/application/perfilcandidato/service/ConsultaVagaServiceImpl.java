@@ -120,7 +120,8 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
         if (ilhaId != null && ilhaId <= 0) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "A ilha selecionada não é válida. Selecione novamente e tente de novo."
+                    "O parâmetro \"ilhaId\" deve conter um identificador positivo. Valor recebido: \""
+                            + ilhaId + "\"."
             );
         }
         return new ConsultaVagaOpcoesResponse(
@@ -248,7 +249,7 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
         if (filtro == null) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Não foi possível carregar as ofertas. Atualize a página e tente novamente."
+                    "Os filtros da pesquisa de ofertas não foram enviados."
             );
         }
         if (filtro.entidadeId() != null && filtro.entidadeId() <= 0) {
@@ -265,14 +266,12 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
             );
         }
         return new ConsultaVagaFiltro(
-                normalizarDominioOpcional(EmpregoDominio.DOMINIO_TIPO_OFERTA, filtro.tipoOferta(),
-                        "Selecione um tipo de oferta válido."),
+                normalizarDominioOpcional(EmpregoDominio.DOMINIO_TIPO_OFERTA, filtro.tipoOferta()),
                 filtro.entidadeId(),
                 textoOpcional(filtro.entidade()),
                 textoOpcional(filtro.ilha()),
                 textoOpcional(filtro.concelho()),
-                normalizarDominioOpcional(EmpregoDominio.DOMINIO_ESTADO_OFERTA, filtro.estado(),
-                        "Selecione um estado de oferta válido."),
+                normalizarDominioOpcional(EmpregoDominio.DOMINIO_ESTADO_OFERTA, filtro.estado()),
                 textoOpcional(filtro.codigoReferencia()),
                 filtro.dataInicio(),
                 filtro.dataFim(),
@@ -451,7 +450,10 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
         habilitacao = EmpregoDominio.valorOficial(EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA, habilitacao)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        "Selecione uma habilitação literária válida."
+                        EmpregoDominio.mensagemValorInvalido(
+                                EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA,
+                                request.habilitacaoAcademica()
+                        )
                 ));
         return new DadosCandidatura(
                 habilitacao,
@@ -855,12 +857,15 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
                 .orElse(normalizado);
     }
 
-    private String normalizarDominioOpcional(String dominio, String valor, String mensagem) {
+    private String normalizarDominioOpcional(String dominio, String valor) {
         if (!temTexto(valor)) {
             return null;
         }
         return EmpregoDominio.valorOficial(dominio, valor)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, mensagem));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        EmpregoDominio.mensagemValorInvalido(dominio, valor)
+                ));
     }
 
     private String normalizarTexto(String valor) {

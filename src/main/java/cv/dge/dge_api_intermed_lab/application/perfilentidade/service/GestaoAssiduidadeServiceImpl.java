@@ -103,8 +103,7 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
     private AssiduidadeEstagiarioFiltro normalizarFiltro(AssiduidadeEstagiarioFiltro filtro) {
         if (filtro == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Não foi possível identificar os dados necessários para consultar a assiduidade."
-                            + " Atualize a página e tente novamente.");
+                    "Os filtros da pesquisa de assiduidade da entidade não foram enviados.");
         }
         validarEntidadeId(filtro.entidadeId());
         if (filtro.horaEntrada() != null && filtro.horaSaida() != null
@@ -196,7 +195,10 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
         return EmpregoDominio.valorOficial(EmpregoDominio.DOMINIO_DECISAO_ASSIDUIDADE, normalizado)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                    "A decisão selecionada não é válida. Atualize a página e tente novamente."
+                        EmpregoDominio.mensagemValorInvalido(
+                                EmpregoDominio.DOMINIO_DECISAO_ASSIDUIDADE,
+                                texto
+                        )
                 ));
     }
 
@@ -208,7 +210,10 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
             return ESTADO_INDEFERIDO;
         }
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                "A decisão selecionada não é válida. Atualize a página e tente novamente.");
+                EmpregoDominio.mensagemValorInvalido(
+                        EmpregoDominio.DOMINIO_DECISAO_ASSIDUIDADE,
+                        decisao
+                ));
     }
 
     private String normalizarDominioOpcional(String dominio, String valor) {
@@ -219,7 +224,7 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
         return EmpregoDominio.valorOficial(dominio, texto)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        "Uma das opções selecionadas não é válida. Atualize a página e tente novamente."
+                        EmpregoDominio.mensagemValorInvalido(dominio, texto)
                 ));
     }
 

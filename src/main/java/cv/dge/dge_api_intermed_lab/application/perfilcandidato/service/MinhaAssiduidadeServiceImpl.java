@@ -135,7 +135,7 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
         if (filtro == null) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Não foi possível carregar a assiduidade. Atualize a página e tente novamente."
+                    "Os filtros da pesquisa de assiduidade não foram enviados."
             );
         }
         validarPessoa(filtro.pessoaId());
@@ -150,13 +150,11 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
                 filtro.pessoaId(),
                 normalizarDominioOpcional(
                         EmpregoDominio.DOMINIO_TIPO_ASSIDUIDADE,
-                        filtro.tipoAssiduidade(),
-                        "Selecione um tipo de assiduidade válido."
+                        filtro.tipoAssiduidade()
                 ),
                 normalizarDominioOpcional(
                         EmpregoDominio.DOMINIO_ESTADO_ASSIDUIDADE,
-                        filtro.estado(),
-                        "Selecione um estado de assiduidade válido."
+                        filtro.estado()
                 ),
                 filtro.dataInicio(),
                 filtro.dataFim()
@@ -176,7 +174,10 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
                 )
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        "Selecione um tipo de assiduidade válido."
+                        EmpregoDominio.mensagemValorInvalido(
+                                EmpregoDominio.DOMINIO_TIPO_ASSIDUIDADE,
+                                request.tipoAssiduidade()
+                        )
                 ));
         if (request.data() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe a data da assiduidade.");
@@ -419,12 +420,15 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
         return horaEntrada.format(FORMATO_HORA) + " - " + horaSaida.format(FORMATO_HORA);
     }
 
-    private String normalizarDominioOpcional(String dominio, String valor, String mensagem) {
+    private String normalizarDominioOpcional(String dominio, String valor) {
         if (!temTexto(valor)) {
             return null;
         }
         return EmpregoDominio.valorOficial(dominio, valor)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, mensagem));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        EmpregoDominio.mensagemValorInvalido(dominio, valor)
+                ));
     }
 
     private String normalizarValor(String dominio, String valor) {

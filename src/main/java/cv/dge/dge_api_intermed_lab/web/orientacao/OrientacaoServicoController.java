@@ -6,6 +6,7 @@ import cv.dge.dge_api_intermed_lab.application.orientacao.dto.OrientacaoServicoR
 import cv.dge.dge_api_intermed_lab.application.orientacao.dto.RequisitoResponse;
 import cv.dge.dge_api_intermed_lab.application.orientacao.service.RequisitoService;
 import cv.dge.dge_api_intermed_lab.application.orientacao.service.OrientacaoServicoService;
+import cv.dge.dge_api_intermed_lab.web.ApiErrorMessageResolver;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -67,7 +68,7 @@ public class OrientacaoServicoController {
         } catch (Exception ex) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Não foi possível interpretar os dados enviados. Atualize a página e tente novamente.",
+                    ApiErrorMessageResolver.corpoInvalido(ex, "dados do serviço de orientação"),
                     ex
             );
         }

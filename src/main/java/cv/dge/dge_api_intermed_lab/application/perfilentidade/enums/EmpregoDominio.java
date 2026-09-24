@@ -4,6 +4,7 @@ import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public enum EmpregoDominio {
 
@@ -199,7 +200,8 @@ public enum EmpregoDominio {
         }
         return Arrays.stream(values())
                 .filter(item -> item.dominio.equals(dominioNormalizado))
-                .filter(item -> item.valor.equals(valorNormalizado))
+                .filter(item -> item.valor.equals(valorNormalizado)
+                        || normalizar(item.descricao).equals(valorNormalizado))
                 .findFirst();
     }
 
@@ -229,6 +231,77 @@ public enum EmpregoDominio {
                 .distinct()
                 .sorted()
                 .toList();
+    }
+
+    public static String nomeCampo(String dominio) {
+        String dominioNormalizado = normalizar(dominio);
+        if (dominioNormalizado == null) {
+            return "Opção";
+        }
+        return switch (dominioNormalizado) {
+            case DOMINIO_ESTADO_OFERTA -> "Estado da oferta";
+            case DOMINIO_TIPO_OFERTA -> "Tipo de oferta";
+            case DOMINIO_NIVEL_CONHECIMENTO -> "Nível de conhecimento";
+            case DOMINIO_SIM_NAO -> "Opção Sim/Não";
+            case DOMINIO_SEXO -> "Sexo";
+            case DOMINIO_REGIME_CONTRATO -> "Regime de contrato";
+            case DOMINIO_NIVEL_QUALIFICACAO -> "Nível de qualificação";
+            case DOMINIO_PARECER_ENTREVISTA -> "Parecer da entrevista";
+            case DOMINIO_HABILITACAO_LITERARIA -> "Habilitação literária";
+            case DOMINIO_ESTADO -> "Estado";
+            case DOMINIO_STATUS_CANDIDATURA -> "Estado da candidatura";
+            case DOMINIO_SITUACAO_PROFISSIONAL -> "Situação profissional";
+            case DOMINIO_CANDIDATURA_STATUS -> "Estado da candidatura ao serviço";
+            case DOMINIO_CANAL_OFERTA -> "Canal da oferta";
+            case DOMINIO_TIPO_COLABORADOR -> "Tipo de colaborador";
+            case DOMINIO_CANAL_ENTREVISTA -> "Modalidade da entrevista";
+            case DOMINIO_ESTADO_ENTREVISTA -> "Estado da entrevista";
+            case DOMINIO_TIPO_COMPETENCIA -> "Tipo de competência";
+            case DOMINIO_AVALIACAO -> "Classificação da avaliação";
+            case DOMINIO_GRAU_SATISFACAO -> "Grau de satisfação";
+            case DOMINIO_TIPO_AVALIACAO -> "Tipo de avaliação";
+            case DOMINIO_TIPO_ASSIDUIDADE -> "Tipo de assiduidade";
+            case DOMINIO_ESTADO_ASSIDUIDADE -> "Estado da assiduidade";
+            case DOMINIO_ESTADO_SERVICO -> "Estado do serviço";
+            case DOMINIO_STATUS_ACEITACAO_CANDIDATO -> "Estado de aceitação do candidato";
+            case DOMINIO_DECISAO_ASSIDUIDADE -> "Decisão da assiduidade";
+            case DOMINIO_AGENDADO_POR -> "Responsável pelo agendamento";
+            case DOMINIO_ESTADO_VISITA_TECNICA -> "Estado da visita técnica";
+            case DOMINIO_PARECER_VISITA -> "Parecer da visita técnica";
+            case DOMINIO_CRITERIO_AVALIACAO -> "Critério da avaliação";
+            default -> dominioNormalizado.replace('_', ' ');
+        };
+    }
+
+    public static String mensagemValorInvalido(String dominio, String valor) {
+        return mensagemValorInvalido(dominio, valor, nomeCampo(dominio));
+    }
+
+    public static String mensagemValorInvalido(String dominio, String valor, String nomeCampo) {
+        String campo = nomeCampo == null || nomeCampo.isBlank() ? nomeCampo(dominio) : nomeCampo.trim();
+        String opcoes = listarPorDominio(dominio).stream()
+                .map(item -> item.valor + " (" + item.descricao + ")")
+                .collect(Collectors.joining(", "));
+        String mensagem = "O valor \"" + valorParaMensagem(valor) + "\" informado no campo \""
+                + campo + "\" não é válido.";
+        if (opcoes.isBlank()) {
+            return mensagem;
+        }
+        return mensagem + " Valores aceites: " + opcoes + ".";
+    }
+
+    public static String mensagemCampoObrigatorio(String dominio) {
+        return "O campo \"" + nomeCampo(dominio) + "\" é obrigatório.";
+    }
+
+    private static String valorParaMensagem(String valor) {
+        if (valor == null || valor.isBlank()) {
+            return "vazio";
+        }
+        String seguro = valor.trim()
+                .replace('"', '\'')
+                .replaceAll("[\\p{Cntrl}]", " ");
+        return seguro.length() <= 100 ? seguro : seguro.substring(0, 100) + "…";
     }
 
     private static String alias(String dominio, String valor) {

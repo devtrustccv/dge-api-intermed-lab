@@ -88,12 +88,16 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
         if (filtro == null) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Não foi possível carregar as candidaturas. Atualize a página e tente novamente."
+                    "Os filtros da pesquisa de candidaturas não foram enviados."
             );
         }
         validarPessoa(filtro.pessoaId());
         if (filtro.entidadeId() != null && filtro.entidadeId() <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione uma entidade válida.");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "O campo \"entidadeId\" deve conter um identificador positivo. Valor recebido: \""
+                            + filtro.entidadeId() + "\"."
+            );
         }
         if (filtro.dataInicio() != null && filtro.dataFim() != null
                 && filtro.dataFim().isBefore(filtro.dataInicio())) {
@@ -107,16 +111,14 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
                 filtro.pessoaId(),
                 normalizarDominioOpcional(
                         EmpregoDominio.DOMINIO_TIPO_OFERTA,
-                        filtro.tipoOferta(),
-                        "Selecione um tipo de oferta válido."
+                        filtro.tipoOferta()
                 ),
                 filtro.entidadeId(),
                 textoOpcional(filtro.ilha()),
                 textoOpcional(filtro.concelho()),
                 normalizarDominioOpcional(
                         EmpregoDominio.DOMINIO_STATUS_CANDIDATURA,
-                        filtro.estado(),
-                        "Selecione um estado de candidatura válido."
+                        filtro.estado()
                 ),
                 textoOpcional(filtro.codigoReferencia()),
                 filtro.dataInicio(),
@@ -376,12 +378,15 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
         return separador >= 0 ? valor.substring(separador + 1) : valor;
     }
 
-    private String normalizarDominioOpcional(String dominio, String valor, String mensagem) {
+    private String normalizarDominioOpcional(String dominio, String valor) {
         if (!temTexto(valor)) {
             return null;
         }
         return EmpregoDominio.valorOficial(dominio, valor)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, mensagem));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        EmpregoDominio.mensagemValorInvalido(dominio, valor)
+                ));
     }
 
     private String normalizarValor(String dominio, String valor) {
