@@ -2,6 +2,7 @@ package cv.dge.dge_api_intermed_lab.application.perfilentidade.enums;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class EmpregoDominioTest {
@@ -16,6 +17,31 @@ class EmpregoDominioTest {
                 .contains("OFERTA_EMPREGO");
         assertThat(EmpregoDominio.valorOficial(EmpregoDominio.DOMINIO_REGIME_CONTRATO, "Contrato a termo"))
                 .contains("CONTRATO_TERMO");
+        assertThat(EmpregoDominio.valorOficial(
+                EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA,
+                "FORMACAO_PROFISSIONAL"
+        )).contains("FORMACAO_PROFISSIONAL");
+        assertThat(EmpregoDominio.valorOficial(
+                EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA,
+                "Formação Profissional"
+        )).contains("FORMACAO_PROFISSIONAL");
+    }
+
+    @Test
+    void deveManterBackendAlinhadoComTodasAsHabilitacoesAtivasNoFrontend() {
+        assertThat(EmpregoDominio.listarPorDominio(EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA))
+                .extracting(EmpregoDominio::getValor)
+                .containsExactlyInAnyOrderElementsOf(List.of(
+                        "ENSINO_BASICO",
+                        "VIA_TEC",
+                        "BACHAREL",
+                        "ENSINO_SECUNDARIO",
+                        "LICENCIATURA",
+                        "MESTRADO",
+                        "DOUTORAMENTO",
+                        "POS_GRAD",
+                        "FORMACAO_PROFISSIONAL"
+                ));
     }
 
     @Test
