@@ -14,7 +14,8 @@ import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaL
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaMapaResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaOpcoesResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagasResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.EmpregoDominioService;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ConsultaVagaRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ConsultaVagaRepository.CandidaturaAnterior;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ConsultaVagaRepository.OfertaDetalhe;
@@ -45,6 +46,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Slf4j
 public class ConsultaVagaServiceImpl implements ConsultaVagaService {
 
+    private final EmpregoDominioService empregoDominioService;
     private static final String SITUACAO_ABERTA = "ABERTA";
     private static final String SITUACAO_A_TERMINAR = "A_TERMINAR";
     private static final String SITUACAO_ENCERRADA = "ENCERRADA";
@@ -311,7 +313,7 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
                 oferta.id(),
                 oferta.titulo(),
                 tipoOferta,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, tipoOferta),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, tipoOferta),
                 oferta.ilha(),
                 ilhaDesc,
                 oferta.concelho(),
@@ -322,7 +324,7 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
                 oferta.denominacaoEntidade(),
                 oferta.codigoReferencia(),
                 estado,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO_OFERTA, estado),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO_OFERTA, estado),
                 oferta.dataInicioCandidatura(),
                 oferta.dataFimCandidatura(),
                 diasRestantes(oferta.dataFimCandidatura()),
@@ -352,7 +354,7 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
                 oferta.id(),
                 oferta.codigoReferencia(),
                 tipoOferta,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, tipoOferta),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, tipoOferta),
                 oferta.titulo(),
                 oferta.descricao(),
                 oferta.dataInicioCandidatura(),
@@ -360,16 +362,16 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
                 oferta.dataInicioPrevisto(),
                 oferta.duracaoContrato(),
                 oferta.regimeContrato(),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_REGIME_CONTRATO, oferta.regimeContrato()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_REGIME_CONTRATO, oferta.regimeContrato()),
                 oferta.entidadeId(),
                 oferta.denominacaoEntidade(),
                 oferta.habilitacaoMinima(),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA, oferta.habilitacaoMinima()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA, oferta.habilitacaoMinima()),
                 oferta.nivelQualificacao(),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_NIVEL_QUALIFICACAO, oferta.nivelQualificacao()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_NIVEL_QUALIFICACAO, oferta.nivelQualificacao()),
                 oferta.numVagas(),
                 oferta.habilitacaoMaxima(),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA, oferta.habilitacaoMaxima()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA, oferta.habilitacaoMaxima()),
                 oferta.conhecimentoLinguistico(),
                 oferta.competenciasValorizadas(),
                 oferta.horaInicio(),
@@ -388,7 +390,7 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
                 oferta.contacto(),
                 oferta.observacao(),
                 estado,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO_OFERTA, estado),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO_OFERTA, estado),
                 diasRestantes(oferta.dataFimCandidatura()),
                 situacao,
                 descricaoSituacao(situacao),
@@ -447,10 +449,10 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
                 request.habilitacaoAcademica(),
                 "Selecione a sua habilitação literária."
         );
-        habilitacao = EmpregoDominio.valorOficial(EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA, habilitacao)
+        habilitacao = empregoDominioService.valorOficial(EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA, habilitacao)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        EmpregoDominio.mensagemValorInvalido(
+                        empregoDominioService.mensagemValorInvalido(
                                 EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA,
                                 request.habilitacaoAcademica()
                         )
@@ -841,7 +843,7 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
     }
 
     private String normalizarTipoOferta(String valor) {
-        return EmpregoDominio.valorOficial(EmpregoDominio.DOMINIO_TIPO_OFERTA, valor)
+        return empregoDominioService.valorOficial(EmpregoDominio.DOMINIO_TIPO_OFERTA, valor)
                 .orElseGet(() -> normalizarTexto(valor));
     }
 
@@ -853,7 +855,7 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
         if ("F".equals(normalizado) || "FECHADO".equals(normalizado)) {
             return "FECHADA";
         }
-        return EmpregoDominio.valorOficial(EmpregoDominio.DOMINIO_ESTADO_OFERTA, valor)
+        return empregoDominioService.valorOficial(EmpregoDominio.DOMINIO_ESTADO_OFERTA, valor)
                 .orElse(normalizado);
     }
 
@@ -861,10 +863,10 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
         if (!temTexto(valor)) {
             return null;
         }
-        return EmpregoDominio.valorOficial(dominio, valor)
+        return empregoDominioService.valorOficial(dominio, valor)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        EmpregoDominio.mensagemValorInvalido(dominio, valor)
+                        empregoDominioService.mensagemValorInvalido(dominio, valor)
                 ));
     }
 

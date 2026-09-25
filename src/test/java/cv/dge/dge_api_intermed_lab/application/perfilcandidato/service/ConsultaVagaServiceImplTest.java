@@ -16,6 +16,7 @@ import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaF
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ConsultaVagaRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ConsultaVagaRepository.OfertaDetalhe;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ConsultaVagaRepository.OfertaResumo;
+import cv.dge.dge_api_intermed_lab.support.EmpregoDominioTestFixture;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -26,7 +27,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
@@ -47,11 +47,17 @@ class ConsultaVagaServiceImplTest {
     @Mock
     private GlobalGeografiaService globalGeografiaService;
 
-    @InjectMocks
     private ConsultaVagaServiceImpl service;
 
     @BeforeEach
     void configurarDocumentos() {
+        service = new ConsultaVagaServiceImpl(
+                EmpregoDominioTestFixture.criar(),
+                vagaRepository,
+                documentService,
+                comboboxService,
+                globalGeografiaService
+        );
         ReflectionTestUtils.setField(service, "appCodeDocumento", "interm_laboral");
         ReflectionTestUtils.setField(service, "estadoDocumento", "A");
         ReflectionTestUtils.setField(

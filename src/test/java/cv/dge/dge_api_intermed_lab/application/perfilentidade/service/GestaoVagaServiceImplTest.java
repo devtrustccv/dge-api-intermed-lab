@@ -10,18 +10,19 @@ import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografia
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaFiltro;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaListaResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.GestaoVagaRepository;
+import cv.dge.dge_api_intermed_lab.support.EmpregoDominioTestFixture;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ResponseStatusException;
@@ -35,8 +36,18 @@ class GestaoVagaServiceImplTest {
     @Mock
     private GlobalGeografiaService globalGeografiaService;
 
-    @InjectMocks
+    private EmpregoDominioService empregoDominioService;
     private GestaoVagaServiceImpl service;
+
+    @BeforeEach
+    void setUp() {
+        empregoDominioService = EmpregoDominioTestFixture.criar();
+        service = new GestaoVagaServiceImpl(
+                empregoDominioService,
+                vagaRepository,
+                globalGeografiaService
+        );
+    }
 
     @Test
     void deveFiltrarIlhaEConcelhoPelasDescricoes() {
@@ -111,7 +122,7 @@ class GestaoVagaServiceImplTest {
 
         String dominio = dominioDoCampo(nomeCampo);
         assertThat(erro.getReason()).isEqualTo(
-                EmpregoDominio.mensagemValorInvalido(dominio, valorInvalido, nomeCampo)
+                empregoDominioService.mensagemValorInvalido(dominio, valorInvalido, nomeCampo)
         );
     }
 

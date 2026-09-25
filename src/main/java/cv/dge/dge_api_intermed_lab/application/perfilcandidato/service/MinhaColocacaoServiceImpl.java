@@ -3,7 +3,8 @@ package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaColocacaoDetalheResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaColocacaoListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.EmpregoDominioService;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaColocacaoRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaColocacaoRepository.ColocacaoRegisto;
 import java.util.List;
@@ -17,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class MinhaColocacaoServiceImpl implements MinhaColocacaoService {
 
+    private final EmpregoDominioService empregoDominioService;
     private final MinhaColocacaoRepository colocacaoRepository;
     private final DocumentService documentService;
 
@@ -48,7 +50,7 @@ public class MinhaColocacaoServiceImpl implements MinhaColocacaoService {
                 colocacao.colocacaoId(),
                 colocacao.ofertaId(),
                 tipoOferta,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, tipoOferta),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, tipoOferta),
                 colocacao.titulo(),
                 colocacao.codigoReferencia(),
                 colocacao.dataColocacao(),
@@ -65,17 +67,17 @@ public class MinhaColocacaoServiceImpl implements MinhaColocacaoService {
                 colocacao.colocacaoId(),
                 colocacao.ofertaId(),
                 tipoOferta,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, tipoOferta),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, tipoOferta),
                 colocacao.titulo(),
                 colocacao.codigoReferencia(),
                 colocacao.dataInicioPrevisto(),
                 colocacao.dataFimPrevisto(),
                 tipoContrato,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_REGIME_CONTRATO, tipoContrato),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_REGIME_CONTRATO, tipoContrato),
                 colocacao.duracaoContrato(),
                 colocacao.descricao(),
                 estado,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO, estado),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO, estado),
                 colocacao.dataColocacao(),
                 colocacao.contratoPath(),
                 gerarContratoUrl(colocacao.contratoPath())
@@ -93,7 +95,7 @@ public class MinhaColocacaoServiceImpl implements MinhaColocacaoService {
         if (!temTexto(valor)) {
             return valor;
         }
-        return EmpregoDominio.valorOficial(dominio, valor)
+        return empregoDominioService.valorOficial(dominio, valor)
                 .orElseGet(() -> EmpregoDominio.normalizar(valor));
     }
 

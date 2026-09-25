@@ -1,7 +1,7 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.*;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.GestaoAvaliacaoEstagiarioRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class GestaoAvaliacaoEstagiarioServiceImpl implements GestaoAvaliacaoEstagiarioService {
 
+    private final EmpregoDominioService empregoDominioService;
     private final GestaoAvaliacaoEstagiarioRepository repository;
 
     @Override
@@ -103,20 +104,20 @@ public class GestaoAvaliacaoEstagiarioServiceImpl implements GestaoAvaliacaoEsta
 
     private AvaliacaoEstagiarioListaResponse enriquecerLista(AvaliacaoEstagiarioListaResponse i) {
         return new AvaliacaoEstagiarioListaResponse(i.id(), i.pessoaId(), i.estagiario(), i.tipoAvaliacao(),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_AVALIACAO, i.tipoAvaliacao()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_AVALIACAO, i.tipoAvaliacao()),
                 i.periodoReferencia(), i.classificacao(), i.dataRegisto());
     }
 
     private AvaliacaoEstagiarioDetalheResponse enriquecerDetalhe(AvaliacaoEstagiarioDetalheResponse i) {
         return new AvaliacaoEstagiarioDetalheResponse(i.id(), i.pessoaId(), i.estagiario(), i.candidaturaId(),
-                i.tipoAvaliacao(), EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_AVALIACAO, i.tipoAvaliacao()),
+                i.tipoAvaliacao(), empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_AVALIACAO, i.tipoAvaliacao()),
                 i.periodoReferencia(), i.avaliacaoDesempenho().stream().map(item -> new AvaliacaoDesempenhoResponse(
                         item.tipoCompetencia(),
-                        EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_COMPETENCIA, item.tipoCompetencia()),
+                        empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_COMPETENCIA, item.tipoCompetencia()),
                         item.avaliacao(),
-                        EmpregoDominio.descricao(EmpregoDominio.DOMINIO_AVALIACAO, item.avaliacao())
+                        empregoDominioService.descricao(EmpregoDominio.DOMINIO_AVALIACAO, item.avaliacao())
                 )).toList(), i.grauSatisfacao(),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_GRAU_SATISFACAO, i.grauSatisfacao()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_GRAU_SATISFACAO, i.grauSatisfacao()),
                 i.interesseContratacao(), i.classificacao(), i.observacao(), i.dateCreate(), i.userCreate(),
                 i.dateUpdate(), i.userUpdate());
     }
@@ -128,8 +129,8 @@ public class GestaoAvaliacaoEstagiarioServiceImpl implements GestaoAvaliacaoEsta
     }
     private String dominioOpcional(String dominio, String valor) {
         String v = texto(valor); if (v == null) return null;
-        return EmpregoDominio.valorOficial(dominio, v)
-                .orElseThrow(() -> erro(EmpregoDominio.mensagemValorInvalido(dominio, v)));
+        return empregoDominioService.valorOficial(dominio, v)
+                .orElseThrow(() -> erro(empregoDominioService.mensagemValorInvalido(dominio, v)));
     }
     private void validarId(Integer id) { if (id == null || id <= 0) throw erro(
             "Não foi possível identificar a avaliação selecionada. Atualize a página e tente novamente."); }

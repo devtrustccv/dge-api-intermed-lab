@@ -10,7 +10,8 @@ import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidat
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaListaResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaOpcaoResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaOpcoesResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.EmpregoDominioService;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaCandidaturaRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaCandidaturaRepository.CandidaturaRegisto;
 import java.net.URI;
@@ -32,6 +33,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
 
+    private final EmpregoDominioService empregoDominioService;
     /* A base atual persiste o canal da candidatura com os valores do domínio CANAL_OFERTA. */
     private static final String DOMINIO_CANAL_CANDIDATURA = EmpregoDominio.DOMINIO_CANAL_OFERTA;
     private static final String TIPO_DOCUMENTO_CURRICULO = "CURRICULO_VITAE";
@@ -132,10 +134,14 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
     ) {
         String tipoOferta = normalizarValor(EmpregoDominio.DOMINIO_TIPO_OFERTA, candidatura.tipoOferta());
         String estado = normalizarValor(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, candidatura.estado());
+        String canal = normalizarValor(DOMINIO_CANAL_CANDIDATURA, candidatura.canal());
+        CandidaturaDocumentoResponse primeiroAnexo = converterAnexos(candidatura.anexos()).stream()
+                .findFirst()
+                .orElse(null);
         return new MinhaCandidaturaListaResponse(
                 candidatura.candidaturaId(),
                 tipoOferta,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, tipoOferta),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, tipoOferta),
                 candidatura.ofertaId(),
                 candidatura.titulo(),
                 candidatura.codigoReferencia(),
@@ -146,7 +152,11 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
                 candidatura.concelho(),
                 descricaoGeografia(candidatura.concelho(), geografias),
                 estado,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, estado),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, estado),
+                candidatura.motivoRecusa(),
+                canal,
+                primeiroAnexo == null ? null : primeiroAnexo.tipo(),
+                primeiroAnexo == null ? null : primeiroAnexo.url(),
                 candidatura.dataCandidatura()
         );
     }
@@ -161,7 +171,7 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
         return new MinhaCandidaturaDetalheResponse(
                 candidatura.candidaturaId(),
                 tipoOferta,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, tipoOferta),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, tipoOferta),
                 candidatura.ofertaId(),
                 candidatura.titulo(),
                 candidatura.codigoReferencia(),
@@ -172,18 +182,18 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
                 candidatura.concelho(),
                 descricaoGeografia(candidatura.concelho(), geografias),
                 estado,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, estado),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, estado),
                 candidatura.motivoRecusa(),
                 canal,
-                EmpregoDominio.descricao(DOMINIO_CANAL_CANDIDATURA, canal),
+                empregoDominioService.descricao(DOMINIO_CANAL_CANDIDATURA, canal),
                 candidatura.dataCandidatura(),
                 converterAnexos(candidatura.anexos())
         );
     }
 
     private List<MinhaCandidaturaOpcaoResponse> listarDominio(String dominio) {
-        return EmpregoDominio.listarPorDominio(dominio).stream()
-                .map(item -> new MinhaCandidaturaOpcaoResponse(item.getValor(), item.getDescricao()))
+        return empregoDominioService.listarPorDominio(dominio).stream()
+                .map(item -> new MinhaCandidaturaOpcaoResponse(item.valor(), item.description()))
                 .toList();
     }
 
@@ -382,10 +392,10 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
         if (!temTexto(valor)) {
             return null;
         }
-        return EmpregoDominio.valorOficial(dominio, valor)
+        return empregoDominioService.valorOficial(dominio, valor)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        EmpregoDominio.mensagemValorInvalido(dominio, valor)
+                        empregoDominioService.mensagemValorInvalido(dominio, valor)
                 ));
     }
 
@@ -393,7 +403,7 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
         if (!temTexto(valor)) {
             return valor;
         }
-        return EmpregoDominio.valorOficial(dominio, valor)
+        return empregoDominioService.valorOficial(dominio, valor)
                 .orElseGet(() -> EmpregoDominio.normalizar(valor));
     }
 

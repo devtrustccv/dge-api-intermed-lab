@@ -1,5 +1,7 @@
 package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
+import cv.dge.dge_api_intermed_lab.support.EmpregoDominioTestFixture;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -57,7 +59,7 @@ class ServicoContratanteServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new ServicoContratanteServiceImpl(
+        service = new ServicoContratanteServiceImpl(EmpregoDominioTestFixture.criar(),
                 servicoRepository,
                 globalGeografiaService,
                 documentService,

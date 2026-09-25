@@ -1,5 +1,6 @@
 package cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
 
 public record MinhaCandidaturaListaResponse(
@@ -17,6 +18,10 @@ public record MinhaCandidaturaListaResponse(
         String concelho,
         String estado,
         String estadoDescricao,
+        @JsonProperty("Motivo Recusa") String motivoRecusa,
+        @JsonProperty("Canal") String canal,
+        @JsonProperty("Tipo Documento") String tipoDocumento,
+        @JsonProperty("Preview") String preview,
         LocalDateTime dataCandidatura
 ) {
 }

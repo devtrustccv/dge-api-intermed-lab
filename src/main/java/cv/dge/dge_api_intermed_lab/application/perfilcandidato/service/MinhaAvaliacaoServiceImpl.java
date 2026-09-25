@@ -3,7 +3,8 @@ package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAvaliacaoDesempenhoResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAvaliacaoDetalheResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAvaliacaoListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.EmpregoDominioService;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaAvaliacaoRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaAvaliacaoRepository.AvaliacaoDesempenhoRegisto;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaAvaliacaoRepository.AvaliacaoDetalheRegisto;
@@ -19,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class MinhaAvaliacaoServiceImpl implements MinhaAvaliacaoService {
 
+    private final EmpregoDominioService empregoDominioService;
     private final MinhaAvaliacaoRepository avaliacaoRepository;
 
     @Override
@@ -51,7 +53,7 @@ public class MinhaAvaliacaoServiceImpl implements MinhaAvaliacaoService {
         return new MinhaAvaliacaoListaResponse(
                 avaliacao.avaliacaoId(),
                 tipoAvaliacao,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_AVALIACAO, tipoAvaliacao),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_AVALIACAO, tipoAvaliacao),
                 avaliacao.periodoReferencia(),
                 avaliacao.classificacao(),
                 avaliacao.dataRegisto()
@@ -70,13 +72,13 @@ public class MinhaAvaliacaoServiceImpl implements MinhaAvaliacaoService {
         return new MinhaAvaliacaoDetalheResponse(
                 avaliacao.avaliacaoId(),
                 tipoAvaliacao,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_AVALIACAO, tipoAvaliacao),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_AVALIACAO, tipoAvaliacao),
                 avaliacao.periodoReferencia(),
                 avaliacao.avaliacaoDesempenho().stream()
                         .map(this::mapearDesempenho)
                         .toList(),
                 grauSatisfacao,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_GRAU_SATISFACAO, grauSatisfacao),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_GRAU_SATISFACAO, grauSatisfacao),
                 avaliacao.interesseContratacao(),
                 avaliacao.classificacao(),
                 avaliacao.observacao(),
@@ -92,9 +94,9 @@ public class MinhaAvaliacaoServiceImpl implements MinhaAvaliacaoService {
         String avaliacao = normalizarDominio(EmpregoDominio.DOMINIO_AVALIACAO, desempenho.avaliacao());
         return new MinhaAvaliacaoDesempenhoResponse(
                 tipoCompetencia,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_COMPETENCIA, tipoCompetencia),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_COMPETENCIA, tipoCompetencia),
                 avaliacao,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_AVALIACAO, avaliacao)
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_AVALIACAO, avaliacao)
         );
     }
 
@@ -102,7 +104,7 @@ public class MinhaAvaliacaoServiceImpl implements MinhaAvaliacaoService {
         if (!temTexto(valor)) {
             return valor;
         }
-        return EmpregoDominio.valorOficial(dominio, valor)
+        return empregoDominioService.valorOficial(dominio, valor)
                 .orElseGet(() -> EmpregoDominio.normalizar(valor));
     }
 

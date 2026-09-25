@@ -12,7 +12,7 @@ import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaL
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaObservacaoRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaValidacaoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.GestaoVisitaTecnicaRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -33,6 +33,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaService {
 
+    private final EmpregoDominioService empregoDominioService;
     private static final String AGENDADO_POR_CEFP = "CEFP";
     private static final String AGENDADO_POR_ENTIDADE_ACOLHEDORA = "ENTIDADE_ACOLHEDORA";
     private static final String ESTADO_AGENDADO = "AGENDADO";
@@ -431,11 +432,11 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
                 item.visitante(),
                 item.objetivos(),
                 agendadoPor,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_AGENDADO_POR, agendadoPor),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_AGENDADO_POR, agendadoPor),
                 item.cefpId(),
                 item.cefp(),
                 estado,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO_VISITA_TECNICA, estado),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO_VISITA_TECNICA, estado),
                 item.candidatos(),
                 item.novaData(),
                 item.motivoIndeferimento(),
@@ -467,11 +468,11 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
                 formatarHorario(item.horaInicio(), item.horaFim()),
                 item.objetivos(),
                 agendadoPor,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_AGENDADO_POR, agendadoPor),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_AGENDADO_POR, agendadoPor),
                 item.cefpId(),
                 item.cefp(),
                 estado,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO_VISITA_TECNICA, estado),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO_VISITA_TECNICA, estado),
                 item.candidatos(),
                 item.novaData(),
                 item.motivoIndeferimento(),
@@ -505,7 +506,7 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
             return ESTADO_PENDENTE;
         }
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                EmpregoDominio.mensagemValorInvalido(
+                empregoDominioService.mensagemValorInvalido(
                         EmpregoDominio.DOMINIO_PARECER_VISITA,
                         parecer
                 ));
@@ -524,10 +525,10 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
         if (texto == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, mensagemObrigatorio);
         }
-        return EmpregoDominio.valorOficial(dominio, texto)
+        return empregoDominioService.valorOficial(dominio, texto)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        EmpregoDominio.mensagemValorInvalido(dominio, texto)
+                        empregoDominioService.mensagemValorInvalido(dominio, texto)
                 ));
     }
 
@@ -536,15 +537,15 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
         if (texto == null) {
             return null;
         }
-        return EmpregoDominio.valorOficial(dominio, texto)
+        return empregoDominioService.valorOficial(dominio, texto)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        EmpregoDominio.mensagemValorInvalido(dominio, texto)
+                        empregoDominioService.mensagemValorInvalido(dominio, texto)
                 ));
     }
 
     private String valorDominio(String dominio, String valor) {
-        return EmpregoDominio.valorOficial(dominio, valor).orElse(valor);
+        return empregoDominioService.valorOficial(dominio, valor).orElse(valor);
     }
 
     private void validarIntervaloHoras(LocalTime horaInicio, LocalTime horaFim) {

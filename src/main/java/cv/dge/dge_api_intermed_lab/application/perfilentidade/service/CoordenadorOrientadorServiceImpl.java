@@ -8,7 +8,7 @@ import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CoordenadorOri
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.PessoaGlobalResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaFiltro;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.CoordenadorOrientadorRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorService {
 
+    private final EmpregoDominioService empregoDominioService;
     private static final String TIPO_ORIENTADOR = "ORIENTADOR";
     private static final String TIPO_COORDENADOR = "COORDENADOR";
     private static final String ESTADO_ATIVO = "A";
@@ -252,12 +253,12 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
                 item.id(),
                 item.entidadeId(),
                 valorDominio(EmpregoDominio.DOMINIO_TIPO_COLABORADOR, item.tipo()),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_COLABORADOR, item.tipo()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_COLABORADOR, item.tipo()),
                 item.nome(),
                 item.email(),
                 item.telemovel(),
                 valorDominio(EmpregoDominio.DOMINIO_ESTADO, item.estado()),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO, item.estado()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO, item.estado()),
                 item.dateCreate(),
                 item.userCreate()
         );
@@ -268,14 +269,14 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
                 item.id(),
                 item.entidadeId(),
                 valorDominio(EmpregoDominio.DOMINIO_TIPO_COLABORADOR, item.tipo()),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_COLABORADOR, item.tipo()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_COLABORADOR, item.tipo()),
                 item.nome(),
                 item.pessoaId(),
                 item.cargo(),
                 item.email(),
                 item.telemovel(),
                 valorDominio(EmpregoDominio.DOMINIO_ESTADO, item.estado()),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO, item.estado()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO, item.estado()),
                 item.dateCreate(),
                 item.userCreate(),
                 item.dateUpdate(),
@@ -288,15 +289,15 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
         if (texto == null) {
             return null;
         }
-        return EmpregoDominio.valorOficial(dominio, texto)
+        return empregoDominioService.valorOficial(dominio, texto)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        EmpregoDominio.mensagemValorInvalido(dominio, texto)
+                        empregoDominioService.mensagemValorInvalido(dominio, texto)
                 ));
     }
 
     private String valorDominio(String dominio, String valor) {
-        return EmpregoDominio.valorOficial(dominio, valor).orElse(valor);
+        return empregoDominioService.valorOficial(dominio, valor).orElse(valor);
     }
 
     private String texto(String valor) {

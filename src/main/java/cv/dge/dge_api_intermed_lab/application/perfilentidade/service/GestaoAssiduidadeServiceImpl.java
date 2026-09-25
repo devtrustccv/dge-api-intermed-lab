@@ -6,7 +6,7 @@ import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeEst
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeEstagiarioSelectResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeOfertaSelectResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeValidacaoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.GestaoAssiduidadeRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
 
+    private final EmpregoDominioService empregoDominioService;
     private static final String DECISAO_APROVAR = "APROVAR";
     private static final String DECISAO_INDEFER = "INDEFER";
     private static final String ESTADO_APROVADO = "APROVADO";
@@ -137,13 +138,13 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
                 item.estagiarioId(),
                 item.estagiario(),
                 valorDominio(EmpregoDominio.DOMINIO_TIPO_ASSIDUIDADE, item.tipoAssiduidade()),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_ASSIDUIDADE, item.tipoAssiduidade()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_ASSIDUIDADE, item.tipoAssiduidade()),
                 item.data(),
                 item.horaEntrada(),
                 item.horaSaida(),
                 formatarHorario(item.horaEntrada(), item.horaSaida()),
                 estado,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO_ASSIDUIDADE, item.estado()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO_ASSIDUIDADE, item.estado()),
                 !ESTADO_APROVADO.equals(estado),
                 item.justificacao(),
                 item.observacao(),
@@ -167,10 +168,10 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
                 item.horaEntrada(),
                 item.horaSaida(),
                 valorDominio(EmpregoDominio.DOMINIO_TIPO_ASSIDUIDADE, item.tipoAssiduidade()),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_ASSIDUIDADE, item.tipoAssiduidade()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_ASSIDUIDADE, item.tipoAssiduidade()),
                 item.justificacao(),
                 valorDominio(EmpregoDominio.DOMINIO_ESTADO_ASSIDUIDADE, item.estado()),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO_ASSIDUIDADE, item.estado()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO_ASSIDUIDADE, item.estado()),
                 item.observacao(),
                 item.comprovativo(),
                 item.dateCreate(),
@@ -192,10 +193,10 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
         if ("APROVADO".equals(normalizado) || "APROVAR".equals(normalizado)) {
             normalizado = DECISAO_APROVAR;
         }
-        return EmpregoDominio.valorOficial(EmpregoDominio.DOMINIO_DECISAO_ASSIDUIDADE, normalizado)
+        return empregoDominioService.valorOficial(EmpregoDominio.DOMINIO_DECISAO_ASSIDUIDADE, normalizado)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        EmpregoDominio.mensagemValorInvalido(
+                        empregoDominioService.mensagemValorInvalido(
                                 EmpregoDominio.DOMINIO_DECISAO_ASSIDUIDADE,
                                 texto
                         )
@@ -210,7 +211,7 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
             return ESTADO_INDEFERIDO;
         }
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                EmpregoDominio.mensagemValorInvalido(
+                empregoDominioService.mensagemValorInvalido(
                         EmpregoDominio.DOMINIO_DECISAO_ASSIDUIDADE,
                         decisao
                 ));
@@ -221,15 +222,15 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
         if (texto == null) {
             return null;
         }
-        return EmpregoDominio.valorOficial(dominio, texto)
+        return empregoDominioService.valorOficial(dominio, texto)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        EmpregoDominio.mensagemValorInvalido(dominio, texto)
+                        empregoDominioService.mensagemValorInvalido(dominio, texto)
                 ));
     }
 
     private String valorDominio(String dominio, String valor) {
-        return EmpregoDominio.valorOficial(dominio, valor).orElse(valor);
+        return empregoDominioService.valorOficial(dominio, valor).orElse(valor);
     }
 
     private String formatarHorario(java.time.LocalTime horaEntrada, java.time.LocalTime horaSaida) {

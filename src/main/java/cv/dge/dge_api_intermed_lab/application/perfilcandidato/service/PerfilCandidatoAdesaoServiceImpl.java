@@ -2,7 +2,8 @@ package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AdesaoJovemRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AdesaoJovemResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.EmpregoDominioService;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.PerfilCandidatoAdesaoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class PerfilCandidatoAdesaoServiceImpl implements PerfilCandidatoAdesaoService {
 
+    private final EmpregoDominioService empregoDominioService;
     private final PerfilCandidatoAdesaoRepository adesaoRepository;
 
     @Override
@@ -28,11 +30,11 @@ public class PerfilCandidatoAdesaoServiceImpl implements PerfilCandidatoAdesaoSe
                 request.situacaoProfissional(),
                 "Selecione a sua situação profissional antes de confirmar a adesão."
         );
-        String situacaoProfissional = EmpregoDominio.valorOficial(
+        String situacaoProfissional = empregoDominioService.valorOficial(
                         EmpregoDominio.DOMINIO_SITUACAO_PROFISSIONAL,
                         situacaoInformada
                 )
-                .orElseThrow(() -> erro(EmpregoDominio.mensagemValorInvalido(
+                .orElseThrow(() -> erro(empregoDominioService.mensagemValorInvalido(
                         EmpregoDominio.DOMINIO_SITUACAO_PROFISSIONAL,
                         situacaoInformada
                 )));

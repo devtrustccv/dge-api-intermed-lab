@@ -9,7 +9,8 @@ import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAssiduid
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAssiduidadeOpcoesResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAssiduidadeRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaOpcaoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.EmpregoDominioService;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaAssiduidadeRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaAssiduidadeRepository.AssiduidadeRegisto;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaAssiduidadeRepository.ColocacaoAtiva;
@@ -37,6 +38,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Slf4j
 public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
 
+    private final EmpregoDominioService empregoDominioService;
     private static final String ESTADO_PENDENTE = "PENDENTE";
     private static final int TAMANHO_MAXIMO_COMPROVATIVO = 150;
     private static final int TAMANHO_MAXIMO_JUSTIFICACAO = 500;
@@ -168,13 +170,13 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
                     "Preencha os dados da assiduidade antes de guardar."
             );
         }
-        String tipo = EmpregoDominio.valorOficial(
+        String tipo = empregoDominioService.valorOficial(
                         EmpregoDominio.DOMINIO_TIPO_ASSIDUIDADE,
                         request.tipoAssiduidade()
                 )
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        EmpregoDominio.mensagemValorInvalido(
+                        empregoDominioService.mensagemValorInvalido(
                                 EmpregoDominio.DOMINIO_TIPO_ASSIDUIDADE,
                                 request.tipoAssiduidade()
                         )
@@ -235,13 +237,13 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
         return new MinhaAssiduidadeListaResponse(
                 registo.assiduidadeId(),
                 tipo,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_ASSIDUIDADE, tipo),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_ASSIDUIDADE, tipo),
                 registo.data(),
                 registo.horaEntrada(),
                 registo.horaSaida(),
                 formatarHorario(registo.horaEntrada(), registo.horaSaida()),
                 estado,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO_ASSIDUIDADE, estado)
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO_ASSIDUIDADE, estado)
         );
     }
 
@@ -252,12 +254,12 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
         return new MinhaAssiduidadeDetalheResponse(
                 registo.assiduidadeId(),
                 tipo,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_ASSIDUIDADE, tipo),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_ASSIDUIDADE, tipo),
                 registo.data(),
                 registo.horaEntrada(),
                 registo.horaSaida(),
                 estado,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO_ASSIDUIDADE, estado),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO_ASSIDUIDADE, estado),
                 registo.justificacao(),
                 comprovativo,
                 comprovativo == null ? null : documentService.gerarLinkPublico(comprovativo),
@@ -266,8 +268,8 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
     }
 
     private List<MinhaCandidaturaOpcaoResponse> listarDominio(String dominio) {
-        return EmpregoDominio.listarPorDominio(dominio).stream()
-                .map(item -> new MinhaCandidaturaOpcaoResponse(item.getValor(), item.getDescricao()))
+        return empregoDominioService.listarPorDominio(dominio).stream()
+                .map(item -> new MinhaCandidaturaOpcaoResponse(item.valor(), item.description()))
                 .toList();
     }
 
@@ -424,10 +426,10 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
         if (!temTexto(valor)) {
             return null;
         }
-        return EmpregoDominio.valorOficial(dominio, valor)
+        return empregoDominioService.valorOficial(dominio, valor)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        EmpregoDominio.mensagemValorInvalido(dominio, valor)
+                        empregoDominioService.mensagemValorInvalido(dominio, valor)
                 ));
     }
 
@@ -435,7 +437,7 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
         if (!temTexto(valor)) {
             return valor;
         }
-        return EmpregoDominio.valorOficial(dominio, valor)
+        return empregoDominioService.valorOficial(dominio, valor)
                 .orElseGet(() -> EmpregoDominio.normalizar(valor));
     }
 

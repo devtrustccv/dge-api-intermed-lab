@@ -1,5 +1,7 @@
 package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
+import cv.dge.dge_api_intermed_lab.support.EmpregoDominioTestFixture;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -9,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
 import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaDetalheResponse;
@@ -45,7 +48,7 @@ class MinhaCandidaturaServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new MinhaCandidaturaServiceImpl(
+        service = new MinhaCandidaturaServiceImpl(EmpregoDominioTestFixture.criar(),
                 candidaturaRepository,
                 globalGeografiaService,
                 documentService
@@ -53,8 +56,17 @@ class MinhaCandidaturaServiceImplTest {
     }
 
     @Test
-    void deveListarApenasDadosDoCandidatoComDominiosEGeografiasEnriquecidos() {
+    void deveListarApenasDadosDoCandidatoComDominiosEGeografiasEnriquecidos() throws Exception {
         LocalDateTime dataCandidatura = LocalDateTime.of(2026, 8, 20, 10, 30);
+        JsonNode anexos = new ObjectMapper().readTree("""
+                {
+                  "curriculumVitae": {
+                    "tipo": "CURRICULO_VITAE",
+                    "nome": "cv.pdf",
+                    "path": "/candidaturas/15/cv.pdf"
+                  }
+                }
+                """);
         when(candidaturaRepository.listar(any())).thenReturn(List.of(registo(
                 15,
                 "EMPREGO",
@@ -62,11 +74,13 @@ class MinhaCandidaturaServiceImplTest {
                 "PORTAL",
                 "101",
                 "102",
-                null,
+                anexos,
                 dataCandidatura
         )));
         when(globalGeografiaService.buscarNomePorCodigo("101")).thenReturn(Optional.of("Santiago"));
         when(globalGeografiaService.buscarNomePorCodigo("102")).thenReturn(Optional.of("Praia"));
+        when(documentService.gerarLinkPublico("/candidaturas/15/cv.pdf"))
+                .thenReturn("https://documentos.test/cv");
 
         List<MinhaCandidaturaListaResponse> resultado = service.listar(new MinhaCandidaturaFiltro(
                 9001L,
@@ -97,7 +111,24 @@ class MinhaCandidaturaServiceImplTest {
             assertThat(item.concelho()).isEqualTo("Praia");
             assertThat(item.estado()).isEqualTo("APROVADO");
             assertThat(item.estadoDescricao()).isEqualTo("Aprovado");
+            assertThat(item.motivoRecusa()).isEqualTo("Perfil não corresponde aos requisitos.");
+            assertThat(item.canal()).isEqualTo("PORTAL");
+            assertThat(item.tipoDocumento()).isEqualTo("CURRICULO_VITAE");
+            assertThat(item.preview()).isEqualTo("https://documentos.test/cv");
             assertThat(item.dataCandidatura()).isEqualTo(dataCandidatura);
+
+            JsonNode json = new ObjectMapper()
+                    .registerModule(new JavaTimeModule())
+                    .valueToTree(item);
+            assertThat(json.get("Motivo Recusa").asText())
+                    .isEqualTo("Perfil não corresponde aos requisitos.");
+            assertThat(json.get("Canal").asText()).isEqualTo("PORTAL");
+            assertThat(json.get("Tipo Documento").asText()).isEqualTo("CURRICULO_VITAE");
+            assertThat(json.get("Preview").asText()).isEqualTo("https://documentos.test/cv");
+            assertThat(json.has("motivoRecusa")).isFalse();
+            assertThat(json.has("canal")).isFalse();
+            assertThat(json.has("tipoDocumento")).isFalse();
+            assertThat(json.has("preview")).isFalse();
         });
     }
 

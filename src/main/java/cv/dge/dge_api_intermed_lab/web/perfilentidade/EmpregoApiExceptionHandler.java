@@ -23,6 +23,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice(assignableTypes = {
         IntermediacaoLaboralDashboardController.class,
+        EmpregoDominioController.class,
         GestaoVagaController.class,
         CoordenadorOrientadorController.class,
         GestaoCandidaturaController.class,

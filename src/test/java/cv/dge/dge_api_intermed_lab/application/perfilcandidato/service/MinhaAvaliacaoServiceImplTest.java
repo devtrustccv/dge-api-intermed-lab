@@ -1,5 +1,7 @@
 package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
+import cv.dge.dge_api_intermed_lab.support.EmpregoDominioTestFixture;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.never;
@@ -34,7 +36,7 @@ class MinhaAvaliacaoServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new MinhaAvaliacaoServiceImpl(avaliacaoRepository);
+        service = new MinhaAvaliacaoServiceImpl(EmpregoDominioTestFixture.criar(), avaliacaoRepository);
     }
 
     @Test

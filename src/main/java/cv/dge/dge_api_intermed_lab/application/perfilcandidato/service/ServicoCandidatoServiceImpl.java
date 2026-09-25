@@ -8,7 +8,8 @@ import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoCandid
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoCandidatoListaResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoCandidatoOpcoesResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteAnexoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.EmpregoDominioService;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ServicoContratanteRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ServicoContratanteRepository.AnexoArmazenado;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ServicoContratanteRepository.ServicoCandidatoRegisto;
@@ -25,6 +26,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class ServicoCandidatoServiceImpl implements ServicoCandidatoService {
 
+    private final EmpregoDominioService empregoDominioService;
     private static final String ESTADO_SERVICO_ATIVO = "A";
     private static final String STATUS_ACEITACAO_PENDENTE = "PENDENTE";
     private static final String STATUS_ACEITACAO_ACEITE = "ACEITE";
@@ -46,10 +48,10 @@ public class ServicoCandidatoServiceImpl implements ServicoCandidatoService {
     @Override
     @Transactional(readOnly = true)
     public ServicoCandidatoOpcoesResponse listarOpcoes() {
-        List<MinhaCandidaturaOpcaoResponse> estados = EmpregoDominio
+        List<MinhaCandidaturaOpcaoResponse> estados = empregoDominioService
                 .listarPorDominio(EmpregoDominio.DOMINIO_ESTADO_SERVICO)
                 .stream()
-                .map(item -> new MinhaCandidaturaOpcaoResponse(item.getValor(), item.getDescricao()))
+                .map(item -> new MinhaCandidaturaOpcaoResponse(item.valor(), item.description()))
                 .toList();
         return new ServicoCandidatoOpcoesResponse(estados);
     }
@@ -147,13 +149,13 @@ public class ServicoCandidatoServiceImpl implements ServicoCandidatoService {
                 servico.tipoServico(),
                 servico.nomeContratante(),
                 estado,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO_SERVICO, estado),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO_SERVICO, estado),
                 servico.inicioCandidatura(),
                 servico.fimCandidatura(),
                 selecaoIefp,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_SIM_NAO, selecaoIefp),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_SIM_NAO, selecaoIefp),
                 statusAceitacao,
-                EmpregoDominio.descricao(
+                empregoDominioService.descricao(
                         EmpregoDominio.DOMINIO_STATUS_ACEITACAO_CANDIDATO,
                         statusAceitacao
                 ),
@@ -189,11 +191,11 @@ public class ServicoCandidatoServiceImpl implements ServicoCandidatoService {
                 servico.email(),
                 mapearAnexos(servico.anexos()),
                 estado,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO_SERVICO, estado),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO_SERVICO, estado),
                 selecaoIefp,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_SIM_NAO, selecaoIefp),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_SIM_NAO, selecaoIefp),
                 statusAceitacao,
-                EmpregoDominio.descricao(
+                empregoDominioService.descricao(
                         EmpregoDominio.DOMINIO_STATUS_ACEITACAO_CANDIDATO,
                         statusAceitacao
                 ),
@@ -230,7 +232,7 @@ public class ServicoCandidatoServiceImpl implements ServicoCandidatoService {
         if (!temTexto(estado)) {
             return estado;
         }
-        return EmpregoDominio.valorOficial(EmpregoDominio.DOMINIO_ESTADO_SERVICO, estado)
+        return empregoDominioService.valorOficial(EmpregoDominio.DOMINIO_ESTADO_SERVICO, estado)
                 .orElseGet(() -> EmpregoDominio.normalizar(estado));
     }
 
@@ -238,7 +240,7 @@ public class ServicoCandidatoServiceImpl implements ServicoCandidatoService {
         if (!temTexto(status)) {
             return STATUS_ACEITACAO_PENDENTE;
         }
-        return EmpregoDominio.valorOficial(EmpregoDominio.DOMINIO_STATUS_ACEITACAO_CANDIDATO, status)
+        return empregoDominioService.valorOficial(EmpregoDominio.DOMINIO_STATUS_ACEITACAO_CANDIDATO, status)
                 .orElseGet(() -> EmpregoDominio.normalizar(status));
     }
 
@@ -260,10 +262,10 @@ public class ServicoCandidatoServiceImpl implements ServicoCandidatoService {
         if (!temTexto(valor)) {
             return null;
         }
-        return EmpregoDominio.valorOficial(dominio, valor)
+        return empregoDominioService.valorOficial(dominio, valor)
                 .orElseThrow(() -> erro(
                         HttpStatus.BAD_REQUEST,
-                        EmpregoDominio.mensagemValorInvalido(dominio, valor)
+                        empregoDominioService.mensagemValorInvalido(dominio, valor)
                 ));
     }
 

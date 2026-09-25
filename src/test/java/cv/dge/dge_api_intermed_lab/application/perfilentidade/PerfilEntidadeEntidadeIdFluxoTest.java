@@ -1,5 +1,7 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade;
 
+import cv.dge.dge_api_intermed_lab.support.EmpregoDominioTestFixture;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -83,7 +85,7 @@ class PerfilEntidadeEntidadeIdFluxoTest {
 
     @Test
     void criacaoDeVagaDeveGravarEntidadeDaUrl() {
-        GestaoVagaServiceImpl service = new GestaoVagaServiceImpl(vagaRepository, geografiaService);
+        GestaoVagaServiceImpl service = new GestaoVagaServiceImpl(EmpregoDominioTestFixture.criar(), vagaRepository, geografiaService);
         VagaRequest request = novaVaga();
         when(vagaRepository.inserir(eq(ENTIDADE_ID), any(), eq("ATIVA"), eq("utilizador")))
                 .thenReturn(29);
@@ -98,7 +100,7 @@ class PerfilEntidadeEntidadeIdFluxoTest {
 
     @Test
     void criacaoDeColaboradorDeveGravarEntidadeDaUrl() {
-        CoordenadorOrientadorServiceImpl service = new CoordenadorOrientadorServiceImpl(
+        CoordenadorOrientadorServiceImpl service = new CoordenadorOrientadorServiceImpl(EmpregoDominioTestFixture.criar(),
                 colaboradorRepository,
                 vagaService
         );
@@ -125,7 +127,7 @@ class PerfilEntidadeEntidadeIdFluxoTest {
 
     @Test
     void criacaoDeVisitaDeveGravarEntidadeDaUrlEValidarCandidatos() {
-        GestaoVisitaTecnicaServiceImpl service = new GestaoVisitaTecnicaServiceImpl(visitaRepository);
+        GestaoVisitaTecnicaServiceImpl service = new GestaoVisitaTecnicaServiceImpl(EmpregoDominioTestFixture.criar(), visitaRepository);
         VisitaTecnicaRequest request = new VisitaTecnicaRequest(
                 LocalDate.of(2026, 9, 30),
                 "Visitante",
@@ -154,7 +156,7 @@ class PerfilEntidadeEntidadeIdFluxoTest {
 
     @Test
     void colocacaoDeveResolverOfertaECandidaturaDentroDaEntidadeDaUrl() {
-        ColocacaoCandidatoServiceImpl service = new ColocacaoCandidatoServiceImpl(colocacaoRepository);
+        ColocacaoCandidatoServiceImpl service = new ColocacaoCandidatoServiceImpl(EmpregoDominioTestFixture.criar(), colocacaoRepository);
         ColocacaoCandidatoRequest request = new ColocacaoCandidatoRequest(
                 "OFERTA_ESTAGIO",
                 29,
@@ -179,7 +181,7 @@ class PerfilEntidadeEntidadeIdFluxoTest {
 
     @Test
     void candidaturaDeveSerConsultadaDentroDaEntidadeDaUrl() {
-        GestaoCandidaturaServiceImpl service = new GestaoCandidaturaServiceImpl(
+        GestaoCandidaturaServiceImpl service = new GestaoCandidaturaServiceImpl(EmpregoDominioTestFixture.criar(),
                 candidaturaRepository,
                 documentService
         );

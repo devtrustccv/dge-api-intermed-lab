@@ -1,5 +1,7 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 
+import cv.dge.dge_api_intermed_lab.support.EmpregoDominioTestFixture;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.never;
@@ -40,7 +42,7 @@ class GestaoCandidaturaServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new GestaoCandidaturaServiceImpl(candidaturaRepository, documentService);
+        service = new GestaoCandidaturaServiceImpl(EmpregoDominioTestFixture.criar(), candidaturaRepository, documentService);
         ReflectionTestUtils.setField(service, "tipoRelacaoDocumento", TIPO_RELACAO);
         ReflectionTestUtils.setField(service, "appCodeDocumento", APP_CODE);
     }

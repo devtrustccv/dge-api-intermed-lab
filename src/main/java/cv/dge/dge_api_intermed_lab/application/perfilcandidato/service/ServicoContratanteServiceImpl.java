@@ -14,7 +14,8 @@ import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContra
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteListaResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteOpcoesResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.EmpregoDominioService;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ServicoContratanteRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ServicoContratanteRepository.AnexoArmazenado;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ServicoContratanteRepository.CandidatoRegisto;
@@ -46,6 +47,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Slf4j
 public class ServicoContratanteServiceImpl implements ServicoContratanteService {
 
+    private final EmpregoDominioService empregoDominioService;
     private static final String ESTADO_ATIVO = "A";
     private static final String ESTADO_RASCUNHO = "R";
     private static final String ESTADO_CANCELADO = "C";
@@ -573,7 +575,7 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
                 servico.tipoServico(),
                 servico.titulo(),
                 estado,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO_SERVICO, estado),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO_SERVICO, estado),
                 servico.inicioCandidatura(),
                 servico.fimCandidatura(),
                 servico.dateCreate()
@@ -604,7 +606,7 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
                 servico.email(),
                 mapearAnexos(servico.anexos()),
                 estado,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO_SERVICO, estado),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO_SERVICO, estado),
                 servico.dateCreate(),
                 servico.userCreate(),
                 servico.dateUpdate(),
@@ -635,9 +637,9 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
                 candidato.tipoServico(),
                 candidato.titulo(),
                 estado,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_CANDIDATURA_STATUS, estado),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_CANDIDATURA_STATUS, estado),
                 selecaoIefp,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_SIM_NAO, selecaoIefp),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_SIM_NAO, selecaoIefp),
                 candidato.dataCandidatura()
         );
     }
@@ -677,7 +679,7 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
         if (!temTexto(estado)) {
             return estado;
         }
-        return EmpregoDominio.valorOficial(EmpregoDominio.DOMINIO_ESTADO_SERVICO, estado)
+        return empregoDominioService.valorOficial(EmpregoDominio.DOMINIO_ESTADO_SERVICO, estado)
                 .orElseGet(() -> EmpregoDominio.normalizar(estado));
     }
 
@@ -685,7 +687,7 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
         if (!temTexto(estado)) {
             return estado;
         }
-        return EmpregoDominio.valorOficial(EmpregoDominio.DOMINIO_CANDIDATURA_STATUS, estado)
+        return empregoDominioService.valorOficial(EmpregoDominio.DOMINIO_CANDIDATURA_STATUS, estado)
                 .orElseGet(() -> EmpregoDominio.normalizar(estado));
     }
 
@@ -704,8 +706,8 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
     }
 
     private List<MinhaCandidaturaOpcaoResponse> listarDominio(String dominio) {
-        return EmpregoDominio.listarPorDominio(dominio).stream()
-                .map(item -> new MinhaCandidaturaOpcaoResponse(item.getValor(), item.getDescricao()))
+        return empregoDominioService.listarPorDominio(dominio).stream()
+                .map(item -> new MinhaCandidaturaOpcaoResponse(item.valor(), item.description()))
                 .toList();
     }
 
@@ -713,10 +715,10 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
         if (!temTexto(valor)) {
             return null;
         }
-        return EmpregoDominio.valorOficial(dominio, valor)
+        return empregoDominioService.valorOficial(dominio, valor)
                 .orElseThrow(() -> erro(
                         HttpStatus.BAD_REQUEST,
-                        EmpregoDominio.mensagemValorInvalido(dominio, valor)
+                        empregoDominioService.mensagemValorInvalido(dominio, valor)
                 ));
     }
 

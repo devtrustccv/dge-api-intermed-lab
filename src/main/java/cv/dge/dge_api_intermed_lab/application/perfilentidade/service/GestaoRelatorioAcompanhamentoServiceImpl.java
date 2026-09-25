@@ -8,7 +8,7 @@ import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcomp
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoRemoverRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoVinculo;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.GestaoRelatorioAcompanhamentoRepository;
 import java.time.LocalDate;
 import java.util.List;
@@ -23,6 +23,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class GestaoRelatorioAcompanhamentoServiceImpl implements GestaoRelatorioAcompanhamentoService {
 
+    private final EmpregoDominioService empregoDominioService;
     private static final String ESTADO_ATIVO = "A";
     private static final String ESTADO_INATIVO = "I";
 
@@ -161,7 +162,7 @@ public class GestaoRelatorioAcompanhamentoServiceImpl implements GestaoRelatorio
         return new RelatorioAcompanhamentoListaResponse(
                 item.id(), item.pessoaId(), item.estagiario(), item.ofertaId(), item.codigoReferencia(),
                 item.dataRegisto(), item.relatorioAnexo(), estado,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO, estado));
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO, estado));
     }
 
     private RelatorioAcompanhamentoDetalheResponse enriquecerDetalhe(RelatorioAcompanhamentoDetalheResponse item) {
@@ -170,7 +171,7 @@ public class GestaoRelatorioAcompanhamentoServiceImpl implements GestaoRelatorio
                 item.id(), item.ofertaId(), item.codigoReferencia(), item.colocacaoId(), item.entidadeId(),
                 item.denominacaoEntidade(), item.pessoaId(), item.estagiario(), item.dataInicio(), item.dataFim(),
                 item.atividadesRealizadas(), item.dificuldades(), item.recomendacoes(), item.relatorioAnexo(),
-                estado, EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO, estado),
+                estado, empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO, estado),
                 item.dateCreate(), item.userCreate(), item.dateUpdate(), item.userUpdate());
     }
 
@@ -184,7 +185,7 @@ public class GestaoRelatorioAcompanhamentoServiceImpl implements GestaoRelatorio
     }
 
     private String valorEstado(String estado) {
-        return EmpregoDominio.valorOficial(EmpregoDominio.DOMINIO_ESTADO, estado).orElse(estado);
+        return empregoDominioService.valorOficial(EmpregoDominio.DOMINIO_ESTADO, estado).orElse(estado);
     }
 
     private void validarIntervalo(LocalDate inicio, LocalDate fim, String mensagem) {

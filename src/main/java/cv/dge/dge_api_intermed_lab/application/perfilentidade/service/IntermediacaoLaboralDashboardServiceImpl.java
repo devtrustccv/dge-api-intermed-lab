@@ -3,7 +3,7 @@ package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.DashboardGrupoResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.DashboardResumoOfertaResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.IntermediacaoLaboralDashboardResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.IntermediacaoLaboralDashboardRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class IntermediacaoLaboralDashboardServiceImpl implements IntermediacaoLaboralDashboardService {
 
+    private final EmpregoDominioService empregoDominioService;
     private final IntermediacaoLaboralDashboardRepository dashboardRepository;
 
     @Override
@@ -51,7 +52,7 @@ public class IntermediacaoLaboralDashboardServiceImpl implements IntermediacaoLa
         return grupos.stream()
                 .map(item -> new DashboardGrupoResponse(
                         valorOficial(dominio, item.valor()),
-                        EmpregoDominio.descricao(dominio, item.valor()),
+                        empregoDominioService.descricao(dominio, item.valor()),
                         item.total()
                 ))
                 .toList();
@@ -63,7 +64,7 @@ public class IntermediacaoLaboralDashboardServiceImpl implements IntermediacaoLa
                         item.idOferta(),
                         item.oferta(),
                         valorOficial(EmpregoDominio.DOMINIO_TIPO_OFERTA, item.tipo()),
-                        EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, item.tipo()),
+                        empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, item.tipo()),
                         item.totalVagas(),
                         item.totalCandidaturas(),
                         item.totalCandidaturasAprovadas(),
@@ -73,6 +74,6 @@ public class IntermediacaoLaboralDashboardServiceImpl implements IntermediacaoLa
     }
 
     private String valorOficial(String dominio, String valor) {
-        return EmpregoDominio.valorOficial(dominio, valor).orElse(valor);
+        return empregoDominioService.valorOficial(dominio, valor).orElse(valor);
     }
 }

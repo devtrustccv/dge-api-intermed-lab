@@ -9,7 +9,7 @@ import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaListaRespo
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaValidacaoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.GestaoVagaRepository;
 import java.text.Normalizer;
@@ -26,6 +26,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class GestaoVagaServiceImpl implements GestaoVagaService {
 
+    private final EmpregoDominioService empregoDominioService;
     private static final String ESTADO_ATIVA = "ATIVA";
     private static final String ESTADO_RASCUNHO = "RASCUNHO";
     private static final String ESTADO_FECHADA = "FECHADA";
@@ -529,19 +530,19 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
         if (texto == null) {
             return null;
         }
-        return EmpregoDominio.valorOficial(dominio, texto)
+        return empregoDominioService.valorOficial(dominio, texto)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        EmpregoDominio.mensagemValorInvalido(dominio, texto, nomeCampo)
+                        empregoDominioService.mensagemValorInvalido(dominio, texto, nomeCampo)
                 ));
     }
 
     private String valorDominio(String dominio, String valor) {
-        return EmpregoDominio.valorOficial(dominio, valor).orElse(valor);
+        return empregoDominioService.valorOficial(dominio, valor).orElse(valor);
     }
 
     private String descricaoDominio(String dominio, String valor) {
-        return EmpregoDominio.descricao(dominio, valor);
+        return empregoDominioService.descricao(dominio, valor);
     }
 
     private String localOferta(String ilha, String concelho) {

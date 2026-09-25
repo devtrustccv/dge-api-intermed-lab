@@ -10,7 +10,7 @@ import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaLis
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EntrevistaAgendamentoRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EntrevistaResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EntrevistaResultadoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.GestaoCandidaturaRepository;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,6 +31,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Slf4j
 public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
 
+    private final EmpregoDominioService empregoDominioService;
     private static final String STATUS_TRIAGEM = "TRIAGEM";
     private static final String STATUS_APROVADO = "APROVADO";
     private static final String ESTADO_ENTREVISTA_PENDENTE = "PENDENTE";
@@ -268,24 +269,24 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
                 item.pessoaId(),
                 item.nomeCandidato(),
                 item.dataNascCandidato(),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_SEXO, item.sexoCandidato()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_SEXO, item.sexoCandidato()),
                 item.emailCandidato(),
                 item.telefoneCandidato(),
                 item.ilhaConcelhoCandidato(),
                 item.moradaCandidato(),
                 item.habilitacaoLiterariaCandidato(),
                 valorDominio(EmpregoDominio.DOMINIO_TIPO_OFERTA, item.tipoOferta()),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, item.tipoOferta()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, item.tipoOferta()),
                 item.ofertaId(),
                 item.codigoOferta(),
                 item.tituloOferta(),
                 valorDominio(EmpregoDominio.DOMINIO_CANAL_OFERTA, item.canal()),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_CANAL_OFERTA, item.canal()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_CANAL_OFERTA, item.canal()),
                 tipoDocumento,
                 primeiroAnexo,
                 anexos,
                 valorDominio(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, item.statusCandidatura()),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, item.statusCandidatura()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, item.statusCandidatura()),
                 item.motivoRecusa(),
                 item.selecaoIefp(),
                 Boolean.TRUE.equals(item.selecaoIefp()),
@@ -474,7 +475,7 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
         return new CandidaturaDetalheResponse(
                 item.id(),
                 valorDominio(EmpregoDominio.DOMINIO_TIPO_OFERTA, item.tipoOferta()),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, item.tipoOferta()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, item.tipoOferta()),
                 item.ofertaId(),
                 item.codigoOferta(),
                 item.tituloOferta(),
@@ -484,7 +485,7 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
                 item.candidato(),
                 item.anexos(),
                 valorDominio(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, item.statusCandidatura()),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, item.statusCandidatura()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, item.statusCandidatura()),
                 item.motivoRecusa(),
                 item.selecaoIefp(),
                 Boolean.TRUE.equals(item.selecaoIefp()),
@@ -505,13 +506,13 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
                 item.dataEntrevista(),
                 item.horario(),
                 valorDominio(EmpregoDominio.DOMINIO_CANAL_ENTREVISTA, item.canal()),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_CANAL_ENTREVISTA, item.canal()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_CANAL_ENTREVISTA, item.canal()),
                 item.localEntrevista(),
                 valorDominio(EmpregoDominio.DOMINIO_PARECER_ENTREVISTA, item.parecer()),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_PARECER_ENTREVISTA, item.parecer()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_PARECER_ENTREVISTA, item.parecer()),
                 item.observacao(),
                 valorDominio(EmpregoDominio.DOMINIO_ESTADO_ENTREVISTA, item.estado()),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO_ENTREVISTA, item.estado()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO_ENTREVISTA, item.estado()),
                 item.dateCreate(),
                 item.userCreate(),
                 item.dateUpdate(),
@@ -568,15 +569,15 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
         if (texto == null) {
             return null;
         }
-        return EmpregoDominio.valorOficial(dominio, texto)
+        return empregoDominioService.valorOficial(dominio, texto)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        EmpregoDominio.mensagemValorInvalido(dominio, texto)
+                        empregoDominioService.mensagemValorInvalido(dominio, texto)
                 ));
     }
 
     private String valorDominio(String dominio, String valor) {
-        return EmpregoDominio.valorOficial(dominio, valor).orElse(valor);
+        return empregoDominioService.valorOficial(dominio, valor).orElse(valor);
     }
 
     private String texto(String valor) {

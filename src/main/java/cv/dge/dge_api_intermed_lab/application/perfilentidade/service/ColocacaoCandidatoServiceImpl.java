@@ -8,7 +8,7 @@ import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandi
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoSelectResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoVinculo;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoOfertaSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.ColocacaoCandidatoRepository;
 import java.time.LocalDate;
 import java.util.List;
@@ -22,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService {
 
+    private final EmpregoDominioService empregoDominioService;
     private static final String ESTADO_ATIVO = "A";
     private static final String ESTADO_INATIVO = "I";
 
@@ -65,7 +66,7 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
                         item.titulo(),
                         item.oferta(),
                         valorDominio(EmpregoDominio.DOMINIO_TIPO_OFERTA, item.tipoOferta()),
-                        EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, item.tipoOferta()),
+                        empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, item.tipoOferta()),
                         item.entidadeId(),
                         item.denominacaoEntidade()
                 ))
@@ -258,12 +259,12 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
         return new ColocacaoCandidatoListaResponse(
                 item.id(),
                 valorDominio(EmpregoDominio.DOMINIO_TIPO_OFERTA, item.tipoOferta()),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, item.tipoOferta()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, item.tipoOferta()),
                 item.codigoReferencia(),
                 item.pessoaId(),
                 item.nomeCandidato(),
                 valorDominio(EmpregoDominio.DOMINIO_REGIME_CONTRATO, item.tipoContrato()),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_REGIME_CONTRATO, item.tipoContrato()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_REGIME_CONTRATO, item.tipoContrato()),
                 item.dataInicioPrevisto(),
                 item.dataRegisto()
         );
@@ -274,7 +275,7 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
                 item.id(),
                 item.idOferta(),
                 valorDominio(EmpregoDominio.DOMINIO_TIPO_OFERTA, item.tipoOferta()),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, item.tipoOferta()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, item.tipoOferta()),
                 item.codigoReferencia(),
                 item.entidadeId(),
                 item.denominacaoEntidade(),
@@ -282,14 +283,14 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
                 item.nomeCandidato(),
                 item.idCandidatura(),
                 valorDominio(EmpregoDominio.DOMINIO_REGIME_CONTRATO, item.tipoContrato()),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_REGIME_CONTRATO, item.tipoContrato()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_REGIME_CONTRATO, item.tipoContrato()),
                 item.duracaoContrato(),
                 item.dataInicioPrevisto(),
                 item.dataFimPrevisto(),
                 item.descricao(),
                 item.contratoPath(),
                 valorDominio(EmpregoDominio.DOMINIO_ESTADO, item.estado()),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO, item.estado()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO, item.estado()),
                 item.registadoCefp(),
                 item.dateCreate(),
                 item.userCreate(),
@@ -341,20 +342,20 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
         if (texto == null) {
             return null;
         }
-        return EmpregoDominio.valorOficial(dominio, texto)
-                .or(() -> EmpregoDominio.listarPorDominio(dominio).stream()
-                        .filter(item -> EmpregoDominio.normalizar(item.getDescricao())
+        return empregoDominioService.valorOficial(dominio, texto)
+                .or(() -> empregoDominioService.listarPorDominio(dominio).stream()
+                        .filter(item -> EmpregoDominio.normalizar(item.description())
                                 .equals(EmpregoDominio.normalizar(texto)))
-                        .map(EmpregoDominio::getValor)
+                        .map(item -> item.valor())
                         .findFirst())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        EmpregoDominio.mensagemValorInvalido(dominio, texto)
+                        empregoDominioService.mensagemValorInvalido(dominio, texto)
                 ));
     }
 
     private String valorDominio(String dominio, String valor) {
-        return EmpregoDominio.valorOficial(dominio, valor).orElse(valor);
+        return empregoDominioService.valorOficial(dominio, valor).orElse(valor);
     }
 
     private String texto(String valor) {

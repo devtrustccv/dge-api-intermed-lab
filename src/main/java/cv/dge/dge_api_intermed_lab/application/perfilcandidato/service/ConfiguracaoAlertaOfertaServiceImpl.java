@@ -6,7 +6,8 @@ import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AlertaOfertaL
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AlertaOfertaOpcoesResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AlertaOfertaRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaOpcaoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.enums.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.EmpregoDominioService;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ConfiguracaoAlertaOfertaRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ConfiguracaoAlertaOfertaRepository.AlertaOfertaDetalheRegisto;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ConfiguracaoAlertaOfertaRepository.AlertaOfertaListaRegisto;
@@ -21,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class ConfiguracaoAlertaOfertaServiceImpl implements ConfiguracaoAlertaOfertaService {
 
+    private final EmpregoDominioService empregoDominioService;
     private static final String ESTADO_ATIVO = "ATIVO";
 
     private final ConfiguracaoAlertaOfertaRepository alertaRepository;
@@ -161,13 +163,13 @@ public class ConfiguracaoAlertaOfertaServiceImpl implements ConfiguracaoAlertaOf
         return new AlertaOfertaListaResponse(
                 alerta.alertaId(),
                 tipoOferta,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, tipoOferta),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, tipoOferta),
                 habilitacao,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA, habilitacao),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA, habilitacao),
                 nivel,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_NIVEL_QUALIFICACAO, nivel),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_NIVEL_QUALIFICACAO, nivel),
                 alerta.estado(),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO, alerta.estado()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO, alerta.estado()),
                 alerta.dataConfiguracao()
         );
     }
@@ -187,7 +189,7 @@ public class ConfiguracaoAlertaOfertaServiceImpl implements ConfiguracaoAlertaOf
                 alerta.pessoaId(),
                 alertaRepository.buscarNomePessoa(alerta.pessoaId()).orElse(null),
                 tipoOferta,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, tipoOferta),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, tipoOferta),
                 alerta.ilha(),
                 descricaoGeografia(alerta.ilha()),
                 alerta.concelho(),
@@ -195,11 +197,11 @@ public class ConfiguracaoAlertaOfertaServiceImpl implements ConfiguracaoAlertaOf
                 alerta.entidadeId(),
                 alertaRepository.buscarDenominacaoEntidade(alerta.entidadeId()).orElse(null),
                 habilitacao,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA, habilitacao),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA, habilitacao),
                 nivel,
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_NIVEL_QUALIFICACAO, nivel),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_NIVEL_QUALIFICACAO, nivel),
                 alerta.estado(),
-                EmpregoDominio.descricao(EmpregoDominio.DOMINIO_ESTADO, alerta.estado()),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO, alerta.estado()),
                 alerta.dateCreate(),
                 alerta.userCreate(),
                 alerta.dateUpdate(),
@@ -208,8 +210,8 @@ public class ConfiguracaoAlertaOfertaServiceImpl implements ConfiguracaoAlertaOf
     }
 
     private List<MinhaCandidaturaOpcaoResponse> listarDominio(String dominio) {
-        return EmpregoDominio.listarPorDominio(dominio).stream()
-                .map(item -> new MinhaCandidaturaOpcaoResponse(item.getValor(), item.getDescricao()))
+        return empregoDominioService.listarPorDominio(dominio).stream()
+                .map(item -> new MinhaCandidaturaOpcaoResponse(item.valor(), item.description()))
                 .toList();
     }
 
@@ -224,15 +226,15 @@ public class ConfiguracaoAlertaOfertaServiceImpl implements ConfiguracaoAlertaOf
         if (!temTexto(valor)) {
             return null;
         }
-        return EmpregoDominio.valorOficial(dominio, valor)
-                .orElseThrow(() -> erro(EmpregoDominio.mensagemValorInvalido(dominio, valor)));
+        return empregoDominioService.valorOficial(dominio, valor)
+                .orElseThrow(() -> erro(empregoDominioService.mensagemValorInvalido(dominio, valor)));
     }
 
     private String normalizarValor(String dominio, String valor) {
         if (!temTexto(valor)) {
             return valor;
         }
-        return EmpregoDominio.valorOficial(dominio, valor)
+        return empregoDominioService.valorOficial(dominio, valor)
                 .orElseGet(() -> EmpregoDominio.normalizar(valor));
     }
 
