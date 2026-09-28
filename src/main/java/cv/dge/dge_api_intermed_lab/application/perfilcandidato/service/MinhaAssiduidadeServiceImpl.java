@@ -40,8 +40,6 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
 
     private final EmpregoDominioService empregoDominioService;
     private static final String ESTADO_PENDENTE = "PENDENTE";
-    private static final int TAMANHO_MAXIMO_COMPROVATIVO = 150;
-    private static final int TAMANHO_MAXIMO_JUSTIFICACAO = 500;
     private static final int TAMANHO_MAXIMO_UTILIZADOR = 100;
     private static final DateTimeFormatter FORMATO_HORA = DateTimeFormatter.ofPattern("HH:mm");
 
@@ -186,11 +184,6 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
         }
         validarHorario(request.horaEntrada(), request.horaSaida());
         String justificacao = textoOpcional(request.justificacao());
-        validarTamanho(
-                justificacao,
-                TAMANHO_MAXIMO_JUSTIFICACAO,
-                "A justificação não pode exceder 500 caracteres."
-        );
         String utilizador = textoObrigatorio(
                 request.utilizador(),
                 "Não foi possível identificar o utilizador. Entre novamente e tente de novo."
@@ -302,10 +295,8 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
                 + "/"
                 + assiduidadeId
                 + "/COMPROVATIVO-";
-        int tamanhoDisponivel = Math.max(1, TAMANHO_MAXIMO_COMPROVATIVO - prefixoPath.length() - extensao.length());
-        String nomeLimitado = limitar(nomeBase, tamanhoDisponivel);
-        String nomeArmazenamento = "COMPROVATIVO-" + nomeLimitado;
-        String pathDocumento = prefixoPath + nomeLimitado + extensao;
+        String nomeArmazenamento = "COMPROVATIVO-" + nomeBase;
+        String pathDocumento = prefixoPath + nomeBase + extensao;
 
         try {
             String pathGuardado = documentService.save(DocRelacaoDTO.builder()
@@ -319,7 +310,7 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
                     .appCode(appCodeDocumento)
                     .file(ficheiro)
                     .build());
-            if (!temTexto(pathGuardado) || pathGuardado.length() > TAMANHO_MAXIMO_COMPROVATIVO) {
+            if (!temTexto(pathGuardado)) {
                 throw new IllegalStateException("O serviço documental devolveu um path inválido.");
             }
             return pathGuardado;
@@ -506,10 +497,6 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
         }
         int indice = nomeFicheiro.lastIndexOf('.');
         return indice < 0 ? "" : nomeFicheiro.substring(indice);
-    }
-
-    private String limitar(String valor, int tamanhoMaximo) {
-        return valor.length() <= tamanhoMaximo ? valor : valor.substring(0, tamanhoMaximo);
     }
 
     private String normalizarParaPesquisa(String valor) {

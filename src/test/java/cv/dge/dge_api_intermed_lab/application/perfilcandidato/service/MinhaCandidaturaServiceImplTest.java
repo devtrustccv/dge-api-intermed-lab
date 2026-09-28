@@ -120,15 +120,15 @@ class MinhaCandidaturaServiceImplTest {
             JsonNode json = new ObjectMapper()
                     .registerModule(new JavaTimeModule())
                     .valueToTree(item);
-            assertThat(json.get("Motivo Recusa").asText())
+            assertThat(json.get("canal").asText()).isEqualTo("PORTAL");
+            assertThat(json.get("motivoRecusa").asText())
                     .isEqualTo("Perfil não corresponde aos requisitos.");
-            assertThat(json.get("Canal").asText()).isEqualTo("PORTAL");
-            assertThat(json.get("Tipo Documento").asText()).isEqualTo("CURRICULO_VITAE");
-            assertThat(json.get("Preview").asText()).isEqualTo("https://documentos.test/cv");
-            assertThat(json.has("motivoRecusa")).isFalse();
-            assertThat(json.has("canal")).isFalse();
-            assertThat(json.has("tipoDocumento")).isFalse();
-            assertThat(json.has("preview")).isFalse();
+            assertThat(json.get("tipoDocumento").asText()).isEqualTo("CURRICULO_VITAE");
+            assertThat(json.get("preview").asText()).isEqualTo("https://documentos.test/cv");
+            assertThat(json.has("Canal")).isFalse();
+            assertThat(json.has("Motivo Recusa")).isFalse();
+            assertThat(json.has("Tipo Documento")).isFalse();
+            assertThat(json.has("Preview")).isFalse();
         });
     }
 

@@ -103,12 +103,22 @@ class MinhaAssiduidadeServiceImplTest {
     }
 
     @Test
-    void deveCriarPendenteComColocacaoAtivaSemExigirComprovativo() {
-        MinhaAssiduidadeRequest request = request();
+    void deveCriarPendenteComJustificacaoAcimaDeQuinhentosCaracteresSemExigirComprovativo() {
+        MinhaAssiduidadeRequest dadosBase = request();
+        String justificacao = "j".repeat(600);
+        MinhaAssiduidadeRequest request = new MinhaAssiduidadeRequest(
+                dadosBase.tipoAssiduidade(),
+                dadosBase.data(),
+                dadosBase.horaEntrada(),
+                dadosBase.horaSaida(),
+                justificacao,
+                dadosBase.utilizador()
+        );
         ColocacaoAtiva colocacao = new ColocacaoAtiva(12, 5, "Entidade X", 9001L, "Kevin Sousa");
         when(assiduidadeRepository.buscarColocacaoAtiva(9001L)).thenReturn(Optional.of(colocacao));
         when(assiduidadeRepository.inserir(eq(colocacao), argThat(dados ->
                 "FALTA_JUSTIFICADA".equals(dados.tipoAssiduidade())
+                        && justificacao.equals(dados.justificacao())
                         && "kevin@dge.cv".equals(dados.utilizador())
         ), eq("PENDENTE"))).thenReturn(41);
         when(assiduidadeRepository.buscarPorId(41, 9001L)).thenReturn(Optional.of(registo(null)));
@@ -174,7 +184,9 @@ class MinhaAssiduidadeServiceImplTest {
                 "pdf".getBytes()
         );
         ColocacaoAtiva colocacao = new ColocacaoAtiva(12, 5, "Entidade X", 9001L, "Kevin Sousa");
-        String path = "interm_laboral/2026/modulos/EMPREGO_T_ASSIDUIDADE/41/COMPROVATIVO-declaracao.pdf";
+        String path = "interm_laboral/2026/modulos/EMPREGO_T_ASSIDUIDADE/41/COMPROVATIVO-"
+                + "a".repeat(180)
+                + ".pdf";
         when(assiduidadeRepository.buscarColocacaoAtiva(9001L)).thenReturn(Optional.of(colocacao));
         when(assiduidadeRepository.inserir(eq(colocacao), argThat(dados -> true), eq("PENDENTE")))
                 .thenReturn(41);

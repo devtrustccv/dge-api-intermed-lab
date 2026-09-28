@@ -153,8 +153,8 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
                 descricaoGeografia(candidatura.concelho(), geografias),
                 estado,
                 empregoDominioService.descricao(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, estado),
-                candidatura.motivoRecusa(),
                 canal,
+                candidatura.motivoRecusa(),
                 primeiroAnexo == null ? null : primeiroAnexo.tipo(),
                 primeiroAnexo == null ? null : primeiroAnexo.url(),
                 candidatura.dataCandidatura()
