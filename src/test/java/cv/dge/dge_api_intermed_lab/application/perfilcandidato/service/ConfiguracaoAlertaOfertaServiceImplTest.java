@@ -134,8 +134,6 @@ class ConfiguracaoAlertaOfertaServiceImplTest {
                 "NIVEL_3",
                 " kevin@dge.cv "
         );
-        when(alertaRepository.existeIlha("11")).thenReturn(true);
-        when(alertaRepository.existeConcelho("111", "11")).thenReturn(true);
         when(alertaRepository.existeEntidade(17)).thenReturn(true);
         when(alertaRepository.inserir(eq(9001L), any(AlertaOfertaRequest.class), eq("ATIVO")))
                 .thenReturn(51);
@@ -176,7 +174,7 @@ class ConfiguracaoAlertaOfertaServiceImplTest {
     }
 
     @Test
-    void deveRejeitarDominioOuHierarquiaGeograficaInvalidaAntesDeGravar() {
+    void deveRejeitarDominioInvalidoAntesDeGravar() {
         assertThatThrownBy(() -> service.criar(
                 9001L,
                 new AlertaOfertaRequest(
@@ -190,12 +188,6 @@ class ConfiguracaoAlertaOfertaServiceImplTest {
                 )
         )).isInstanceOfSatisfying(ResponseStatusException.class, ex ->
                 assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST));
-
-        assertThatThrownBy(() -> service.criar(
-                9001L,
-                new AlertaOfertaRequest(null, null, "111", null, null, null, "kevin@dge.cv")
-        )).isInstanceOfSatisfying(ResponseStatusException.class, ex ->
-                assertThat(ex.getReason()).contains("Selecione primeiro a ilha"));
 
         verify(alertaRepository, never()).inserir(eq(9001L), any(), any());
     }

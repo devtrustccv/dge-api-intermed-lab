@@ -121,18 +121,9 @@ public class ConfiguracaoAlertaOfertaServiceImpl implements ConfiguracaoAlertaOf
         validarTamanho(ilha, 10, "O identificador da ilha não é válido.");
         validarTamanho(concelho, 10, "O identificador do concelho não é válido.");
         validarTamanho(utilizador, 100, "A identificação do utilizador não pode exceder 100 caracteres.");
-        if (concelho != null && ilha == null) {
-            throw erro("Selecione primeiro a ilha correspondente ao concelho.");
-        }
         if (request.entidadeId() != null && request.entidadeId() <= 0) {
             throw erro("O campo \"entidadeId\" deve conter um identificador positivo. Valor recebido: \""
                     + request.entidadeId() + "\".");
-        }
-        if (ilha != null && !alertaRepository.existeIlha(ilha)) {
-            throw erro("A ilha com o código \"" + ilha + "\" não existe ou não está disponível.");
-        }
-        if (concelho != null && !alertaRepository.existeConcelho(concelho, ilha)) {
-            throw erro("O concelho selecionado não pertence à ilha informada.");
         }
         if (request.entidadeId() != null && !alertaRepository.existeEntidade(request.entidadeId())) {
             throw erro("A entidade com o identificador \"" + request.entidadeId()

@@ -87,9 +87,6 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
     public ServicoContratanteOpcoesResponse listarOpcoes(String ilha, String concelho) {
         String ilhaLimpa = textoOpcional(ilha);
         String concelhoLimpo = textoOpcional(concelho);
-        if (concelhoLimpo != null && ilhaLimpa == null) {
-            throw erro(HttpStatus.BAD_REQUEST, "Selecione primeiro a ilha para consultar os concelhos e zonas.");
-        }
         return new ServicoContratanteOpcoesResponse(
                 listarDominio(EmpregoDominio.DOMINIO_ESTADO_SERVICO),
                 servicoRepository.listarIlhas(),
@@ -342,7 +339,6 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
         String ilha = textoOpcional(request.ilha());
         String concelho = textoOpcional(request.concelho());
         String zona = textoOpcional(request.zona());
-        validarGeografia(ilha, concelho, zona);
         String telefone = textoOpcional(request.telefone());
         String email = textoOpcional(request.email());
         validarTamanho(telefone, 50, "O telefone não pode exceder 50 caracteres.");
@@ -368,25 +364,6 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
                 normalizarPaths(request.anexosMantidos()),
                 validarUtilizador(request.utilizador())
         );
-    }
-
-    private void validarGeografia(String ilha, String concelho, String zona) {
-        if (concelho != null && ilha == null) {
-            throw erro(HttpStatus.BAD_REQUEST, "Selecione a ilha antes do concelho.");
-        }
-        if (zona != null && concelho == null) {
-            throw erro(HttpStatus.BAD_REQUEST, "Selecione o concelho antes da zona.");
-        }
-        if (ilha != null && !servicoRepository.existeIlha(ilha)) {
-            throw erro(HttpStatus.BAD_REQUEST,
-                    "A ilha com o código \"" + ilha + "\" não existe ou não está disponível.");
-        }
-        if (concelho != null && !servicoRepository.existeConcelho(concelho, ilha)) {
-            throw erro(HttpStatus.BAD_REQUEST, "O concelho selecionado não pertence à ilha indicada.");
-        }
-        if (zona != null && !servicoRepository.existeZona(zona, concelho)) {
-            throw erro(HttpStatus.BAD_REQUEST, "A zona selecionada não pertence ao concelho indicado.");
-        }
     }
 
     private List<String> normalizarPaths(List<String> paths) {

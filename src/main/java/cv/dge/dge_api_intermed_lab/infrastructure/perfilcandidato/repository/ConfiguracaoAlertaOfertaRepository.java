@@ -235,14 +235,6 @@ public class ConfiguracaoAlertaOfertaRepository {
         );
     }
 
-    public boolean existeIlha(String ilha) {
-        return existeGeografia(ilha, "2", null);
-    }
-
-    public boolean existeConcelho(String concelho, String ilha) {
-        return existeGeografia(concelho, "3", ilha);
-    }
-
     public boolean existeEntidade(Integer entidadeId) {
         if (entidadeId == null) {
             return true;
@@ -252,59 +244,6 @@ public class ConfiguracaoAlertaOfertaRepository {
                 Boolean.class,
                 entidadeId
         );
-        return Boolean.TRUE.equals(existe);
-    }
-
-    private boolean existeGeografia(String valor, String nivel, String ilha) {
-        if (!temTexto(valor)) {
-            return true;
-        }
-        StringBuilder sql = new StringBuilder("""
-                SELECT EXISTS (
-                    SELECT 1
-                    FROM global_geografia geografia
-                    WHERE CAST(geografia.pais AS VARCHAR) = '238'
-                      AND CAST(geografia.nivel_detalhe AS VARCHAR) = ?
-                      AND (
-                          CAST(geografia.id AS VARCHAR) = ?
-                          OR UPPER(CAST(geografia.codigo AS VARCHAR)) = UPPER(?)
-                      )
-                """);
-        if (temTexto(ilha)) {
-            sql.append("""
-                      AND CAST(geografia.ilha AS VARCHAR) = (
-                          SELECT CAST(ilha.id AS VARCHAR)
-                          FROM global_geografia ilha
-                          WHERE CAST(ilha.pais AS VARCHAR) = '238'
-                            AND CAST(ilha.nivel_detalhe AS VARCHAR) = '2'
-                            AND (
-                                CAST(ilha.id AS VARCHAR) = ?
-                                OR UPPER(CAST(ilha.codigo AS VARCHAR)) = UPPER(?)
-                            )
-                          FETCH FIRST 1 ROWS ONLY
-                      )
-                    """);
-        }
-        sql.append(")");
-
-        String valorLimpo = valor.trim();
-        Boolean existe = temTexto(ilha)
-                ? globalJdbcTemplate.queryForObject(
-                        sql.toString(),
-                        Boolean.class,
-                        nivel,
-                        valorLimpo,
-                        valorLimpo,
-                        ilha.trim(),
-                        ilha.trim()
-                )
-                : globalJdbcTemplate.queryForObject(
-                        sql.toString(),
-                        Boolean.class,
-                        nivel,
-                        valorLimpo,
-                        valorLimpo
-                );
         return Boolean.TRUE.equals(existe);
     }
 

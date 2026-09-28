@@ -293,6 +293,7 @@ public class ConsultaVagaRepository {
     private String construirWhere(ConsultaVagaFiltro filtro, List<Object> parametros) {
         StringBuilder where = new StringBuilder(
                 " WHERE (" + ESTADO_OFERTA_NORMALIZADO + ") IN ('ATIVA', 'FECHADA')"
+                        + " AND o.data_fim_candidatura >= CURRENT_DATE"
         );
         if (temTexto(filtro.tipoOferta())) {
             where.append(" AND (").append(TIPO_OFERTA_NORMALIZADO).append(") = ?");

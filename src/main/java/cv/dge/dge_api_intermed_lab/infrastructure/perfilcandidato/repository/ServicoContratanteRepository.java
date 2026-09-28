@@ -408,30 +408,6 @@ public class ServicoContratanteRepository {
         );
     }
 
-    public boolean existeIlha(String ilha) {
-        return existeGeografia(ilha, "2");
-    }
-
-    public boolean existeConcelho(String concelho, String ilha) {
-        if (!temTexto(concelho)) {
-            return true;
-        }
-        if (!temTexto(ilha)) {
-            return existeGeografia(concelho, "3");
-        }
-        return existeGeografiaFilha(concelho, "3", "ilha", ilha, "2");
-    }
-
-    public boolean existeZona(String zona, String concelho) {
-        if (!temTexto(zona)) {
-            return true;
-        }
-        if (!temTexto(concelho)) {
-            return existeGeografia(zona, "5");
-        }
-        return existeGeografiaFilha(zona, "5", "concelho", concelho, "3");
-    }
-
     public List<CandidatoRegisto> listarCandidatos(ServicoContratanteCandidatoFiltro filtro) {
         List<Object> parametros = new ArrayList<>();
         StringBuilder where = new StringBuilder("""
@@ -641,74 +617,6 @@ public class ServicoContratanteRepository {
                 rs.getString("codigo"),
                 rs.getString("nome")
         );
-    }
-
-    private boolean existeGeografia(String valor, String nivel) {
-        if (!temTexto(valor)) {
-            return true;
-        }
-        Boolean existe = globalJdbcTemplate.queryForObject(
-                """
-                        SELECT EXISTS (
-                            SELECT 1
-                            FROM global_geografia
-                            WHERE CAST(pais AS VARCHAR) = '238'
-                              AND CAST(nivel_detalhe AS VARCHAR) = ?
-                              AND (
-                                  CAST(id AS VARCHAR) = ?
-                                  OR UPPER(CAST(codigo AS VARCHAR)) = UPPER(?)
-                              )
-                        )
-                        """,
-                Boolean.class,
-                nivel,
-                valor.trim(),
-                valor.trim()
-        );
-        return Boolean.TRUE.equals(existe);
-    }
-
-    private boolean existeGeografiaFilha(
-            String valor,
-            String nivel,
-            String colunaParent,
-            String parent,
-            String nivelParent
-    ) {
-        String sql = """
-                SELECT EXISTS (
-                    SELECT 1
-                    FROM global_geografia geografia
-                    WHERE CAST(geografia.pais AS VARCHAR) = '238'
-                      AND CAST(geografia.nivel_detalhe AS VARCHAR) = ?
-                      AND (
-                          CAST(geografia.id AS VARCHAR) = ?
-                          OR UPPER(CAST(geografia.codigo AS VARCHAR)) = UPPER(?)
-                      )
-                      AND CAST(geografia.%s AS VARCHAR) = (
-                          SELECT CAST(parent.id AS VARCHAR)
-                          FROM global_geografia parent
-                          WHERE CAST(parent.pais AS VARCHAR) = '238'
-                            AND CAST(parent.nivel_detalhe AS VARCHAR) = ?
-                            AND (
-                                CAST(parent.id AS VARCHAR) = ?
-                                OR UPPER(CAST(parent.codigo AS VARCHAR)) = UPPER(?)
-                            )
-                          FETCH FIRST 1 ROWS ONLY
-                      )
-                )
-                """.formatted(colunaParent);
-        Boolean existe = globalJdbcTemplate.queryForObject(
-                sql,
-                Boolean.class,
-                nivel,
-                valor.trim(),
-                valor.trim(),
-                nivelParent,
-                parent.trim(),
-                parent.trim()
-        );
-        return Boolean.TRUE.equals(existe);
     }
 
     private List<AnexoArmazenado> lerAnexos(Object valor) {
