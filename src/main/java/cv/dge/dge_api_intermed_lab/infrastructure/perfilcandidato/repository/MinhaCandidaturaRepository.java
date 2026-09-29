@@ -173,6 +173,16 @@ public class MinhaCandidaturaRepository {
             where.append("AND COALESCE(c.entidade_id, o.entidade_id) = ?\n");
             parametros.add(filtro.entidadeId());
         }
+        if (temTexto(filtro.entidade())) {
+            where.append("""
+                    AND (
+                        CAST(COALESCE(c.entidade_id, o.entidade_id) AS VARCHAR) = ?
+                        OR o.denominacao_entidade ILIKE ?
+                    )
+                    """);
+            parametros.add(filtro.entidade().trim());
+            parametros.add("%" + filtro.entidade().trim() + "%");
+        }
         if (temTexto(filtro.ilha())) {
             where.append("AND UPPER(TRIM(COALESCE(o.ilha, ''))) = UPPER(?)\n");
             parametros.add(filtro.ilha());

@@ -79,6 +79,7 @@ class PerfilCandidatoVagaControllerTest {
                 "Empresa XPTO".equals(filtro.entidade())
                         && "Santiago".equals(filtro.ilha())
                         && "Praia".equals(filtro.concelho())
+                        && "A_TERMINAR".equals(filtro.situacao())
                         && "REF-22".equals(filtro.codigoReferencia())
         ))).thenReturn(new ConsultaVagasResponse(0L, 0L, 0L, List.of(), List.of()));
 
@@ -86,6 +87,7 @@ class PerfilCandidatoVagaControllerTest {
                         .param("entidade", "Empresa XPTO")
                         .param("ilha", "Santiago")
                         .param("concelho", "Praia")
+                        .param("situacao", "A_TERMINAR")
                         .param("referencia", "REF-22")
                         .param("dataInicio", "2026-09-01")
                         .param("dataFim", "2026-09-30"))
@@ -95,6 +97,7 @@ class PerfilCandidatoVagaControllerTest {
                 "Empresa XPTO".equals(filtro.entidade())
                         && "Santiago".equals(filtro.ilha())
                         && "Praia".equals(filtro.concelho())
+                        && "A_TERMINAR".equals(filtro.situacao())
                         && "REF-22".equals(filtro.codigoReferencia())
                         && java.time.LocalDate.of(2026, 9, 1).equals(filtro.dataInicio())
                         && java.time.LocalDate.of(2026, 9, 30).equals(filtro.dataFim())

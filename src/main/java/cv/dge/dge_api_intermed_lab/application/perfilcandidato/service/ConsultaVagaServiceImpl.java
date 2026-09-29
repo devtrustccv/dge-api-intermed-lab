@@ -85,6 +85,7 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
                 .map(oferta -> enriquecerResumo(oferta, geografias))
                 .filter(oferta -> correspondeGeografia(dados.ilha(), oferta.ilha(), oferta.ilhaDesc()))
                 .filter(oferta -> correspondeGeografia(dados.concelho(), oferta.concelho(), oferta.concelhoDesc()))
+                .filter(oferta -> dados.situacao() == null || dados.situacao().equals(oferta.situacao()))
                 .toList();
 
         long totalEmprego = ofertas.stream()
@@ -277,7 +278,8 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
                 textoOpcional(filtro.codigoReferencia()),
                 filtro.dataInicio(),
                 filtro.dataFim(),
-                textoOpcional(filtro.pesquisa())
+                textoOpcional(filtro.pesquisa()),
+                normalizarSituacao(filtro.situacao())
         );
     }
 
@@ -292,7 +294,26 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
                 filtro.codigoReferencia(),
                 filtro.dataInicio(),
                 filtro.dataFim(),
-                filtro.pesquisa()
+                filtro.pesquisa(),
+                filtro.situacao()
+        );
+    }
+
+    private String normalizarSituacao(String valor) {
+        if (!temTexto(valor)) {
+            return null;
+        }
+        String normalizado = normalizarParaPesquisa(valor)
+                .replace(' ', '_')
+                .replace('-', '_');
+        if (SITUACAO_ABERTA.equals(normalizado)
+                || SITUACAO_A_TERMINAR.equals(normalizado)
+                || SITUACAO_ENCERRADA.equals(normalizado)) {
+            return normalizado;
+        }
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "A situação informada não é válida. Utilize ABERTA, A_TERMINAR ou ENCERRADA."
         );
     }
 

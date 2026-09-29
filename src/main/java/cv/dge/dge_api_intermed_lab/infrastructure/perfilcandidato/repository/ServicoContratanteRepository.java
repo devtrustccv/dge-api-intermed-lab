@@ -69,6 +69,22 @@ public class ServicoContratanteRepository {
 
     public List<ServicoRegisto> listar(ServicoContratanteFiltro filtro) {
         List<Object> parametros = new ArrayList<>();
+        String where = construirWhereServicosContratante(filtro, parametros);
+
+        String sql = """
+                SELECT
+                """ + CAMPOS_SERVICO + """
+                FROM emprego_t_intermediacao servico
+                """ + where + """
+                ORDER BY servico.date_create DESC NULLS LAST, servico.id DESC
+                """;
+        return empregoJdbcTemplate.query(sql, this::mapearServico, parametros.toArray());
+    }
+
+    private String construirWhereServicosContratante(
+            ServicoContratanteFiltro filtro,
+            List<Object> parametros
+    ) {
         StringBuilder where = new StringBuilder("WHERE servico.contratante_id = ?\n");
         parametros.add(filtro.pessoaId());
         if (temTexto(filtro.tipoServico())) {
@@ -80,22 +96,14 @@ public class ServicoContratanteRepository {
             parametros.add(filtro.estado());
         }
         if (filtro.dataInicio() != null) {
-            where.append("AND servico.date_create >= ?\n");
-            parametros.add(filtro.dataInicio().atStartOfDay());
+            where.append("AND servico.inicio_candidatura >= ?\n");
+            parametros.add(filtro.dataInicio());
         }
         if (filtro.dataFim() != null) {
-            where.append("AND servico.date_create < ?\n");
-            parametros.add(filtro.dataFim().plusDays(1).atStartOfDay());
+            where.append("AND servico.fim_candidatura <= ?\n");
+            parametros.add(filtro.dataFim());
         }
-
-        String sql = """
-                SELECT
-                """ + CAMPOS_SERVICO + """
-                FROM emprego_t_intermediacao servico
-                """ + where + """
-                ORDER BY servico.date_create DESC NULLS LAST, servico.id DESC
-                """;
-        return empregoJdbcTemplate.query(sql, this::mapearServico, parametros.toArray());
+        return where.toString();
     }
 
     public Optional<ServicoRegisto> buscarPorId(Integer servicoId, Long contratanteId) {

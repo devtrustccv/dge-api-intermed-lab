@@ -16,12 +16,14 @@ import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.Min
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaCandidaturaRepository.CandidaturaRegisto;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -47,9 +49,20 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
     @Transactional(readOnly = true)
     public List<MinhaCandidaturaListaResponse> listar(MinhaCandidaturaFiltro filtro) {
         MinhaCandidaturaFiltro dados = normalizarFiltro(filtro);
+        MinhaCandidaturaFiltro filtroBanco = semFiltrosGeografia(dados);
         Map<String, String> geografias = new LinkedHashMap<>();
-        return candidaturaRepository.listar(dados).stream()
+        return candidaturaRepository.listar(filtroBanco).stream()
                 .map(candidatura -> mapearLista(candidatura, geografias))
+                .filter(candidatura -> correspondeGeografia(
+                        dados.ilha(),
+                        candidatura.ilhaId(),
+                        candidatura.ilha()
+                ))
+                .filter(candidatura -> correspondeGeografia(
+                        dados.concelho(),
+                        candidatura.concelhoId(),
+                        candidatura.concelho()
+                ))
                 .toList();
     }
 
@@ -116,6 +129,7 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
                         filtro.tipoOferta()
                 ),
                 filtro.entidadeId(),
+                textoOpcional(filtro.entidade()),
                 textoOpcional(filtro.ilha()),
                 textoOpcional(filtro.concelho()),
                 normalizarDominioOpcional(
@@ -123,6 +137,21 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
                         filtro.estado()
                 ),
                 textoOpcional(filtro.codigoReferencia()),
+                filtro.dataInicio(),
+                filtro.dataFim()
+        );
+    }
+
+    private MinhaCandidaturaFiltro semFiltrosGeografia(MinhaCandidaturaFiltro filtro) {
+        return new MinhaCandidaturaFiltro(
+                filtro.pessoaId(),
+                filtro.tipoOferta(),
+                filtro.entidadeId(),
+                filtro.entidade(),
+                null,
+                null,
+                filtro.estado(),
+                filtro.codigoReferencia(),
                 filtro.dataInicio(),
                 filtro.dataFim()
         );
@@ -228,6 +257,27 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
         } catch (RuntimeException ex) {
             return codigo;
         }
+    }
+
+    private boolean correspondeGeografia(String filtro, String codigo, String descricao) {
+        if (!temTexto(filtro)) {
+            return true;
+        }
+        String procurado = normalizarParaPesquisa(filtro);
+        String codigoNormalizado = normalizarParaPesquisa(codigo);
+        String descricaoNormalizada = normalizarParaPesquisa(descricao);
+        return procurado.equals(codigoNormalizado)
+                || (descricaoNormalizada != null && descricaoNormalizada.contains(procurado));
+    }
+
+    private String normalizarParaPesquisa(String valor) {
+        if (!temTexto(valor)) {
+            return null;
+        }
+        return Normalizer.normalize(valor, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "")
+                .trim()
+                .toUpperCase(Locale.ROOT);
     }
 
     private List<CandidaturaDocumentoResponse> converterAnexos(JsonNode anexos) {

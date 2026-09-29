@@ -3,6 +3,8 @@ package cv.dge.dge_api_intermed_lab.web.perfilcandidato;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -11,6 +13,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.service.ServicoContratanteService;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -105,6 +109,31 @@ class PerfilCandidatoServicoContratanteControllerTest {
                 argThat(anexos -> anexos.isEmpty()),
                 eq(true)
         );
+    }
+
+    @Test
+    void deveEncaminharTodosOsFiltrosDaPrestacaoDeServicos() throws Exception {
+        when(servicoService.listar(argThat(filtro ->
+                "Canalização".equals(filtro.tipoServico())
+                        && "A".equals(filtro.estado())
+                        && LocalDate.of(2026, 9, 1).equals(filtro.dataInicio())
+                        && LocalDate.of(2026, 9, 30).equals(filtro.dataFim())
+        ))).thenReturn(List.of());
+
+        mockMvc.perform(get("/v1/perfil-candidato/prestacoes-servicos/contratante")
+                        .param("pessoaId", "9001")
+                        .param("tipoServico", "Canalização")
+                        .param("estado", "A")
+                        .param("dataInicio", "2026-09-01")
+                        .param("dataFim", "2026-09-30"))
+                .andExpect(status().isOk());
+
+        verify(servicoService).listar(argThat(filtro ->
+                "Canalização".equals(filtro.tipoServico())
+                        && "A".equals(filtro.estado())
+                        && LocalDate.of(2026, 9, 1).equals(filtro.dataInicio())
+                        && LocalDate.of(2026, 9, 30).equals(filtro.dataFim())
+        ));
     }
 
     private String dadosJson() {

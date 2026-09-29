@@ -47,6 +47,7 @@ public class PerfilCandidatoVagaController {
             @RequestParam(required = false) String ilha,
             @RequestParam(required = false) String concelho,
             @RequestParam(required = false) String estado,
+            @RequestParam(required = false) String situacao,
             @RequestParam(required = false) String codigoReferencia,
             @RequestParam(required = false) String referencia,
             @RequestParam(required = false)
@@ -67,7 +68,8 @@ public class PerfilCandidatoVagaController {
                         codigoReferencia != null ? codigoReferencia : referencia,
                         dataInicio,
                         dataFim,
-                        pesquisa
+                        pesquisa,
+                        situacao
                 ))
         );
     }

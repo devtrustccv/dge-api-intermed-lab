@@ -299,6 +299,35 @@ class ConsultaVagaServiceImplTest {
         ));
     }
 
+    @Test
+    void deveFiltrarOfertasPelaSituacaoCalculada() {
+        when(vagaRepository.listar(any())).thenReturn(List.of(new OfertaResumo(
+                22,
+                "Programador",
+                "OFERTA_EMPREGO",
+                "1",
+                "11",
+                2,
+                40,
+                "Empresa XPTO",
+                "REF-22",
+                "ATIVA",
+                LocalDate.of(2026, 9, 1),
+                LocalDate.now().plusDays(2),
+                false
+        )));
+        when(globalGeografiaService.buscarNomePorCodigo("1")).thenReturn(Optional.of("Santiago"));
+        when(globalGeografiaService.buscarNomePorCodigo("11")).thenReturn(Optional.of("Praia"));
+
+        var resultado = service.listar(new ConsultaVagaFiltro(
+                null, null, null, null, null, null, null, null, null, null, "A_TERMINAR"
+        ));
+
+        assertThat(resultado.ofertas()).singleElement().satisfies(oferta ->
+                assertThat(oferta.situacao()).isEqualTo("A_TERMINAR")
+        );
+    }
+
     private Map<String, Object> tipoDocumento(Integer id, String descricao) {
         Map<String, Object> tipo = new LinkedHashMap<>();
         tipo.put("id", id);

@@ -198,12 +198,12 @@ public class MinhaAssiduidadeRepository {
             parametros.add(filtro.estado());
         }
         if (filtro.dataInicio() != null) {
-            where.append("AND assiduidade.date_create >= ?\n");
-            parametros.add(filtro.dataInicio().atStartOfDay());
+            where.append("AND assiduidade.data >= ?\n");
+            parametros.add(filtro.dataInicio());
         }
         if (filtro.dataFim() != null) {
-            where.append("AND assiduidade.date_create < ?\n");
-            parametros.add(filtro.dataFim().plusDays(1).atStartOfDay());
+            where.append("AND assiduidade.data <= ?\n");
+            parametros.add(filtro.dataFim());
         }
         return where.toString();
     }

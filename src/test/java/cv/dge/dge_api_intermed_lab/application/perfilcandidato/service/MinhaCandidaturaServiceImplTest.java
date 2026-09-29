@@ -86,8 +86,9 @@ class MinhaCandidaturaServiceImplTest {
                 9001L,
                 "emprego",
                 45,
-                "101",
-                "102",
+                "Entidade Exemplo",
+                "Santiago",
+                "Praia",
                 "aprovada",
                 " REF-2026 ",
                 LocalDate.of(2026, 8, 1),
@@ -98,6 +99,9 @@ class MinhaCandidaturaServiceImplTest {
         verify(candidaturaRepository).listar(filtroCaptor.capture());
         assertThat(filtroCaptor.getValue().pessoaId()).isEqualTo(9001L);
         assertThat(filtroCaptor.getValue().tipoOferta()).isEqualTo("OFERTA_EMPREGO");
+        assertThat(filtroCaptor.getValue().entidade()).isEqualTo("Entidade Exemplo");
+        assertThat(filtroCaptor.getValue().ilha()).isNull();
+        assertThat(filtroCaptor.getValue().concelho()).isNull();
         assertThat(filtroCaptor.getValue().estado()).isEqualTo("APROVADO");
         assertThat(filtroCaptor.getValue().codigoReferencia()).isEqualTo("REF-2026");
 
