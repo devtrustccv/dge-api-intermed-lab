@@ -170,6 +170,7 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
                 origem.regimeContrato(),
                 origem.entidadeId(),
                 origem.denominacaoEntidade(),
+                origem.entidadeNif(),
                 origem.habilitacaoMinima(),
                 origem.nivelQualificacao(),
                 origem.numVagas(),
@@ -316,6 +317,7 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
                 vaga.numVagas(),
                 vaga.entidadeId(),
                 vaga.denominacaoEntidade(),
+                vaga.entidadeNif(),
                 vaga.orientadorId(),
                 vaga.orientadorDenominacao(),
                 vaga.orientadorNome(),
@@ -349,6 +351,7 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
                 vaga.regimeContrato(),
                 vaga.entidadeId(),
                 vaga.denominacaoEntidade(),
+                vaga.entidadeNif(),
                 vaga.habilitacaoMinima(),
                 vaga.nivelQualificacao(),
                 vaga.numVagas(),
@@ -489,6 +492,7 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
                         "Regime de contrato"
                 ),
                 texto(request.denominacaoEntidade()),
+                texto(request.entidadeNif()),
                 normalizarDominioOpcional(
                         EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA,
                         request.habilitacaoMinima(),

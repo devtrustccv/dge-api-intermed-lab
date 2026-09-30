@@ -14,6 +14,7 @@ public record VagaRequest(
         Integer duracaoContrato,
         String regimeContrato,
         String denominacaoEntidade,
+        String entidadeNif,
         String habilitacaoMinima,
         String nivelQualificacao,
         Integer numVagas,

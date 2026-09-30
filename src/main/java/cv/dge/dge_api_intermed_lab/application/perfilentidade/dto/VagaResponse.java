@@ -18,6 +18,7 @@ public record VagaResponse(
         String regimeContrato,
         Integer entidadeId,
         String denominacaoEntidade,
+        String entidadeNif,
         String habilitacaoMinima,
         String nivelQualificacao,
         Integer numVagas,

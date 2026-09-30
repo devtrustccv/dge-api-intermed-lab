@@ -37,6 +37,7 @@ public class GestaoVagaRepository {
             o.regime_contrato,
             o.entidade_id,
             o.denominacao_entidade,
+            o.entidade_nif,
             o.habilitacao_minima,
             o.nivel_qualificacao,
             o.num_vagas,
@@ -79,6 +80,7 @@ public class GestaoVagaRepository {
                 regime_contrato,
                 entidade_id,
                 denominacao_entidade,
+                entidade_nif,
                 habilitacao_minima,
                 nivel_qualificacao,
                 num_vagas,
@@ -100,7 +102,7 @@ public class GestaoVagaRepository {
                 estado,
                 date_create,
                 user_create
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """;
 
     private static final String SQL_UPDATE = """
@@ -115,6 +117,7 @@ public class GestaoVagaRepository {
                 duracao_contrato = ?,
                 regime_contrato = ?,
                 denominacao_entidade = ?,
+                entidade_nif = ?,
                 habilitacao_minima = ?,
                 nivel_qualificacao = ?,
                 num_vagas = ?,
@@ -163,6 +166,7 @@ public class GestaoVagaRepository {
                     o.num_vagas,
                     o.entidade_id,
                     o.denominacao_entidade,
+                    o.entidade_nif,
                     o.orientador_id,
                     orientador.nome AS orientador_denominacao,
                     o.coordenador_id,
@@ -234,9 +238,9 @@ public class GestaoVagaRepository {
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(SQL_INSERT, new String[]{"id"});
             preencherCamposGravacao(ps, entidadeId, request, 1);
-            ps.setString(30, estado);
-            ps.setTimestamp(31, Timestamp.valueOf(agora));
-            ps.setString(32, utilizador);
+            ps.setString(31, estado);
+            ps.setTimestamp(32, Timestamp.valueOf(agora));
+            ps.setString(33, utilizador);
             return ps;
         }, keyHolder);
 
@@ -395,6 +399,7 @@ public class GestaoVagaRepository {
             setInteger(ps, index++, entidadeId);
         }
         ps.setString(index++, request.denominacaoEntidade());
+        ps.setString(index++, request.entidadeNif());
         ps.setString(index++, request.habilitacaoMinima());
         ps.setString(index++, request.nivelQualificacao());
         setInteger(ps, index++, request.numVagas());
@@ -473,6 +478,7 @@ public class GestaoVagaRepository {
                 rs.getObject("num_vagas", Integer.class),
                 rs.getObject("entidade_id", Integer.class),
                 rs.getString("denominacao_entidade"),
+                rs.getString("entidade_nif"),
                 rs.getObject("orientador_id", Integer.class),
                 rs.getString("orientador_denominacao"),
                 rs.getString("orientador_denominacao"),
@@ -507,6 +513,7 @@ public class GestaoVagaRepository {
                 rs.getString("regime_contrato"),
                 rs.getObject("entidade_id", Integer.class),
                 rs.getString("denominacao_entidade"),
+                rs.getString("entidade_nif"),
                 rs.getString("habilitacao_minima"),
                 rs.getString("nivel_qualificacao"),
                 rs.getObject("num_vagas", Integer.class),

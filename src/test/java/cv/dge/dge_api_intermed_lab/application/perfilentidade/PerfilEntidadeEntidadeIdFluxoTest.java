@@ -5,6 +5,7 @@ import cv.dge.dge_api_intermed_lab.support.EmpregoDominioTestFixture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -87,14 +88,16 @@ class PerfilEntidadeEntidadeIdFluxoTest {
     void criacaoDeVagaDeveGravarEntidadeDaUrl() {
         GestaoVagaServiceImpl service = new GestaoVagaServiceImpl(EmpregoDominioTestFixture.criar(), vagaRepository, geografiaService);
         VagaRequest request = novaVaga();
-        when(vagaRepository.inserir(eq(ENTIDADE_ID), any(), eq("ATIVA"), eq("utilizador")))
+        when(vagaRepository.inserir(eq(ENTIDADE_ID), argThat(vaga ->
+                        "012345678".equals(vaga.entidadeNif())), eq("ATIVA"), eq("utilizador")))
                 .thenReturn(29);
         when(vagaRepository.buscarPorId(29, ENTIDADE_ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.criar(ENTIDADE_ID, request))
                 .isInstanceOf(ResponseStatusException.class);
 
-        verify(vagaRepository).inserir(eq(ENTIDADE_ID), any(), eq("ATIVA"), eq("utilizador"));
+        verify(vagaRepository).inserir(eq(ENTIDADE_ID), argThat(vaga ->
+                "012345678".equals(vaga.entidadeNif())), eq("ATIVA"), eq("utilizador"));
         verify(vagaRepository).buscarPorId(29, ENTIDADE_ID);
     }
 
@@ -205,6 +208,7 @@ class PerfilEntidadeEntidadeIdFluxoTest {
                 6,
                 "CONTRATO_TERMO",
                 "Entidade",
+                " 012345678 ",
                 null,
                 null,
                 1,

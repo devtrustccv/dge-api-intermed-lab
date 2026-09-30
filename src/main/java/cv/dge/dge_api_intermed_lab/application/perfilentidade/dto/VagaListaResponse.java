@@ -15,6 +15,7 @@ public record VagaListaResponse(
         Integer numVagas,
         Integer entidadeId,
         String denominacaoEntidade,
+        String entidadeNif,
         Integer orientadorId,
         String orientadorDenominacao,
         String orientadorNome,
