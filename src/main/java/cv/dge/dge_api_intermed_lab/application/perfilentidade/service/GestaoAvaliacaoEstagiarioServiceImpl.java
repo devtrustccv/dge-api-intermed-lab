@@ -103,7 +103,7 @@ public class GestaoAvaliacaoEstagiarioServiceImpl implements GestaoAvaliacaoEsta
     }
 
     private AvaliacaoEstagiarioListaResponse enriquecerLista(AvaliacaoEstagiarioListaResponse i) {
-        return new AvaliacaoEstagiarioListaResponse(i.id(), i.pessoaId(), i.estagiario(), i.tipoAvaliacao(),
+        return new AvaliacaoEstagiarioListaResponse(i.id(), i.pessoaId(), i.estagiario(), i.oferta(), i.tipoAvaliacao(),
                 empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_AVALIACAO, i.tipoAvaliacao()),
                 i.periodoReferencia(), i.classificacao(), i.dataRegisto());
     }

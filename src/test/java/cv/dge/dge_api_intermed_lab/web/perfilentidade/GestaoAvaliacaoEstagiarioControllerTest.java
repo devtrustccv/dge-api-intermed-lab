@@ -78,6 +78,7 @@ class GestaoAvaliacaoEstagiarioControllerTest {
                 10,
                 100L,
                 "Maria Silva",
+                "Estágio em Desenvolvimento de Software",
                 "MENSAL",
                 "Mensal",
                 "Agosto 2026",
@@ -88,6 +89,7 @@ class GestaoAvaliacaoEstagiarioControllerTest {
                 mockMvc.perform(get("/v1/avaliacoes-estagiarios")
                         .param("entidadeId", "23"))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.dados[0].oferta").value("Estágio em Desenvolvimento de Software"))
                 .andExpect(jsonPath("$.dados[0].dataRegisto").value("2026-09-17"));
     }
 }

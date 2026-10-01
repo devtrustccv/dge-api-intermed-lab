@@ -362,9 +362,7 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
 
         String tipo = texto(primeiroValor(mapa, "tipo", "tipoDocumento", "idTpDoc", "id_tp_doc"));
         String nome = texto(primeiroValor(mapa, "nome", "name", "fileName", "file_name", "ficheiro"));
-        if (!temTexto(url) && temTexto(path)) {
-            url = documentService.gerarLinkPublico(path);
-        }
+        url = documentService.gerarLinkPublico(temTexto(path) ? path : url);
         if (!temTexto(nome)) {
             nome = nomeDoPath(temTexto(path) ? path : url);
         }
@@ -377,10 +375,9 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
     }
 
     private CandidaturaDocumentoResponse normalizarDocumento(CandidaturaDocumentoResponse documento) {
-        String url = documento.url();
-        if (!temTexto(url) && temTexto(documento.path())) {
-            url = documentService.gerarLinkPublico(documento.path());
-        }
+        String url = documentService.gerarLinkPublico(
+                temTexto(documento.path()) ? documento.path() : documento.url()
+        );
         String nome = temTexto(documento.nome())
                 ? documento.nome()
                 : nomeDoPath(temTexto(documento.path()) ? documento.path() : url);
@@ -411,10 +408,9 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
 
     private CandidaturaDocumentoResponse converterDocumentoDaRelacao(DocumentoResponseDTO documento) {
         String path = texto(documento.getPath());
-        String url = texto(documento.getPreviewUrl());
-        if (!temTexto(url) && temTexto(path)) {
-            url = documentService.gerarLinkPublico(path);
-        }
+        String url = documentService.gerarLinkPublico(
+                temTexto(path) ? path : texto(documento.getPreviewUrl())
+        );
         String nome = primeiroTexto(documento.getName(), documento.getFileName());
         if (!temTexto(nome)) {
             nome = nomeDoPath(temTexto(path) ? path : url);

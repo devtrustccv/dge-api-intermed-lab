@@ -379,9 +379,7 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
         if (!temTexto(path) && !temTexto(url)) {
             return null;
         }
-        if (!temTexto(url) && temTexto(path)) {
-            url = documentService.gerarLinkPublico(path);
-        }
+        url = documentService.gerarLinkPublico(temTexto(path) ? path : url);
         if (!temTexto(nome)) {
             nome = nomeDoPath(temTexto(path) ? path : url);
         }

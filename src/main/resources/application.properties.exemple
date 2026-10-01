@@ -8,7 +8,14 @@ spring.datasource.username=postgres
 spring.datasource.password=postgres
 spring.datasource.driver-class-name=org.postgresql.Driver
 
-# BD tertiary (db_igrp_dge)
+# BD IGRP (catálogo dinâmico de domínios)
+spring.datasource.igrp.url=jdbc:postgresql://localhost:5432/db_igrp_dge
+spring.datasource.igrp.username=postgres
+spring.datasource.igrp.password=postgres
+spring.datasource.igrp.driver-class-name=org.postgresql.Driver
+igrp.domain.dad=interm_laboral
+
+# BD tertiary (db_dge_global)
 spring.datasource.tertiary.url=jdbc:postgresql://localhost:5432/db_dge_global
 spring.datasource.tertiary.username=postgres
 spring.datasource.tertiary.password=postgres

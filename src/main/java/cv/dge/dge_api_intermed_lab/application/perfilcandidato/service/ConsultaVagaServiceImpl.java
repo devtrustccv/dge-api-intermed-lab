@@ -715,17 +715,15 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
             return null;
         }
         String tipo = primeiroTexto(mapa, "tipo", "tipoDocumento", "idTpDoc", "id_tp_doc");
-        String path = primeiroTexto(mapa, "path", "caminho", "ver_documento", "url");
+        String path = primeiroTexto(mapa, "path", "caminho", "anexo");
         String url = primeiroTexto(mapa, "url", "previewUrl", "ver_documento");
         String nome = primeiroTexto(mapa, "nome", "name", "fileName", "ficheiro");
         if (!temTexto(path) && !temTexto(url)) {
             return null;
         }
-        if (!temTexto(url) && temTexto(path)) {
-            url = documentService.gerarLinkPublico(path);
-        }
+        url = documentService.gerarLinkPublico(temTexto(path) ? path : url);
         if (!temTexto(nome)) {
-            nome = nomeDoPath(path);
+            nome = nomeDoPath(temTexto(path) ? path : url);
         }
         return new CandidaturaDocumentoResponse(
                 temTexto(tipo) ? tipo : tipoPadrao,

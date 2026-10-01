@@ -40,16 +40,20 @@ public class GestaoAvaliacaoEstagiarioRepository {
         StringBuilder sql = new StringBuilder("""
                 SELECT a.id, a.pessoa_id,
                        COALESCE(NULLIF(TRIM(a.nome), ''), colocacao.nome) AS nome,
+                       colocacao.oferta,
                        a.tipo_avaliacao, a.periodo_referencia,
                        a.classificacao, a.date_create
                 FROM emprego_t_avaliacao_estagiario a
                 JOIN LATERAL (
-                    SELECT c.nome
+                    SELECT c.nome, o.titulo AS oferta
                     FROM emprego_t_colocacao_candidato c
+                    LEFT JOIN emprego_t_oferta o ON o.id = c.id_oferta
                     WHERE c.pessoa_id = a.pessoa_id
                       AND c.entidade_id = ? AND
                 """ + CONDICAO_OFERTA_ESTAGIO + """
-                    ORDER BY (NULLIF(TRIM(c.nome), '') IS NOT NULL) DESC, c.id DESC
+                    ORDER BY CASE WHEN c.id_candidatura = a.candidatura_id THEN 0 ELSE 1 END,
+                             (NULLIF(TRIM(c.nome), '') IS NOT NULL) DESC,
+                             c.id DESC
                     LIMIT 1
                 ) colocacao ON TRUE
                 WHERE 1 = 1
@@ -66,7 +70,8 @@ public class GestaoAvaliacaoEstagiarioRepository {
         if (filtro.dataFim() != null) { sql.append(" AND a.date_create < ?"); params.add(filtro.dataFim().plusDays(1).atStartOfDay()); }
         sql.append(" ORDER BY a.date_create DESC, a.id DESC");
         return jdbcTemplate.query(sql.toString(), (rs, n) -> new AvaliacaoEstagiarioListaResponse(
-                rs.getInt("id"), getLong(rs, "pessoa_id"), rs.getString("nome"), rs.getString("tipo_avaliacao"),
+                rs.getInt("id"), getLong(rs, "pessoa_id"), rs.getString("nome"), rs.getString("oferta"),
+                rs.getString("tipo_avaliacao"),
                 rs.getString("tipo_avaliacao"), rs.getString("periodo_referencia"), decimal(rs.getString("classificacao")),
                 rs.getTimestamp("date_create") == null
                         ? null

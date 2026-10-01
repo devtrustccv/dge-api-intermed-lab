@@ -9,7 +9,8 @@ import cv.dge.dge_api_intermed_lab.utils.RestClientHelper;
 import io.micrometer.common.lang.NonNull;
 import io.micrometer.common.lang.Nullable;
 import java.io.IOException;
-import java.net.URLEncoder;
+import java.net.URI;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -78,10 +80,12 @@ public class DocumentServiceImpl implements DocumentService {
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("tipoRelacao", dto.getTipoRelacao());
         body.add("idRelacao", dto.getIdRelacao());
-        body.add("estado", dto.getEstado());
-        body.add("idTpDoc", dto.getIdTpDoc());
+        adicionarSePreenchido(body, "estado", dto.getEstado());
+        if (dto.getIdTpDoc() != null) {
+            body.add("idTpDoc", dto.getIdTpDoc());
+        }
         body.add("appCode", dto.getAppCode());
-        body.add("fileName", dto.getFileName());
+        adicionarSePreenchido(body, "fileName", dto.getFileName());
         body.add("path", resolverPathDocumento(dto));
 
         MultipartFile file = dto.getFile();
@@ -89,6 +93,12 @@ public class DocumentServiceImpl implements DocumentService {
             body.add("file", criarRecursoArquivo(file));
         }
         return body;
+    }
+
+    private void adicionarSePreenchido(MultiValueMap<String, Object> body, String nome, String valor) {
+        if (valor != null && !valor.isBlank()) {
+            body.add(nome, valor);
+        }
     }
 
     private ResponseEntity<String> enviarDocumento(
@@ -186,13 +196,22 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public String gerarLinkPublico(String path) {
-        if (path == null || path.isBlank()) {
+    public String gerarLinkPublico(String pathOuUrl) {
+        if (pathOuUrl == null || pathOuUrl.isBlank()) {
             return "";
         }
 
-        return appendQueryParam(docOpen, "path_url", path)
-                + "&type=" + DEFAULT_DOCUMENT_TYPE;
+        String valor = pathOuUrl.trim();
+        if (ehUrlAbsoluta(valor)) {
+            String pathExtraido = extrairParametroPathUrl(valor);
+            if (pathExtraido == null || pathExtraido.isBlank()) {
+                return valor;
+            }
+            valor = pathExtraido;
+        }
+
+        return appendQueryParam(docOpen, "path_url", valor)
+                + "&type=" + resolverMediaType(valor);
     }
 
     private String appendQueryParam(String baseUrl, String paramName, String paramValue) {
@@ -200,11 +219,41 @@ public class DocumentServiceImpl implements DocumentService {
                 ? (baseUrl.endsWith("?") || baseUrl.endsWith("&") ? "" : "&")
                 : "?";
 
-        return baseUrl + separator + paramName + "=" + encodeQueryParam(paramValue);
+        // O Document_viewer do IGRP recebe o caminho no mesmo formato usado pelo SGF.
+        // Em particular, as barras do caminho não devem ser convertidas para %2F.
+        return baseUrl + separator + paramName + "=" + paramValue;
     }
 
-    private String encodeQueryParam(String value) {
-        return URLEncoder.encode(value, StandardCharsets.UTF_8);
+    private boolean ehUrlAbsoluta(String valor) {
+        return valor.regionMatches(true, 0, "http://", 0, 7)
+                || valor.regionMatches(true, 0, "https://", 0, 8);
+    }
+
+    private String extrairParametroPathUrl(String urlDocumento) {
+        try {
+            String query = URI.create(urlDocumento).getRawQuery();
+            if (query == null) {
+                return null;
+            }
+
+            for (String parametro : query.split("&")) {
+                int separador = parametro.indexOf('=');
+                String nome = separador >= 0 ? parametro.substring(0, separador) : parametro;
+                if ("path_url".equals(URLDecoder.decode(nome, StandardCharsets.UTF_8))) {
+                    String valor = separador >= 0 ? parametro.substring(separador + 1) : "";
+                    return URLDecoder.decode(valor, StandardCharsets.UTF_8);
+                }
+            }
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
+        return null;
+    }
+
+    private String resolverMediaType(String path) {
+        return MediaTypeFactory.getMediaType(path)
+                .map(MediaType::toString)
+                .orElse(DEFAULT_DOCUMENT_TYPE);
     }
 
 }

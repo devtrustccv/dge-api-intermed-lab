@@ -95,6 +95,8 @@ class GestaoCandidaturaServiceImplTest {
         when(candidaturaRepository.listar(filtroVazio())).thenReturn(List.of(candidatura(null)));
         when(documentService.getDocumentosPorRelacao(1, TIPO_RELACAO, APP_CODE))
                 .thenReturn(List.of(documento));
+        when(documentService.gerarLinkPublico(documento.getPath()))
+                .thenReturn(documento.getPreviewUrl());
 
         CandidaturaListaResponse resultado = service.listar(filtroVazio()).get(0);
 

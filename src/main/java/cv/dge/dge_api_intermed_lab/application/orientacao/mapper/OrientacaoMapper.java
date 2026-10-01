@@ -3,16 +3,25 @@ package cv.dge.dge_api_intermed_lab.application.orientacao.mapper;
 import cv.dge.dge_api_intermed_lab.application.orientacao.dto.OrientacaoEntrevistaResponse;
 import cv.dge.dge_api_intermed_lab.application.orientacao.dto.OrientacaoServicoResponse;
 import cv.dge.dge_api_intermed_lab.application.orientacao.dto.RequisitoResponse;
+import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
 import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.DetalhesAcolhimento;
 import cv.dge.dge_api_intermed_lab.domain.orientacao.model.AcolhimentoServico;
 import cv.dge.dge_api_intermed_lab.domain.orientacao.model.AgendamentoEntrevista;
 import cv.dge.dge_api_intermed_lab.domain.orientacao.model.Requisito;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 
 @Component
 public class OrientacaoMapper {
+
+    private final DocumentService documentService;
+
+    public OrientacaoMapper(DocumentService documentService) {
+        this.documentService = documentService;
+    }
 
     public OrientacaoServicoResponse toServicoResponse(AcolhimentoServico servico) {
         if (servico == null) {
@@ -28,7 +37,7 @@ public class OrientacaoMapper {
                 servico.getTipoServico(),
                 servico.getTipoServicoDesc(),
                 servico.getNecessidadeAnalise(),
-                servico.getDetalhesServico(),
+                normalizarDetalhesDocumento(servico.getDetalhesServico()),
                 servico.getDetalhesAnalise()
         );
     }
@@ -102,7 +111,7 @@ public class OrientacaoMapper {
         dados.put("tipoServicoDesc", acolhimento.getTipoServicoDesc());
         dados.put("canal", acolhimento.getCanal());
         dados.put("canalDesc", acolhimento.getCanalDesc());
-        dados.put("detalhes", acolhimento.getDetalhes());
+        dados.put("detalhes", normalizarDetalhesDocumento(acolhimento.getDetalhes()));
         dados.put("idTecnicoAtendimento", acolhimento.getIdTecnicoAtendimento());
         dados.put("tecnicoAtendimento", acolhimento.getTecnicoAtendimento());
         dados.put("fonteInformacao", acolhimento.getFonteInformacao());
@@ -113,5 +122,67 @@ public class OrientacaoMapper {
         dados.put("dateUpdate", acolhimento.getDateUpdate());
         dados.put("userUpdate", acolhimento.getUserUpdate());
         return dados;
+    }
+
+    private Map<String, Object> normalizarDetalhesDocumento(Map<String, Object> detalhes) {
+        if (detalhes == null) {
+            return null;
+        }
+
+        Map<String, Object> normalizados = new LinkedHashMap<>(detalhes);
+        Object valorAnexos = detalhes.get("anexos");
+        if (!(valorAnexos instanceof List<?> anexos)) {
+            return normalizados;
+        }
+
+        List<Object> anexosNormalizados = new ArrayList<>();
+        for (Object item : anexos) {
+            if (!(item instanceof Map<?, ?> mapa)) {
+                anexosNormalizados.add(item);
+                continue;
+            }
+
+            Map<String, Object> anexo = new LinkedHashMap<>();
+            mapa.forEach((chave, valor) -> {
+                if (chave != null) {
+                    anexo.put(chave.toString(), valor);
+                }
+            });
+            normalizarLinkDocumento(anexo);
+            anexosNormalizados.add(anexo);
+        }
+        normalizados.put("anexos", anexosNormalizados);
+        return normalizados;
+    }
+
+    private void normalizarLinkDocumento(Map<String, Object> anexo) {
+        String path = primeiroTexto(anexo, "anexo", "path", "caminho");
+        String url = primeiroTexto(anexo, "ver_documento", "url", "previewUrl");
+        String origem = path != null ? path : url;
+        if (origem == null) {
+            return;
+        }
+
+        String linkAtual = documentService.gerarLinkPublico(origem);
+        anexo.put("ver_documento", linkAtual);
+        if (anexo.containsKey("ver_documento_desc")) {
+            anexo.put("ver_documento_desc", linkAtual);
+        }
+        if (anexo.containsKey("url")) {
+            anexo.put("url", linkAtual);
+        }
+        if (anexo.containsKey("previewUrl")) {
+            anexo.put("previewUrl", linkAtual);
+        }
+    }
+
+    private String primeiroTexto(Map<String, Object> dados, String... chaves) {
+        for (String chave : chaves) {
+            Object valor = dados.get(chave);
+            if (valor != null && !valor.toString().isBlank()) {
+                return valor.toString().trim();
+            }
+        }
+        return null;
     }
 }

@@ -181,6 +181,8 @@ class MinhaCandidaturaServiceImplTest {
         when(globalGeografiaService.buscarNomePorCodigo("102")).thenReturn(Optional.of("Praia"));
         when(documentService.gerarLinkPublico("/candidaturas/77/cv.pdf"))
                 .thenReturn("https://documentos.test/cv");
+        when(documentService.gerarLinkPublico("/candidaturas/77/diploma.pdf"))
+                .thenReturn("https://documentos.test/diploma");
 
         MinhaCandidaturaDetalheResponse resultado = service.buscarPorId(77, 9001L);
 

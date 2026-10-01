@@ -298,6 +298,7 @@ public class AcolhimentoServiceImpl implements AcolhimentoService {
             anexo.putAll(mapearAnexosDetalhes(List.of(metadados)).stream().findFirst().orElseGet(LinkedHashMap::new));
         }
         String publicUrl = documentService.gerarLinkPublico(path);
+        anexo.put("anexo", valorOuVazio(path));
         anexo.put("ver_documento", valorOuVazio(publicUrl));
         anexo.put("ver_documento_desc", valorOuVazio(publicUrl));
     }

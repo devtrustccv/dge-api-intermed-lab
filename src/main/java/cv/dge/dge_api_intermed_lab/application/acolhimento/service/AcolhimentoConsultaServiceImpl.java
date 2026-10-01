@@ -244,7 +244,41 @@ public class AcolhimentoConsultaServiceImpl implements AcolhimentoConsultaServic
                 destino.put(nomeChave, valorComNomeGeografia(nomeChave, valor, cache));
             }
         });
+        normalizarLinkDocumento(destino);
         return destino;
+    }
+
+    private void normalizarLinkDocumento(Map<String, Object> dados) {
+        String path = primeiroTexto(dados, "anexo", "path", "caminho");
+        String url = primeiroTexto(dados, "ver_documento", "url", "previewUrl");
+        String origem = path != null ? path : url;
+        if (origem == null) {
+            return;
+        }
+
+        String linkAtual = documentService.gerarLinkPublico(origem);
+        if (dados.containsKey("ver_documento")) {
+            dados.put("ver_documento", linkAtual);
+        }
+        if (dados.containsKey("ver_documento_desc")) {
+            dados.put("ver_documento_desc", linkAtual);
+        }
+        if (dados.containsKey("url")) {
+            dados.put("url", linkAtual);
+        }
+        if (dados.containsKey("previewUrl")) {
+            dados.put("previewUrl", linkAtual);
+        }
+    }
+
+    private String primeiroTexto(Map<String, Object> dados, String... chaves) {
+        for (String chave : chaves) {
+            Object valor = dados.get(chave);
+            if (valor != null && !valor.toString().isBlank()) {
+                return valor.toString().trim();
+            }
+        }
+        return null;
     }
 
     private Object valorComNomeGeografia(String chave, Object valor, Map<String, String> cache) {

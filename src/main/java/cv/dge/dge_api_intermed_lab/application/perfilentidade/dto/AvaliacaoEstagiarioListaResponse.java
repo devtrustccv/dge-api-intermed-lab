@@ -7,6 +7,7 @@ public record AvaliacaoEstagiarioListaResponse(
         Integer id,
         Long pessoaId,
         String estagiario,
+        String oferta,
         String tipoAvaliacao,
         String tipoAvaliacaoDescricao,
         String periodoReferencia,
