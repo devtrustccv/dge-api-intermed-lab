@@ -1,6 +1,7 @@
 package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocRelacaoDTO;
+import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
 import cv.dge.dge_api_intermed_lab.application.document.service.ComboboxService;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
 import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
@@ -581,7 +582,7 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
                 descricaoGeografia(servico.zona()),
                 servico.telefone(),
                 servico.email(),
-                mapearAnexos(servico.anexos()),
+                resolverAnexos(servico.servicoId(), servico.anexos()),
                 estado,
                 empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO_SERVICO, estado),
                 servico.dateCreate(),
@@ -591,7 +592,48 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
         );
     }
 
-    private List<ServicoContratanteAnexoResponse> mapearAnexos(List<AnexoArmazenado> anexos) {
+    private List<ServicoContratanteAnexoResponse> resolverAnexos(
+            Integer servicoId,
+            List<AnexoArmazenado> anexosLegados
+    ) {
+        try {
+            List<DocumentoResponseDTO> documentos = documentService.getDocumentosPorRelacao(
+                    servicoId,
+                    tipoRelacaoDocumento,
+                    appCodeDocumento
+            );
+            if (documentos != null && !documentos.isEmpty()) {
+                return documentos.stream()
+                        .map(this::mapearDocumentoRelacionado)
+                        .filter(java.util.Objects::nonNull)
+                        .toList();
+            }
+        } catch (RuntimeException ex) {
+            log.warn("Nao foi possivel consultar os anexos do servico {} na relacao documental.", servicoId, ex);
+        }
+        return mapearAnexosLegados(anexosLegados);
+    }
+
+    private ServicoContratanteAnexoResponse mapearDocumentoRelacionado(DocumentoResponseDTO documento) {
+        if (documento == null) {
+            return null;
+        }
+        String path = textoOpcional(documento.getPath());
+        String url = documentService.gerarLinkPublico(
+                temTexto(path) ? path : textoOpcional(documento.getPreviewUrl())
+        );
+        if (!temTexto(path) && !temTexto(url)) {
+            return null;
+        }
+        String nome = primeiroTexto(
+                documento.getName(),
+                documento.getFileName(),
+                nomeDoPath(temTexto(path) ? path : url)
+        );
+        return new ServicoContratanteAnexoResponse(nome, path, url);
+    }
+
+    private List<ServicoContratanteAnexoResponse> mapearAnexosLegados(List<AnexoArmazenado> anexos) {
         if (anexos == null) {
             return List.of();
         }
@@ -602,6 +644,25 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
                         documentService.gerarLinkPublico(anexo.path())
                 ))
                 .toList();
+    }
+
+    private String primeiroTexto(String... valores) {
+        for (String valor : valores) {
+            String texto = textoOpcional(valor);
+            if (texto != null) {
+                return texto;
+            }
+        }
+        return null;
+    }
+
+    private String nomeDoPath(String path) {
+        String valor = textoOpcional(path);
+        if (valor == null) {
+            return null;
+        }
+        int indice = Math.max(valor.lastIndexOf('/'), valor.lastIndexOf('\\'));
+        return indice >= 0 ? valor.substring(indice + 1) : valor;
     }
 
     private ServicoContratanteCandidatoListaResponse mapearCandidato(CandidatoRegisto candidato) {

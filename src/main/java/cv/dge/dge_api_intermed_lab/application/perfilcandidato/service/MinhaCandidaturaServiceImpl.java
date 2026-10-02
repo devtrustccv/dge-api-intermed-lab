@@ -1,6 +1,7 @@
 package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
 import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaDocumentoResponse;
@@ -26,6 +27,8 @@ import java.util.Map;
 import java.util.Locale;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +36,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
 
     private final EmpregoDominioService empregoDominioService;
@@ -44,6 +48,12 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
     private final MinhaCandidaturaRepository candidaturaRepository;
     private final GlobalGeografiaService globalGeografiaService;
     private final DocumentService documentService;
+
+    @Value("${document.candidatura.app-code:interm_laboral}")
+    private String appCodeDocumento;
+
+    @Value("${document.candidatura.tipo-relacao:EMPREGO_T_CANDIDATURA_OFERTA}")
+    private String tipoRelacaoDocumento;
 
     @Override
     @Transactional(readOnly = true)
@@ -216,8 +226,46 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
                 canal,
                 empregoDominioService.descricao(DOMINIO_CANAL_CANDIDATURA, canal),
                 candidatura.dataCandidatura(),
-                converterAnexos(candidatura.anexos())
+                resolverAnexosDetalhe(candidatura.candidaturaId(), candidatura.anexos())
         );
+    }
+
+    private List<CandidaturaDocumentoResponse> resolverAnexosDetalhe(Integer candidaturaId, JsonNode anexosLegados) {
+        try {
+            List<DocumentoResponseDTO> documentos = documentService.getDocumentosPorRelacao(
+                    candidaturaId,
+                    tipoRelacaoDocumento,
+                    appCodeDocumento
+            );
+            if (documentos != null && !documentos.isEmpty()) {
+                return documentos.stream()
+                        .map(this::converterDocumentoDaRelacao)
+                        .filter(java.util.Objects::nonNull)
+                        .toList();
+            }
+        } catch (RuntimeException ex) {
+            log.warn("Nao foi possivel consultar os anexos da candidatura {} na relacao documental.",
+                    candidaturaId, ex);
+        }
+        return converterAnexos(anexosLegados);
+    }
+
+    private CandidaturaDocumentoResponse converterDocumentoDaRelacao(DocumentoResponseDTO documento) {
+        if (documento == null) {
+            return null;
+        }
+        String path = textoOpcional(documento.getPath());
+        String url = documentService.gerarLinkPublico(
+                temTexto(path) ? path : textoOpcional(documento.getPreviewUrl())
+        );
+        if (!temTexto(path) && !temTexto(url)) {
+            return null;
+        }
+        String nome = primeiroTexto(documento.getName(), documento.getFileName());
+        if (!temTexto(nome)) {
+            nome = nomeDoPath(temTexto(path) ? path : url);
+        }
+        return new CandidaturaDocumentoResponse(documento.getIdTpDoc(), nome, path, url);
     }
 
     private List<MinhaCandidaturaOpcaoResponse> listarDominio(String dominio) {

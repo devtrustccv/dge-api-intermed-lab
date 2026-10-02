@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 
 import cv.dge.dge_api_intermed_lab.application.document.service.ComboboxService;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
+import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
 import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteCandidatoFiltro;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteCandidatoListaResponse;
@@ -112,7 +113,34 @@ class ServicoContratanteServiceImplTest {
         assertThat(resultado.estado()).isEqualTo("A");
         assertThat(resultado.anexos()).isEmpty();
         verify(servicoRepository, never()).atualizarAnexos(eq(41), eq(9001L), argThat(lista -> true));
-        verifyNoInteractions(documentService, comboboxService, globalGeografiaService);
+        verify(documentService).getDocumentosPorRelacao(41, "EMPREGO_T_INTERMEDIACAO", "interm_laboral");
+        verifyNoInteractions(comboboxService, globalGeografiaService);
+    }
+
+    @Test
+    void detalheDeveUsarAnexosDaRelacaoDocumentalComoFontePrincipal() {
+        DocumentoResponseDTO documento = DocumentoResponseDTO.builder()
+                .id(90L)
+                .name("contrato.pdf")
+                .fileName("DOCUMENTO-0-contrato")
+                .path("interm_laboral/2026/modulos/EMPREGO_T_INTERMEDIACAO/41/contrato.pdf")
+                .idTpDoc("7")
+                .build();
+        when(servicoRepository.buscarPorId(41, 9001L)).thenReturn(Optional.of(servico(
+                "A",
+                List.of(new AnexoArmazenado("antigo.pdf", "docs/antigo.pdf"))
+        )));
+        when(documentService.getDocumentosPorRelacao(41, "EMPREGO_T_INTERMEDIACAO", "interm_laboral"))
+                .thenReturn(List.of(documento));
+        when(documentService.gerarLinkPublico(documento.getPath())).thenReturn("https://documentos/contrato");
+
+        ServicoContratanteDetalheResponse resultado = service.buscarPorId(41, 9001L);
+
+        assertThat(resultado.anexos()).singleElement().satisfies(anexo -> {
+            assertThat(anexo.nome()).isEqualTo("contrato.pdf");
+            assertThat(anexo.path()).isEqualTo(documento.getPath());
+            assertThat(anexo.url()).isEqualTo("https://documentos/contrato");
+        });
     }
 
     @Test

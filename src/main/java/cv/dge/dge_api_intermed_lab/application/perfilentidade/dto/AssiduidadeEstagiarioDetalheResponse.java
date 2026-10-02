@@ -23,6 +23,8 @@ public record AssiduidadeEstagiarioDetalheResponse(
         String estadoDesc,
         String observacao,
         String comprovativo,
+        String comprovativoPath,
+        String comprovativoUrl,
         LocalDateTime dateCreate,
         String userCreate,
         LocalDateTime dateUpdate,

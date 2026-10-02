@@ -38,7 +38,6 @@ public class OrientacaoServicoServiceImpl implements OrientacaoServicoService {
             "Não foi encontrado um acolhimento associado à entrevista selecionada.";
     private static final String MSG_SERVICO_NAO_ENCONTRADO =
             "O serviço selecionado não foi encontrado. Atualize a página e tente novamente.";
-    private static final String TIPO_RELACAO_SUB_DESEMP = "SUB_DESEMP";
     private static final String ESTADO_ATIVO = "A";
 
     private final OrientacaoBus orientacaoBus;
@@ -48,6 +47,9 @@ public class OrientacaoServicoServiceImpl implements OrientacaoServicoService {
 
     @Value("${document.orientacao.app-code:interm_laboral}")
     private String appCodeDocumentoOrientacao;
+
+    @Value("${document.orientacao.tipo-relacao:SUB_DESEMP}")
+    private String tipoRelacaoDocumentoOrientacao;
 
     @Transactional
     public OrientacaoServicoResponse guardar(OrientacaoServicoRequest request) {
@@ -175,7 +177,7 @@ public class OrientacaoServicoServiceImpl implements OrientacaoServicoService {
             String path = construirPathDocumento(servico.getId(), nomeBase, ficheiro);
             documentService.save(docRelacaoMapper.toUploadDto(
                     servico.getId(),
-                    TIPO_RELACAO_SUB_DESEMP,
+                    tipoRelacaoDocumentoOrientacao,
                     ESTADO_ATIVO,
                     documento,
                     textoOuPadrao(anexo.get("documento_desc"), nomeBase),
@@ -242,7 +244,7 @@ public class OrientacaoServicoServiceImpl implements OrientacaoServicoService {
                 + "/"
                 + LocalDateTime.now().getYear()
                 + "/modulos/"
-                + TIPO_RELACAO_SUB_DESEMP
+                + tipoRelacaoDocumentoOrientacao
                 + "/"
                 + idServico
                 + "/"

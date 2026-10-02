@@ -468,6 +468,7 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
     }
 
     private CandidaturaDetalheResponse enriquecerDetalhe(CandidaturaDetalheResponse item) {
+        List<CandidaturaDocumentoResponse> anexos = resolverAnexosDetalhe(item.id(), item.anexos());
         return new CandidaturaDetalheResponse(
                 item.id(),
                 valorDominio(EmpregoDominio.DOMINIO_TIPO_OFERTA, item.tipoOferta()),
@@ -479,7 +480,7 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
                 item.denominacaoEntidade(),
                 item.dataCandidatura(),
                 item.candidato(),
-                item.anexos(),
+                anexos,
                 valorDominio(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, item.statusCandidatura()),
                 empregoDominioService.descricao(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, item.statusCandidatura()),
                 item.motivoRecusa(),
@@ -491,6 +492,17 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
                 item.dateUpdate(),
                 item.userUpdate()
         );
+    }
+
+    private List<CandidaturaDocumentoResponse> resolverAnexosDetalhe(Integer candidaturaId, Object anexosLegados) {
+        List<CandidaturaDocumentoResponse> documentos = new ArrayList<>();
+        Set<String> identidades = new LinkedHashSet<>();
+
+        adicionarAnexosDaRelacao(candidaturaId, documentos, identidades);
+        if (documentos.isEmpty()) {
+            adicionarAnexos(anexosLegados, null, documentos, identidades);
+        }
+        return List.copyOf(documentos);
     }
 
     private EntrevistaResponse enriquecerEntrevista(EntrevistaResponse item) {

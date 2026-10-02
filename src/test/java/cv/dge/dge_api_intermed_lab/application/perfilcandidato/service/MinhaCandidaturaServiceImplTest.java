@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
+import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
 import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaDetalheResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaFiltro;
@@ -30,6 +31,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,6 +55,8 @@ class MinhaCandidaturaServiceImplTest {
                 globalGeografiaService,
                 documentService
         );
+        ReflectionTestUtils.setField(service, "appCodeDocumento", "interm_laboral");
+        ReflectionTestUtils.setField(service, "tipoRelacaoDocumento", "EMPREGO_T_CANDIDATURA_OFERTA");
     }
 
     @Test
@@ -195,6 +199,42 @@ class MinhaCandidaturaServiceImplTest {
         assertThat(resultado.anexos().get(0).url()).isEqualTo("https://documentos.test/cv");
         assertThat(resultado.anexos().get(1).tipo()).isEqualTo("OUTRO_DOCUMENTO");
         assertThat(resultado.anexos().get(1).url()).isEqualTo("https://documentos.test/diploma");
+    }
+
+    @Test
+    void detalheDeveUsarAnexosDaRelacaoDocumentalComoFontePrincipal() {
+        DocumentoResponseDTO documento = DocumentoResponseDTO.builder()
+                .id(81L)
+                .idTpDoc("12")
+                .name("curriculo.pdf")
+                .path("interm_laboral/2026/modulos/EMPREGO_T_CANDIDATURA_OFERTA/77/curriculo.pdf")
+                .build();
+        when(candidaturaRepository.buscarPorId(77, 9001L)).thenReturn(Optional.of(registo(
+                77,
+                "OFERTA_ESTAGIO",
+                "TRIAGEM",
+                "PORTAL",
+                "101",
+                "102",
+                null,
+                LocalDateTime.of(2026, 8, 21, 9, 0)
+        )));
+        when(documentService.getDocumentosPorRelacao(
+                77,
+                "EMPREGO_T_CANDIDATURA_OFERTA",
+                "interm_laboral"
+        )).thenReturn(List.of(documento));
+        when(documentService.gerarLinkPublico(documento.getPath()))
+                .thenReturn("https://documentos/curriculo");
+
+        MinhaCandidaturaDetalheResponse resultado = service.buscarPorId(77, 9001L);
+
+        assertThat(resultado.anexos()).singleElement().satisfies(anexo -> {
+            assertThat(anexo.tipo()).isEqualTo("12");
+            assertThat(anexo.nome()).isEqualTo("curriculo.pdf");
+            assertThat(anexo.path()).isEqualTo(documento.getPath());
+            assertThat(anexo.url()).isEqualTo("https://documentos/curriculo");
+        });
     }
 
     @Test
