@@ -65,6 +65,7 @@ class GestaoVagaServiceImplTest {
                 40,
                 "Empresa XPTO",
                 "012345678",
+                7,
                 null,
                 null,
                 null,
@@ -107,6 +108,46 @@ class GestaoVagaServiceImplTest {
                         && LocalDate.of(2026, 9, 1).equals(filtro.dataInicio())
                         && LocalDate.of(2026, 9, 30).equals(filtro.dataFim())
         ));
+    }
+
+    @Test
+    void deveTraduzirEstadoLegadoDaOfertaEmVezDeRepetirCodigo() {
+        when(vagaRepository.listar(any())).thenReturn(List.of(new VagaListaResponse(
+                22,
+                "Programador",
+                "OFERTA_EMPREGO",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                2,
+                40,
+                "Empresa XPTO",
+                "012345678",
+                7,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "REF-22",
+                "A",
+                null,
+                LocalDate.of(2026, 9, 1),
+                LocalDate.of(2026, 9, 30)
+        )));
+
+        VagaListaResponse resultado = service.listar(new VagaFiltro(
+                null, 40, null, null, null, null, null, null, null, null, null, null
+        )).get(0);
+
+        assertThat(resultado.estado()).isEqualTo("ATIVA");
+        assertThat(resultado.estadoDesc()).isEqualTo("Ativa");
     }
 
     @ParameterizedTest
@@ -169,6 +210,7 @@ class GestaoVagaServiceImplTest {
                 null,
                 null,
                 regimeContrato,
+                null,
                 null,
                 null,
                 habilitacaoMinima,

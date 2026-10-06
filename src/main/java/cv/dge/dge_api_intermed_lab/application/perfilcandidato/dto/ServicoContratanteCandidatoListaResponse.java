@@ -6,6 +6,7 @@ public record ServicoContratanteCandidatoListaResponse(
         Integer candidaturaId,
         Long pessoaId,
         String nomeCandidato,
+        String telefone,
         String tipoServico,
         String titulo,
         String estado,

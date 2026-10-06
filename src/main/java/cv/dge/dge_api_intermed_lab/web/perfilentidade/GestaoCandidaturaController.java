@@ -39,6 +39,7 @@ public class GestaoCandidaturaController {
             @RequestParam(value = "estado", required = false) String estado,
             @RequestParam(value = "tipoOferta", required = false) String tipoOferta,
             @RequestParam(value = "ofertaId", required = false) Integer ofertaId,
+            @RequestParam(value = "tituloOferta", required = false) String tituloOferta,
             @RequestParam(value = "canal", required = false) String canal,
             @RequestParam(value = "dataInicio", required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
@@ -54,6 +55,7 @@ public class GestaoCandidaturaController {
                         estado,
                         tipoOferta,
                         ofertaId,
+                        tituloOferta,
                         canal,
                         dataInicio,
                         dataFim

@@ -93,6 +93,30 @@ class EmpregoDominioServiceTest {
                 .contains("FORMACAO_PROFISSIONAL (Formação Profissional)");
     }
 
+    @Test
+    void deveTraduzirDescricaoMesmoQuandoValorDoDominioEstaInativo() {
+        when(repository.listarPorDominio("ESTADO", "interm_laboral"))
+                .thenReturn(List.of(new EmpregoDominioResponse(
+                        10, "Ativo", "PRIVATE", "ESTADO", 1, "INATIVE", "A", 13
+                )));
+
+        assertThat(service.descricao("ESTADO", "A")).isEqualTo("Ativo");
+        assertThat(service.valorOficial("ESTADO", "A")).isEmpty();
+    }
+
+    @Test
+    void deveProcurarDescricaoNoCatalogoGlobalQuandoDadNaoPossuiDominio() {
+        EmpregoDominioResponse ativo = new EmpregoDominioResponse(
+                10, "Ativo", "PRIVATE", "ESTADO", 1, "ATIVE", "A", 99
+        );
+        when(repository.listarPorDominio("ESTADO", "interm_laboral")).thenReturn(List.of());
+        when(repository.listarPorDominioGlobal("ESTADO", "interm_laboral"))
+                .thenReturn(List.of(ativo));
+
+        assertThat(service.descricao("ESTADO", "A")).isEqualTo("Ativo");
+        assertThat(service.listarPorDominio("ESTADO")).containsExactly(ativo);
+    }
+
     private EmpregoDominioResponse registo(Integer id, String descricao, String valor, String status) {
         return new EmpregoDominioResponse(
                 id,

@@ -3,8 +3,6 @@ package cv.dge.dge_api_intermed_lab.application.document.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import cv.dge.dge_api_intermed_lab.application.document.mapper.DocRelacaoMapper;
-import cv.dge.dge_api_intermed_lab.domain.document.business.DocRelacaoBus;
 import cv.dge.dge_api_intermed_lab.utils.RestClientHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,11 +19,7 @@ class DocumentServiceImplTest {
 
     @BeforeEach
     void configurar() {
-        service = new DocumentServiceImpl(
-                mock(RestClientHelper.class),
-                mock(DocRelacaoBus.class),
-                mock(DocRelacaoMapper.class)
-        );
+        service = new DocumentServiceImpl(mock(RestClientHelper.class));
         ReflectionTestUtils.setField(service, "docOpen", VISUALIZADOR_ATUAL);
     }
 

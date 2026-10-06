@@ -3,6 +3,7 @@ package cv.dge.dge_api_intermed_lab.application.perfilentidade.dto;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 public record VisitaTecnicaListaResponse(
         Integer id,
@@ -19,13 +20,13 @@ public record VisitaTecnicaListaResponse(
         String cefp,
         String estado,
         String estadoDesc,
-        Object candidatos,
+        List<VisitaTecnicaCandidatoRequest> candidatos,
         LocalDateTime novaData,
         String motivoIndeferimento,
         String observacoesEntidade,
         String supervisorParticipante,
         String observacoesIefp,
-        Object detalhesAvaliacao,
+        List<VisitaTecnicaAvaliacaoItemRequest> detalhesAvaliacao,
         String conteudoReuniao,
         Boolean podeValidar,
         Boolean podeMarcarComoExecutado,

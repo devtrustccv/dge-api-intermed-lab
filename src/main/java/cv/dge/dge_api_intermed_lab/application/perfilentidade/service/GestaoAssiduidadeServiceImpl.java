@@ -1,6 +1,5 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 
-import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeEstagiarioDetalheResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeEstagiarioFiltro;
@@ -12,8 +11,6 @@ import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoD
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.GestaoAssiduidadeRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +18,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
 
     private final EmpregoDominioService empregoDominioService;
@@ -32,12 +28,6 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
 
     private final GestaoAssiduidadeRepository assiduidadeRepository;
     private final DocumentService documentService;
-
-    @Value("${document.assiduidade.app-code:interm_laboral}")
-    private String appCodeDocumento;
-
-    @Value("${document.assiduidade.tipo-relacao:EMPREGO_T_ASSIDUIDADE}")
-    private String tipoRelacaoDocumento;
 
     @Override
     @Transactional(readOnly = true)
@@ -167,7 +157,7 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
     }
 
     private AssiduidadeEstagiarioDetalheResponse enriquecerDetalhe(AssiduidadeEstagiarioDetalheResponse item) {
-        ComprovativoDocumento comprovativo = resolverComprovativo(item.id(), item.comprovativo());
+        ComprovativoDocumento comprovativo = resolverComprovativo(item.comprovativo());
         return new AssiduidadeEstagiarioDetalheResponse(
                 item.id(),
                 item.colocacaoId(),
@@ -196,40 +186,8 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
         );
     }
 
-    private ComprovativoDocumento resolverComprovativo(Integer assiduidadeId, String pathLegado) {
-        String pathFallback = texto(pathLegado);
-        try {
-            List<DocumentoResponseDTO> documentos = documentService.getDocumentosPorRelacao(
-                    assiduidadeId,
-                    tipoRelacaoDocumento,
-                    appCodeDocumento
-            );
-            if (documentos != null && !documentos.isEmpty()) {
-                DocumentoResponseDTO documento = documentos.stream()
-                        .filter(java.util.Objects::nonNull)
-                        .filter(item -> pathFallback != null && pathFallback.equals(texto(item.getPath())))
-                        .reduce((primeiro, ultimo) -> ultimo)
-                        .orElseGet(() -> documentos.stream()
-                                .filter(java.util.Objects::nonNull)
-                                .reduce((primeiro, ultimo) -> ultimo)
-                                .orElse(null));
-                if (documento == null) {
-                    return fallbackComprovativo(pathFallback);
-                }
-                String path = texto(documento.getPath());
-                String url = documentService.gerarLinkPublico(
-                        path != null ? path : texto(documento.getPreviewUrl())
-                );
-                return new ComprovativoDocumento(path, texto(url));
-            }
-        } catch (RuntimeException ex) {
-            log.warn("Nao foi possivel consultar o comprovativo da assiduidade {} na relacao documental.",
-                    assiduidadeId, ex);
-        }
-        return fallbackComprovativo(pathFallback);
-    }
-
-    private ComprovativoDocumento fallbackComprovativo(String pathFallback) {
+    private ComprovativoDocumento resolverComprovativo(String pathGuardado) {
+        String pathFallback = texto(pathGuardado);
         return pathFallback == null
                 ? new ComprovativoDocumento(null, null)
                 : new ComprovativoDocumento(pathFallback, documentService.gerarLinkPublico(pathFallback));

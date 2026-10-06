@@ -95,6 +95,14 @@ public final class EmpregoDominio {
             return valor;
         }
         return switch (dominioNormalizado) {
+            case DOMINIO_ESTADO_OFERTA -> switch (valor) {
+                case "A", "ATIVO" -> "ATIVA";
+                case "I", "INATIVO" -> "INATIVA";
+                case "F", "FECHADO" -> "FECHADA";
+                case "C", "CANCELADO" -> "CANCELADA";
+                case "R" -> "RASCUNHO";
+                default -> valor;
+            };
             case DOMINIO_TIPO_OFERTA -> switch (valor) {
                 case "EMPREGO" -> "OFERTA_EMPREGO";
                 case "ESTAGIO", "ESTAGIO_PROFISSIONAL" -> "OFERTA_ESTAGIO";

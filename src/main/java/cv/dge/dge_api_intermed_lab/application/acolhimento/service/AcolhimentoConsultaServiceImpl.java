@@ -21,6 +21,7 @@ import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.DetalhesAcolhimento;
 import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.Entidade;
 import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.Utente;
 import java.text.Normalizer;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -29,7 +30,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,12 +53,6 @@ public class AcolhimentoConsultaServiceImpl implements AcolhimentoConsultaServic
     private final OrientacaoMapper orientacaoMapper;
     private final DocumentService documentService;
     private final GlobalGeografiaService globalGeografiaService;
-
-    @Value("${document.acolhimento.tipo-relacao:acolhimento}")
-    private String tipoRelacaoDocumentoAcolhimento;
-
-    @Value("${document.acolhimento.app-code:emprego}")
-    private String appCodeDocumentoAcolhimento;
 
     @Override
     @Transactional(readOnly = true)
@@ -201,11 +195,7 @@ public class AcolhimentoConsultaServiceImpl implements AcolhimentoConsultaServic
         AcolhimentoServico servico = entrevista == null ? null : resolverServico(acolhimento, entrevista);
         OrientacaoServicoResponse servicoResponse = orientacaoMapper.toServicoResponse(servico);
         OrientacaoEntrevistaResponse entrevistaResponse = orientacaoMapper.toEntrevistaResponse(entrevista, null, servico);
-        List<DocumentoResponseDTO> documentos = documentService.getDocumentosPorRelacao(
-                acolhimento.getId(),
-                tipoRelacaoDocumentoAcolhimento,
-                appCodeDocumentoAcolhimento
-        );
+        List<DocumentoResponseDTO> documentos = extrairDocumentosGuardados(acolhimento.getId(), detalhes);
 
         return acolhimentoMapper.toCompletoResponse(
                 acolhimento,
@@ -217,6 +207,73 @@ public class AcolhimentoConsultaServiceImpl implements AcolhimentoConsultaServic
                 documentos,
                 detalhes
         );
+    }
+
+    private List<DocumentoResponseDTO> extrairDocumentosGuardados(
+            Integer idAcolhimento,
+            Map<String, Object> detalhes
+    ) {
+        if (detalhes == null || !(detalhes.get("anexos") instanceof Collection<?> anexos)) {
+            return List.of();
+        }
+
+        List<DocumentoResponseDTO> documentos = new ArrayList<>();
+        for (Object item : anexos) {
+            DocumentoResponseDTO documento = converterDocumentoGuardado(idAcolhimento, item);
+            if (documento != null) {
+                documentos.add(documento);
+            }
+        }
+        return List.copyOf(documentos);
+    }
+
+    private DocumentoResponseDTO converterDocumentoGuardado(Integer idAcolhimento, Object item) {
+        if (item instanceof String path && !path.isBlank()) {
+            return DocumentoResponseDTO.builder()
+                    .idRelacao(idAcolhimento)
+                    .fileName(nomeDoPath(path))
+                    .name(nomeDoPath(path))
+                    .path(path)
+                    .previewUrl(documentService.gerarLinkPublico(path))
+                    .build();
+        }
+        if (!(item instanceof Map<?, ?> mapaOriginal)) {
+            return null;
+        }
+
+        Map<String, Object> anexo = new LinkedHashMap<>();
+        mapaOriginal.forEach((chave, valor) -> {
+            if (chave != null) {
+                anexo.put(chave.toString(), valor);
+            }
+        });
+        String path = primeiroTexto(anexo, "anexo", "path", "caminho");
+        String url = primeiroTexto(anexo, "ver_documento", "url", "previewUrl");
+        if (path == null && url == null) {
+            return null;
+        }
+        String nome = primeiroTexto(anexo, "fileName", "nome", "documento_desc", "ficheiro");
+        if (nome == null) {
+            nome = nomeDoPath(path != null ? path : url);
+        }
+
+        return DocumentoResponseDTO.builder()
+                .idRelacao(idAcolhimento)
+                .idTpDoc(primeiroTexto(anexo, "documento", "idTpDoc", "id_tp_doc", "tipo_documento_anexo"))
+                .fileName(nome)
+                .name(nome)
+                .path(path)
+                .previewUrl(documentService.gerarLinkPublico(path != null ? path : url))
+                .build();
+    }
+
+    private String nomeDoPath(String valor) {
+        if (valor == null || valor.isBlank()) {
+            return null;
+        }
+        String semQuery = valor.split("\\?", 2)[0];
+        int separador = Math.max(semQuery.lastIndexOf('/'), semQuery.lastIndexOf('\\'));
+        return separador >= 0 ? semQuery.substring(separador + 1) : semQuery;
     }
 
     private AcolhimentoDadosEmpregoResponse resolverDadosEmprego(DetalhesAcolhimento acolhimento) {

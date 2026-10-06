@@ -4,7 +4,6 @@ import cv.dge.dge_api_intermed_lab.application.orientacao.dto.OrientacaoEntrevis
 import cv.dge.dge_api_intermed_lab.application.orientacao.dto.OrientacaoServicoResponse;
 import cv.dge.dge_api_intermed_lab.application.orientacao.dto.RequisitoResponse;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
-import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
 import cv.dge.dge_api_intermed_lab.domain.acolhimento.model.DetalhesAcolhimento;
 import cv.dge.dge_api_intermed_lab.domain.orientacao.model.AcolhimentoServico;
 import cv.dge.dge_api_intermed_lab.domain.orientacao.model.AgendamentoEntrevista;
@@ -14,20 +13,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
-import org.springframework.beans.factory.annotation.Value;
-import lombok.extern.slf4j.Slf4j;
 
 @Component
-@Slf4j
 public class OrientacaoMapper {
 
     private final DocumentService documentService;
-
-    @Value("${document.orientacao.app-code:interm_laboral}")
-    private String appCodeDocumentoOrientacao;
-
-    @Value("${document.orientacao.tipo-relacao:SUB_DESEMP}")
-    private String tipoRelacaoDocumentoOrientacao;
 
     public OrientacaoMapper(DocumentService documentService) {
         this.documentService = documentService;
@@ -47,7 +37,7 @@ public class OrientacaoMapper {
                 servico.getTipoServico(),
                 servico.getTipoServicoDesc(),
                 servico.getNecessidadeAnalise(),
-                normalizarDetalhesDocumento(servico.getId(), servico.getDetalhesServico()),
+                normalizarDetalhesDocumento(servico.getDetalhesServico()),
                 servico.getDetalhesAnalise()
         );
     }
@@ -121,7 +111,7 @@ public class OrientacaoMapper {
         dados.put("tipoServicoDesc", acolhimento.getTipoServicoDesc());
         dados.put("canal", acolhimento.getCanal());
         dados.put("canalDesc", acolhimento.getCanalDesc());
-        dados.put("detalhes", normalizarDetalhesDocumento(null, acolhimento.getDetalhes()));
+        dados.put("detalhes", normalizarDetalhesDocumento(acolhimento.getDetalhes()));
         dados.put("idTecnicoAtendimento", acolhimento.getIdTecnicoAtendimento());
         dados.put("tecnicoAtendimento", acolhimento.getTecnicoAtendimento());
         dados.put("fonteInformacao", acolhimento.getFonteInformacao());
@@ -134,23 +124,12 @@ public class OrientacaoMapper {
         return dados;
     }
 
-    private Map<String, Object> normalizarDetalhesDocumento(
-            Integer idServico,
-            Map<String, Object> detalhes
-    ) {
-        List<Map<String, Object>> documentosRelacionados = buscarDocumentosRelacionados(idServico);
-        if (detalhes == null && documentosRelacionados.isEmpty()) {
+    private Map<String, Object> normalizarDetalhesDocumento(Map<String, Object> detalhes) {
+        if (detalhes == null) {
             return null;
         }
 
-        Map<String, Object> normalizados = detalhes == null
-                ? new LinkedHashMap<>()
-                : new LinkedHashMap<>(detalhes);
-        if (!documentosRelacionados.isEmpty()) {
-            normalizados.put("anexos", documentosRelacionados);
-            return normalizados;
-        }
-
+        Map<String, Object> normalizados = new LinkedHashMap<>(detalhes);
         Object valorAnexos = detalhes.get("anexos");
         if (!(valorAnexos instanceof List<?> anexos)) {
             return normalizados;
@@ -174,73 +153,6 @@ public class OrientacaoMapper {
         }
         normalizados.put("anexos", anexosNormalizados);
         return normalizados;
-    }
-
-    private List<Map<String, Object>> buscarDocumentosRelacionados(Integer idServico) {
-        if (idServico == null) {
-            return List.of();
-        }
-        try {
-            List<DocumentoResponseDTO> documentos = documentService.getDocumentosPorRelacao(
-                    idServico,
-                    tipoRelacaoDocumentoOrientacao,
-                    appCodeDocumentoOrientacao
-            );
-            if (documentos == null || documentos.isEmpty()) {
-                return List.of();
-            }
-            return documentos.stream()
-                    .map(this::mapearDocumentoRelacionado)
-                    .filter(java.util.Objects::nonNull)
-                    .toList();
-        } catch (RuntimeException ex) {
-            log.warn("Nao foi possivel consultar os anexos do servico de orientacao {} na relacao documental.",
-                    idServico, ex);
-            return List.of();
-        }
-    }
-
-    private Map<String, Object> mapearDocumentoRelacionado(DocumentoResponseDTO documento) {
-        if (documento == null) {
-            return null;
-        }
-        String path = texto(documento.getPath());
-        String url = documentService.gerarLinkPublico(
-                path != null ? path : texto(documento.getPreviewUrl())
-        );
-        if (path == null && texto(url) == null) {
-            return null;
-        }
-
-        Map<String, Object> anexo = new LinkedHashMap<>();
-        String nome = primeiroTextoValores(documento.getName(), documento.getFileName());
-        adicionarSePreenchido(anexo, "documento", documento.getIdTpDoc());
-        adicionarSePreenchido(anexo, "documento_desc", nome);
-        adicionarSePreenchido(anexo, "nome", nome);
-        adicionarSePreenchido(anexo, "fileName", documento.getFileName());
-        adicionarSePreenchido(anexo, "anexo", path);
-        adicionarSePreenchido(anexo, "ver_documento", url);
-        return anexo;
-    }
-
-    private void adicionarSePreenchido(Map<String, Object> destino, String chave, Object valor) {
-        if (valor != null && !valor.toString().isBlank()) {
-            destino.put(chave, valor);
-        }
-    }
-
-    private String texto(Object valor) {
-        return valor == null || valor.toString().isBlank() ? null : valor.toString().trim();
-    }
-
-    private String primeiroTextoValores(Object... valores) {
-        for (Object valor : valores) {
-            String resultado = texto(valor);
-            if (resultado != null) {
-                return resultado;
-            }
-        }
-        return null;
     }
 
     private void normalizarLinkDocumento(Map<String, Object> anexo) {

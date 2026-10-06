@@ -6,6 +6,4 @@ import java.util.List;
 public interface DocRelacaoBus {
 
     List<DocRelacaoEntity> findByIdRelacao(Integer idRelacao);
-
-    List<DocRelacaoEntity> findByRelacao(Integer idRelacao, String tipoRelacao, String appCode);
 }

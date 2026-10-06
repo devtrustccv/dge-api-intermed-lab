@@ -19,6 +19,7 @@ public record VagaResponse(
         Integer entidadeId,
         String denominacaoEntidade,
         String entidadeNif,
+        Integer idCefp,
         String habilitacaoMinima,
         String nivelQualificacao,
         Integer numVagas,

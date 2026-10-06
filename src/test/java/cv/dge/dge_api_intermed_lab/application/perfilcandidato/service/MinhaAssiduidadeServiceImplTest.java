@@ -13,7 +13,6 @@ import static org.mockito.Mockito.when;
 
 import cv.dge.dge_api_intermed_lab.application.document.service.ComboboxService;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
-import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAssiduidadeDetalheResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAssiduidadeFiltro;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAssiduidadeListaResponse;
@@ -130,8 +129,7 @@ class MinhaAssiduidadeServiceImplTest {
         assertThat(resultado.estado()).isEqualTo("PENDENTE");
         assertThat(resultado.comprovativoPath()).isNull();
         verify(assiduidadeRepository, never()).atualizarComprovativo(eq(41), eq(9001L), argThat(path -> true));
-        verify(documentService).getDocumentosPorRelacao(41, "EMPREGO_T_ASSIDUIDADE", "interm_laboral");
-        verifyNoInteractions(comboboxService);
+        verifyNoInteractions(documentService, comboboxService);
     }
 
     @Test
@@ -214,18 +212,10 @@ class MinhaAssiduidadeServiceImplTest {
     }
 
     @Test
-    void detalheDeveUsarComprovativoDaRelacaoDocumental() {
+    void detalheDeveUsarComprovativoGuardadoNoRegistoDeAssiduidade() {
         String path = "interm_laboral/2026/modulos/EMPREGO_T_ASSIDUIDADE/41/comprovativo.pdf";
-        DocumentoResponseDTO documento = DocumentoResponseDTO.builder()
-                .id(15L)
-                .name("comprovativo.pdf")
-                .path(path)
-                .previewUrl("url-antiga")
-                .build();
         when(assiduidadeRepository.buscarPorId(41, 9001L))
-                .thenReturn(Optional.of(registo("documentos/legado.pdf")));
-        when(documentService.getDocumentosPorRelacao(41, "EMPREGO_T_ASSIDUIDADE", "interm_laboral"))
-                .thenReturn(List.of(documento));
+                .thenReturn(Optional.of(registo(path)));
         when(documentService.gerarLinkPublico(path)).thenReturn("https://documentos/comprovativo");
 
         MinhaAssiduidadeDetalheResponse resultado = service.buscarPorId(41, 9001L);

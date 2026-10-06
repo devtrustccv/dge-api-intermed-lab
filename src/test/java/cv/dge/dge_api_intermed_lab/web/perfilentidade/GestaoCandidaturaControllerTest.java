@@ -105,11 +105,12 @@ class GestaoCandidaturaControllerTest {
     }
 
     @Test
-    void deveEncaminharDataInicioEDataFimParaOFiltro() throws Exception {
+    void deveEncaminharTituloOfertaDataInicioEDataFimParaOFiltro() throws Exception {
         when(candidaturaService.listar(any())).thenReturn(List.of());
 
         mockMvc.perform(get("/v1/candidaturas")
                         .param("entidadeId", "23")
+                        .param("tituloOferta", "Programação")
                         .param("dataInicio", "2026-09-01")
                         .param("dataFim", "2026-09-30"))
                 .andExpect(status().isOk());
@@ -118,6 +119,7 @@ class GestaoCandidaturaControllerTest {
                 ArgumentCaptor.forClass(
                         cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaFiltro.class);
         verify(candidaturaService).listar(captor.capture());
+        assertEquals("Programação", captor.getValue().tituloOferta());
         assertEquals(LocalDate.of(2026, 9, 1), captor.getValue().dataInicio());
         assertEquals(LocalDate.of(2026, 9, 30), captor.getValue().dataFim());
     }

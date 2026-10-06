@@ -1,10 +1,6 @@
 package cv.dge.dge_api_intermed_lab.application.document.service;
 
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocRelacaoDTO;
-import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
-import cv.dge.dge_api_intermed_lab.application.document.mapper.DocRelacaoMapper;
-import cv.dge.dge_api_intermed_lab.domain.document.business.DocRelacaoBus;
-import cv.dge.dge_api_intermed_lab.infrastructure.document.DocRelacaoEntity;
 import cv.dge.dge_api_intermed_lab.utils.RestClientHelper;
 import io.micrometer.common.lang.NonNull;
 import io.micrometer.common.lang.Nullable;
@@ -13,9 +9,7 @@ import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
@@ -35,9 +29,6 @@ public class DocumentServiceImpl implements DocumentService {
     private static final String DEFAULT_N_PROCESSO = "SEM-PROCESSO";
     private static final String DEFAULT_DOCUMENT_TYPE = "application/pdf";
 
-    private final DocRelacaoBus docRelacaoBus;
-    private final DocRelacaoMapper docRelacaoMapper;
-
     private final RestClientHelper restClientHelper;
 
     @Value("${api.base.service.url}")
@@ -46,14 +37,8 @@ public class DocumentServiceImpl implements DocumentService {
     @Value("${doc.open}")
     private String docOpen;
 
-    public DocumentServiceImpl(
-            RestClientHelper restClientHelper,
-            DocRelacaoBus docRelacaoBus,
-            DocRelacaoMapper docRelacaoMapper
-    ) {
+    public DocumentServiceImpl(RestClientHelper restClientHelper) {
         this.restClientHelper = restClientHelper;
-        this.docRelacaoBus = docRelacaoBus;
-        this.docRelacaoMapper = docRelacaoMapper;
     }
 
     @Override
@@ -175,24 +160,6 @@ public class DocumentServiceImpl implements DocumentService {
         var processId = (processInstanceID == null || processInstanceID.isEmpty() ? "" : processInstanceID + "/");
 
         return appDad + "/" + thisYear + "/processos/" + processTypeKey + "/" + processId + task;
-    }
-
-    @Override
-    public List<DocumentoResponseDTO> getDocumentosPorRelacao(Integer idRelacao, String tipoRelacao, String appCode) {
-        List<DocRelacaoEntity> documentosEntity = docRelacaoBus.findByRelacao(idRelacao, tipoRelacao, appCode);
-
-        List<DocumentoResponseDTO> documentosDTO = new ArrayList<>();
-
-        for (DocRelacaoEntity entity : documentosEntity) {
-            DocumentoResponseDTO dto = docRelacaoMapper.toDocumentoResponse(entity, buildPreviewUrl(entity.getPath()));
-            documentosDTO.add(dto);
-        }
-
-        return documentosDTO;
-    }
-
-    private String buildPreviewUrl(String path) {
-        return gerarLinkPublico(path);
     }
 
     @Override

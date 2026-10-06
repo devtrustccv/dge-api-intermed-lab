@@ -3,6 +3,8 @@ package cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaAtualizacaoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaAvaliacaoItemRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaCandidatoRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaCandidatoSelectResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaCefpSelectResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaDetalheResponse;
@@ -68,9 +70,10 @@ public class GestaoVisitaTecnicaRepository {
                 agendado_por,
                 cefp_id,
                 cefp,
+                detalhes_avaliacao,
                 date_create,
                 user_create
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """;
 
     private static final String SQL_UPDATE = """
@@ -147,6 +150,7 @@ public class GestaoVisitaTecnicaRepository {
             ps.setString(index++, agendadoPor);
             setInteger(ps, index++, request.cefpId());
             ps.setString(index++, request.cefp());
+            setJsonb(ps, index++, request.detalhesAvaliacao());
             ps.setTimestamp(index++, Timestamp.valueOf(agora));
             ps.setString(index, utilizador);
             return ps;
@@ -369,13 +373,13 @@ public class GestaoVisitaTecnicaRepository {
                 rs.getString("cefp"),
                 rs.getString("estado"),
                 rs.getString("estado"),
-                readJson(rs.getObject("candidatos")),
+                readCandidatos(rs.getObject("candidatos")),
                 rs.getObject("nova_data", java.time.LocalDateTime.class),
                 rs.getString("motivo_indeferimento"),
                 rs.getString("observacoes_entidade"),
                 rs.getString("supervisor_participante"),
                 rs.getString("observacoes_iefp"),
-                readJson(rs.getObject("detalhes_avaliacao")),
+                readDetalhesAvaliacao(rs.getObject("detalhes_avaliacao")),
                 rs.getString("conteudo_reuniao"),
                 null,
                 null,
@@ -406,13 +410,13 @@ public class GestaoVisitaTecnicaRepository {
                 rs.getString("cefp"),
                 rs.getString("estado"),
                 rs.getString("estado"),
-                readJson(rs.getObject("candidatos")),
+                readCandidatos(rs.getObject("candidatos")),
                 rs.getObject("nova_data", java.time.LocalDateTime.class),
                 rs.getString("motivo_indeferimento"),
                 rs.getString("observacoes_entidade"),
                 rs.getString("supervisor_participante"),
                 rs.getString("observacoes_iefp"),
-                readJson(rs.getObject("detalhes_avaliacao")),
+                readDetalhesAvaliacao(rs.getObject("detalhes_avaliacao")),
                 rs.getString("conteudo_reuniao"),
                 null,
                 null,
@@ -454,15 +458,30 @@ public class GestaoVisitaTecnicaRepository {
         }
     }
 
-    private Object readJson(Object value) {
+    private List<VisitaTecnicaCandidatoRequest> readCandidatos(Object value) {
         if (value == null) {
-            return null;
+            return List.of();
         }
         try {
-            return objectMapper.readValue(value.toString(), new TypeReference<>() {
+            return objectMapper.readValue(value.toString(), new TypeReference<List<VisitaTecnicaCandidatoRequest>>() {
             });
         } catch (Exception ex) {
-            return value.toString();
+            return List.of();
+        }
+    }
+
+    private List<VisitaTecnicaAvaliacaoItemRequest> readDetalhesAvaliacao(Object value) {
+        if (value == null) {
+            return List.of();
+        }
+        try {
+            return objectMapper.readValue(
+                    value.toString(),
+                    new TypeReference<List<VisitaTecnicaAvaliacaoItemRequest>>() {
+                    }
+            );
+        } catch (Exception ex) {
+            return List.of();
         }
     }
 

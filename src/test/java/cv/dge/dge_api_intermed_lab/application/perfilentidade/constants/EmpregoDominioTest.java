@@ -28,6 +28,8 @@ class EmpregoDominioTest {
                 .isEqualTo("OFERTA_EMPREGO");
         assertThat(EmpregoDominio.alias(EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA, "12_ANO"))
                 .isEqualTo("ENSINO_SECUNDARIO");
+        assertThat(EmpregoDominio.alias(EmpregoDominio.DOMINIO_ESTADO_OFERTA, "A"))
+                .isEqualTo("ATIVA");
     }
 
     @Test

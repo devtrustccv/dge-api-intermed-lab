@@ -9,8 +9,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaAvaliacaoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaDetalheResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaFiltro;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaListaResponse;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.GestaoCandidaturaRepository;
@@ -18,19 +19,16 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class GestaoCandidaturaServiceImplTest {
-
-    private static final String TIPO_RELACAO = "EMPREGO_T_CANDIDATURA_OFERTA";
-    private static final String APP_CODE = "interm_laboral";
 
     @Mock
     private GestaoCandidaturaRepository candidaturaRepository;
@@ -43,8 +41,6 @@ class GestaoCandidaturaServiceImplTest {
     @BeforeEach
     void setUp() {
         service = new GestaoCandidaturaServiceImpl(EmpregoDominioTestFixture.criar(), candidaturaRepository, documentService);
-        ReflectionTestUtils.setField(service, "tipoRelacaoDocumento", TIPO_RELACAO);
-        ReflectionTestUtils.setField(service, "appCodeDocumento", APP_CODE);
     }
 
     @Test
@@ -80,40 +76,68 @@ class GestaoCandidaturaServiceImplTest {
                         org.assertj.core.groups.Tuple.tuple(
                                 "OUTRO_DOCUMENTO", "carta.pdf", pathCarta, "https://sgf/view?path=carta")
                 );
-        verify(documentService, never()).getDocumentosPorRelacao(1, TIPO_RELACAO, APP_CODE);
     }
 
     @Test
-    void deveConsultarRelacaoDocumentalQuandoJsonDeAnexosEstaVazio() {
-        DocumentoResponseDTO documento = DocumentoResponseDTO.builder()
-                .id(91L)
-                .idTpDoc("12")
-                .name("curriculo.pdf")
-                .path("interm_laboral/2026/processos/candidatura/1/curriculo.pdf")
-                .previewUrl("https://sgf/view?path=curriculo")
-                .build();
+    void deveManterAnexosVaziosQuandoNaoForamGuardadosNaCandidatura() {
         when(candidaturaRepository.listar(filtroVazio())).thenReturn(List.of(candidatura(null)));
-        when(documentService.getDocumentosPorRelacao(1, TIPO_RELACAO, APP_CODE))
-                .thenReturn(List.of(documento));
-        when(documentService.gerarLinkPublico(documento.getPath()))
-                .thenReturn(documento.getPreviewUrl());
 
         CandidaturaListaResponse resultado = service.listar(filtroVazio()).get(0);
 
-        assertThat(resultado.tipoDocumento()).isEqualTo("12");
-        assertThat(resultado.anexos()).singleElement().satisfies(anexo -> {
-            assertThat(anexo.nome()).isEqualTo("curriculo.pdf");
-            assertThat(anexo.path()).isEqualTo(documento.getPath());
-            assertThat(anexo.url()).isEqualTo(documento.getPreviewUrl());
-        });
-        assertThat(resultado.anexo()).isEqualTo(resultado.anexos().get(0));
-        verify(documentService).getDocumentosPorRelacao(1, TIPO_RELACAO, APP_CODE);
+        assertThat(resultado.tipoDocumento()).isNull();
+        assertThat(resultado.anexos()).isEmpty();
+        assertThat(resultado.anexo()).isNull();
+        verifyNoInteractions(documentService);
+    }
+
+    @Test
+    void deveIndicarQuandoCadaTipoDeOfertaPodeSerAvaliado() {
+        when(candidaturaRepository.listar(filtroVazio())).thenReturn(List.of(
+                candidatura("emprego.pdf", "OFERTA_EMPREGO", false),
+                candidatura("estagio-selecionado.pdf", "OFERTA_ESTAGIO", true),
+                candidatura("estagio-nao-selecionado.pdf", "OFERTA_ESTAGIO", false)
+        ));
+
+        List<CandidaturaListaResponse> resultado = service.listar(filtroVazio());
+
+        assertThat(resultado)
+                .extracting(CandidaturaListaResponse::podeAvaliar)
+                .containsExactly(true, true, false);
+    }
+
+    @Test
+    void devePermitirAvaliarOfertaDeEmpregoSemSelecaoIefp() {
+        when(candidaturaRepository.buscarPorId(1, 23))
+                .thenReturn(Optional.of(candidaturaDetalhe("OFERTA_EMPREGO", false)));
+
+        service.avaliar(1, 23, new CandidaturaAvaliacaoRequest("APROVADO", null, "utilizador"));
+
+        verify(candidaturaRepository).atualizarAvaliacao(
+                1, 23, "APROVADO", null, "utilizador"
+        );
+    }
+
+    @Test
+    void deveImpedirAvaliacaoDeEstagioNaoSelecionadoPeloIefp() {
+        when(candidaturaRepository.buscarPorId(1, 23))
+                .thenReturn(Optional.of(candidaturaDetalhe("OFERTA_ESTAGIO", false)));
+
+        assertThatThrownBy(() -> service.avaliar(
+                1,
+                23,
+                new CandidaturaAvaliacaoRequest("APROVADO", null, "utilizador")
+        )).isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("selecionada pelo IEFP");
+
+        verify(candidaturaRepository, never()).atualizarAvaliacao(
+                1, 23, "APROVADO", null, "utilizador"
+        );
     }
 
     @Test
     void deveRecusarDataFimAnteriorADataInicio() {
         CandidaturaFiltro filtro = new CandidaturaFiltro(
-                23, null, null, null, null, null, null,
+                23, null, null, null, null, null, null, null,
                 LocalDate.of(2026, 9, 30), LocalDate.of(2026, 9, 1));
 
         assertThatThrownBy(() -> service.listar(filtro))
@@ -123,10 +147,14 @@ class GestaoCandidaturaServiceImplTest {
     }
 
     private CandidaturaFiltro filtroVazio() {
-        return new CandidaturaFiltro(23, null, null, null, null, null, null, null, null);
+        return new CandidaturaFiltro(23, null, null, null, null, null, null, null, null, null);
     }
 
     private CandidaturaListaResponse candidatura(Object anexos) {
+        return candidatura(anexos, "OFERTA_EMPREGO", null);
+    }
+
+    private CandidaturaListaResponse candidatura(Object anexos, String tipoOferta, Boolean selecaoIefp) {
         return new CandidaturaListaResponse(
                 1,
                 143L,
@@ -138,8 +166,8 @@ class GestaoCandidaturaServiceImplTest {
                 "Santiago / Praia",
                 "Praia",
                 "LICENCIATURA",
-                "OFERTA_EMPREGO",
-                "OFERTA_EMPREGO",
+                tipoOferta,
+                tipoOferta,
                 22,
                 "OF-2026-001",
                 "Programador",
@@ -151,12 +179,38 @@ class GestaoCandidaturaServiceImplTest {
                 "TRIAGEM",
                 "TRIAGEM",
                 null,
-                null,
+                selecaoIefp,
                 null,
                 null,
                 null,
                 false,
                 LocalDateTime.of(2026, 8, 31, 15, 14, 50)
+        );
+    }
+
+    private CandidaturaDetalheResponse candidaturaDetalhe(String tipoOferta, Boolean selecaoIefp) {
+        return new CandidaturaDetalheResponse(
+                1,
+                tipoOferta,
+                tipoOferta,
+                22,
+                "OF-2026-001",
+                "Programador",
+                23,
+                "Entidade",
+                LocalDateTime.of(2026, 8, 31, 15, 14, 50),
+                null,
+                null,
+                "TRIAGEM",
+                "TRIAGEM",
+                null,
+                selecaoIefp,
+                null,
+                null,
+                LocalDateTime.of(2026, 8, 31, 15, 14, 50),
+                "utilizador",
+                null,
+                null
         );
     }
 }

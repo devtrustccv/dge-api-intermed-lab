@@ -13,6 +13,7 @@ public record VisitaTecnicaRequest(
         String objetivos,
         Integer cefpId,
         String cefp,
+        List<VisitaTecnicaAvaliacaoItemRequest> detalhesAvaliacao,
         String utilizador
 ) {
 }

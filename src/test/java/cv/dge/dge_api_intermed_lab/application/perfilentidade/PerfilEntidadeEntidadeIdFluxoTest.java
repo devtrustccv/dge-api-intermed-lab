@@ -16,6 +16,7 @@ import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandi
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CoordenadorOrientadorRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaDuplicacaoDadosResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaAvaliacaoItemRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaCandidatoRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaCandidatoSelectResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaRequest;
@@ -89,7 +90,8 @@ class PerfilEntidadeEntidadeIdFluxoTest {
         GestaoVagaServiceImpl service = new GestaoVagaServiceImpl(EmpregoDominioTestFixture.criar(), vagaRepository, geografiaService);
         VagaRequest request = novaVaga();
         when(vagaRepository.inserir(eq(ENTIDADE_ID), argThat(vaga ->
-                        "012345678".equals(vaga.entidadeNif())), eq("ATIVA"), eq("utilizador")))
+                        "012345678".equals(vaga.entidadeNif())
+                                && Integer.valueOf(7).equals(vaga.idCefp())), eq("ATIVA"), eq("utilizador")))
                 .thenReturn(29);
         when(vagaRepository.buscarPorId(29, ENTIDADE_ID)).thenReturn(Optional.empty());
 
@@ -97,7 +99,8 @@ class PerfilEntidadeEntidadeIdFluxoTest {
                 .isInstanceOf(ResponseStatusException.class);
 
         verify(vagaRepository).inserir(eq(ENTIDADE_ID), argThat(vaga ->
-                "012345678".equals(vaga.entidadeNif())), eq("ATIVA"), eq("utilizador"));
+                "012345678".equals(vaga.entidadeNif())
+                        && Integer.valueOf(7).equals(vaga.idCefp())), eq("ATIVA"), eq("utilizador"));
         verify(vagaRepository).buscarPorId(29, ENTIDADE_ID);
     }
 
@@ -140,6 +143,12 @@ class PerfilEntidadeEntidadeIdFluxoTest {
                 "Acompanhamento",
                 7,
                 "CEFP",
+                List.of(new VisitaTecnicaAvaliacaoItemRequest(
+                        List.of(new VisitaTecnicaCandidatoRequest(126L, "Candidato")),
+                        "COMP_TECNICA",
+                        "4",
+                        " Bom desempenho "
+                )),
                 "utilizador"
         );
         when(visitaRepository.listarCandidatos(ENTIDADE_ID))
@@ -153,7 +162,17 @@ class PerfilEntidadeEntidadeIdFluxoTest {
                 .isInstanceOf(ResponseStatusException.class);
 
         verify(visitaRepository).listarCandidatos(ENTIDADE_ID);
-        verify(visitaRepository).inserir(eq(ENTIDADE_ID), any(), eq("PENDENTE"), any(), eq("utilizador"));
+        verify(visitaRepository).inserir(
+                eq(ENTIDADE_ID),
+                argThat(dados -> dados.detalhesAvaliacao().size() == 1
+                        && dados.detalhesAvaliacao().get(0).candidatos().get(0).pessoaId().equals(126L)
+                        && dados.detalhesAvaliacao().get(0).criterio().equals("COMP_TECNICA")
+                        && dados.detalhesAvaliacao().get(0).avaliacao().equals("4")
+                        && dados.detalhesAvaliacao().get(0).observacao().equals("Bom desempenho")),
+                eq("PENDENTE"),
+                any(),
+                eq("utilizador")
+        );
         verify(visitaRepository).buscarPorId(10, ENTIDADE_ID);
     }
 
@@ -209,6 +228,7 @@ class PerfilEntidadeEntidadeIdFluxoTest {
                 "CONTRATO_TERMO",
                 "Entidade",
                 " 012345678 ",
+                7,
                 null,
                 null,
                 1,

@@ -1,7 +1,6 @@
 package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocRelacaoDTO;
-import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
 import cv.dge.dge_api_intermed_lab.application.document.service.ComboboxService;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAssiduidadeDetalheResponse;
@@ -244,10 +243,7 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
     private MinhaAssiduidadeDetalheResponse mapearDetalhe(AssiduidadeRegisto registo) {
         String tipo = normalizarValor(EmpregoDominio.DOMINIO_TIPO_ASSIDUIDADE, registo.tipoAssiduidade());
         String estado = normalizarValor(EmpregoDominio.DOMINIO_ESTADO_ASSIDUIDADE, registo.estado());
-        ComprovativoDocumento comprovativo = resolverComprovativo(
-                registo.assiduidadeId(),
-                textoOpcional(registo.comprovativo())
-        );
+        ComprovativoDocumento comprovativo = resolverComprovativo(textoOpcional(registo.comprovativo()));
         return new MinhaAssiduidadeDetalheResponse(
                 registo.assiduidadeId(),
                 tipo,
@@ -264,39 +260,7 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
         );
     }
 
-    private ComprovativoDocumento resolverComprovativo(Integer assiduidadeId, String pathLegado) {
-        try {
-            List<DocumentoResponseDTO> documentos = documentService.getDocumentosPorRelacao(
-                    assiduidadeId,
-                    tipoRelacaoDocumento,
-                    appCodeDocumento
-            );
-            if (documentos != null && !documentos.isEmpty()) {
-                DocumentoResponseDTO documento = documentos.stream()
-                        .filter(java.util.Objects::nonNull)
-                        .filter(item -> pathLegado != null && pathLegado.equals(textoOpcional(item.getPath())))
-                        .reduce((primeiro, ultimo) -> ultimo)
-                        .orElseGet(() -> documentos.stream()
-                                .filter(java.util.Objects::nonNull)
-                                .reduce((primeiro, ultimo) -> ultimo)
-                                .orElse(null));
-                if (documento == null) {
-                    return fallbackComprovativo(pathLegado);
-                }
-                String path = textoOpcional(documento.getPath());
-                String url = documentService.gerarLinkPublico(
-                        temTexto(path) ? path : textoOpcional(documento.getPreviewUrl())
-                );
-                return new ComprovativoDocumento(path, textoOpcional(url));
-            }
-        } catch (RuntimeException ex) {
-            log.warn("Nao foi possivel consultar o comprovativo da assiduidade {} na relacao documental.",
-                    assiduidadeId, ex);
-        }
-        return fallbackComprovativo(pathLegado);
-    }
-
-    private ComprovativoDocumento fallbackComprovativo(String pathLegado) {
+    private ComprovativoDocumento resolverComprovativo(String pathLegado) {
         return temTexto(pathLegado)
                 ? new ComprovativoDocumento(pathLegado, documentService.gerarLinkPublico(pathLegado))
                 : new ComprovativoDocumento(null, null);

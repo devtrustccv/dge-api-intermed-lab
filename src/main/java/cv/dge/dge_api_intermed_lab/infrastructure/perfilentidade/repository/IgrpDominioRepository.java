@@ -23,7 +23,27 @@ public class IgrpDominioRepository {
               JOIN tbl_env e ON e.id = d.env_fk
              WHERE UPPER(TRIM(d.dominio)) = UPPER(TRIM(?))
                AND LOWER(TRIM(e.dad)) = LOWER(TRIM(?))
-             ORDER BY d.ordem NULLS LAST, d.id
+            ORDER BY d.ordem NULLS LAST, d.id
+            """;
+
+    private static final String LISTAR_POR_DOMINIO_GLOBAL = """
+            SELECT d.id,
+                   d.description,
+                   d.domain_type,
+                   d.dominio,
+                   d.ordem,
+                   d.status,
+                   d.valor,
+                   d.env_fk
+              FROM tbl_domain d
+              JOIN tbl_env e ON e.id = d.env_fk
+             WHERE UPPER(TRIM(d.dominio)) = UPPER(TRIM(?))
+             ORDER BY CASE
+                          WHEN LOWER(TRIM(e.dad)) = LOWER(TRIM(?)) THEN 0
+                          ELSE 1
+                      END,
+                      d.ordem NULLS LAST,
+                      d.id
             """;
 
     private final JdbcTemplate jdbcTemplate;
@@ -47,6 +67,24 @@ public class IgrpDominioRepository {
                 ),
                 dominio,
                 dad
+        );
+    }
+
+    public List<EmpregoDominioResponse> listarPorDominioGlobal(String dominio, String dadPreferencial) {
+        return jdbcTemplate.query(
+                LISTAR_POR_DOMINIO_GLOBAL,
+                (rs, rowNum) -> new EmpregoDominioResponse(
+                        rs.getObject("id", Integer.class),
+                        rs.getString("description"),
+                        rs.getString("domain_type"),
+                        rs.getString("dominio"),
+                        rs.getObject("ordem", Integer.class),
+                        rs.getString("status"),
+                        rs.getString("valor"),
+                        rs.getObject("env_fk", Integer.class)
+                ),
+                dominio,
+                dadPreferencial
         );
     }
 }

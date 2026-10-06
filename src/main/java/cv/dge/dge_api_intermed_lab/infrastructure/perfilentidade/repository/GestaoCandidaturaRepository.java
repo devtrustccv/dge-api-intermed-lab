@@ -465,6 +465,10 @@ public class GestaoCandidaturaRepository {
             where.append(" AND c.id_oferta = ?");
             params.add(filtro.ofertaId());
         }
+        if (temTexto(filtro.tituloOferta())) {
+            where.append(" AND o.titulo ILIKE ?");
+            params.add("%" + filtro.tituloOferta().trim() + "%");
+        }
         adicionarFiltroTexto(where, params, "c.canal", filtro.canal());
         if (filtro.dataInicio() != null) {
             where.append(" AND c.date_create::date >= ?");

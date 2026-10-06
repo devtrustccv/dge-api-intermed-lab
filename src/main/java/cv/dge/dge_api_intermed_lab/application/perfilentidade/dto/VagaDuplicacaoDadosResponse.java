@@ -16,6 +16,7 @@ public record VagaDuplicacaoDadosResponse(
         Integer entidadeId,
         String denominacaoEntidade,
         String entidadeNif,
+        Integer idCefp,
         String habilitacaoMinima,
         String nivelQualificacao,
         Integer numVagas,

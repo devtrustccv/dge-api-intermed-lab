@@ -1,6 +1,5 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 
-import cv.dge.dge_api_intermed_lab.application.document.dto.DocumentoResponseDTO;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaDocumentoResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaAvaliacaoRequest;
@@ -19,8 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,12 +25,13 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
 
     private final EmpregoDominioService empregoDominioService;
     private static final String STATUS_TRIAGEM = "TRIAGEM";
     private static final String STATUS_APROVADO = "APROVADO";
+    private static final String TIPO_OFERTA_EMPREGO = "OFERTA_EMPREGO";
+    private static final String TIPO_OFERTA_ESTAGIO = "OFERTA_ESTAGIO";
     private static final String ESTADO_ENTREVISTA_PENDENTE = "PENDENTE";
     private static final String ESTADO_ENTREVISTA_REALIZADO = "REALIZADO";
     private static final String TIPO_DOCUMENTO_CURRICULO = "CURRICULO_VITAE";
@@ -41,12 +39,6 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
 
     private final GestaoCandidaturaRepository candidaturaRepository;
     private final DocumentService documentService;
-
-    @Value("${document.candidatura.app-code:interm_laboral}")
-    private String appCodeDocumento;
-
-    @Value("${document.candidatura.tipo-relacao:EMPREGO_T_CANDIDATURA_OFERTA}")
-    private String tipoRelacaoDocumento;
 
     @Override
     @Transactional(readOnly = true)
@@ -104,12 +96,7 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
         }
 
         CandidaturaDetalheResponse atual = buscarPorId(id, entidadeId);
-        if (!Boolean.TRUE.equals(atual.selecaoIefp())) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
-                    "Esta candidatura ainda não está disponível para avaliação."
-            );
-        }
+        validarDisponibilidadeAvaliacao(atual.tipoOferta(), atual.selecaoIefp());
 
         String motivoRecusa = texto(request.motivoRecusa());
         if (isRecusa(parecer) && !temTexto(motivoRecusa)) {
@@ -231,6 +218,7 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, filtro.estado()),
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_TIPO_OFERTA, filtro.tipoOferta()),
                 filtro.ofertaId(),
+                texto(filtro.tituloOferta()),
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_CANAL_OFERTA, filtro.canal()),
                 filtro.dataInicio(),
                 filtro.dataFim()
@@ -289,7 +277,7 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
                 empregoDominioService.descricao(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, item.statusCandidatura()),
                 item.motivoRecusa(),
                 item.selecaoIefp(),
-                Boolean.TRUE.equals(item.selecaoIefp()),
+                podeAvaliar(item.tipoOferta(), item.selecaoIefp()),
                 podeAgendarEntrevista(item.statusCandidatura()) && item.entrevistaId() == null,
                 item.entrevistaId(),
                 Boolean.TRUE.equals(item.podeRegistarResultadoEntrevista()),
@@ -301,10 +289,6 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
         List<CandidaturaDocumentoResponse> documentos = new ArrayList<>();
         Set<String> identidades = new LinkedHashSet<>();
         adicionarAnexos(item.anexo(), null, documentos, identidades);
-
-        if (documentos.isEmpty()) {
-            adicionarAnexosDaRelacao(item.id(), documentos, identidades);
-        }
         return List.copyOf(documentos);
     }
 
@@ -384,45 +368,6 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
         return new CandidaturaDocumentoResponse(documento.tipo(), nome, documento.path(), url);
     }
 
-    private void adicionarAnexosDaRelacao(
-            Integer candidaturaId,
-            List<CandidaturaDocumentoResponse> documentos,
-            Set<String> identidades
-    ) {
-        try {
-            List<DocumentoResponseDTO> documentosRelacionados = documentService.getDocumentosPorRelacao(
-                    candidaturaId,
-                    tipoRelacaoDocumento,
-                    appCodeDocumento
-            );
-            if (documentosRelacionados == null) {
-                return;
-            }
-            documentosRelacionados.stream()
-                    .map(this::converterDocumentoDaRelacao)
-                    .forEach(documento -> adicionarSemDuplicar(documento, documentos, identidades));
-        } catch (RuntimeException ex) {
-            log.warn("Nao foi possivel consultar os anexos da candidatura {} no SGF.", candidaturaId, ex);
-        }
-    }
-
-    private CandidaturaDocumentoResponse converterDocumentoDaRelacao(DocumentoResponseDTO documento) {
-        String path = texto(documento.getPath());
-        String url = documentService.gerarLinkPublico(
-                temTexto(path) ? path : texto(documento.getPreviewUrl())
-        );
-        String nome = primeiroTexto(documento.getName(), documento.getFileName());
-        if (!temTexto(nome)) {
-            nome = nomeDoPath(temTexto(path) ? path : url);
-        }
-        return new CandidaturaDocumentoResponse(
-                texto(documento.getIdTpDoc()),
-                nome,
-                path,
-                url
-        );
-    }
-
     private void adicionarSemDuplicar(
             CandidaturaDocumentoResponse documento,
             List<CandidaturaDocumentoResponse> documentos,
@@ -468,7 +413,7 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
     }
 
     private CandidaturaDetalheResponse enriquecerDetalhe(CandidaturaDetalheResponse item) {
-        List<CandidaturaDocumentoResponse> anexos = resolverAnexosDetalhe(item.id(), item.anexos());
+        List<CandidaturaDocumentoResponse> anexos = resolverAnexosDetalhe(item.anexos());
         return new CandidaturaDetalheResponse(
                 item.id(),
                 valorDominio(EmpregoDominio.DOMINIO_TIPO_OFERTA, item.tipoOferta()),
@@ -485,7 +430,7 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
                 empregoDominioService.descricao(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, item.statusCandidatura()),
                 item.motivoRecusa(),
                 item.selecaoIefp(),
-                Boolean.TRUE.equals(item.selecaoIefp()),
+                podeAvaliar(item.tipoOferta(), item.selecaoIefp()),
                 podeAgendarEntrevista(item.statusCandidatura()),
                 item.dateCreate(),
                 item.userCreate(),
@@ -494,14 +439,10 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
         );
     }
 
-    private List<CandidaturaDocumentoResponse> resolverAnexosDetalhe(Integer candidaturaId, Object anexosLegados) {
+    private List<CandidaturaDocumentoResponse> resolverAnexosDetalhe(Object anexosGuardados) {
         List<CandidaturaDocumentoResponse> documentos = new ArrayList<>();
         Set<String> identidades = new LinkedHashSet<>();
-
-        adicionarAnexosDaRelacao(candidaturaId, documentos, identidades);
-        if (documentos.isEmpty()) {
-            adicionarAnexos(anexosLegados, null, documentos, identidades);
-        }
+        adicionarAnexos(anexosGuardados, null, documentos, identidades);
         return List.copyOf(documentos);
     }
 
@@ -531,6 +472,29 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
     private boolean podeAgendarEntrevista(String status) {
         String valor = valorDominio(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, status);
         return STATUS_APROVADO.equals(valor);
+    }
+
+    private boolean podeAvaliar(String tipoOferta, Boolean selecaoIefp) {
+        String tipo = valorDominio(EmpregoDominio.DOMINIO_TIPO_OFERTA, tipoOferta);
+        return TIPO_OFERTA_EMPREGO.equals(tipo)
+                || (TIPO_OFERTA_ESTAGIO.equals(tipo) && Boolean.TRUE.equals(selecaoIefp));
+    }
+
+    private void validarDisponibilidadeAvaliacao(String tipoOferta, Boolean selecaoIefp) {
+        if (podeAvaliar(tipoOferta, selecaoIefp)) {
+            return;
+        }
+        String tipo = valorDominio(EmpregoDominio.DOMINIO_TIPO_OFERTA, tipoOferta);
+        if (TIPO_OFERTA_ESTAGIO.equals(tipo)) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "A candidatura a estágio só pode ser avaliada depois de ser selecionada pelo IEFP."
+            );
+        }
+        throw new ResponseStatusException(
+                HttpStatus.CONFLICT,
+                "O tipo de oferta da candidatura não permite avaliação."
+        );
     }
 
     private boolean isRecusa(String status) {

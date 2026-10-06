@@ -23,7 +23,7 @@ public class EmpregoDominioService {
 
     public List<EmpregoDominioResponse> consultarTodosCampos(String dominio) {
         String nome = validarNomeDominio(dominio);
-        List<EmpregoDominioResponse> itens = repository.listarPorDominio(nome, dad);
+        List<EmpregoDominioResponse> itens = carregarDominio(nome);
         if (itens.isEmpty()) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
@@ -35,21 +35,34 @@ public class EmpregoDominioService {
 
     public List<EmpregoDominioResponse> listarPorDominio(String dominio) {
         String nome = validarNomeDominio(dominio);
-        return repository.listarPorDominio(nome, dad).stream()
+        return carregarDominio(nome).stream()
                 .filter(EmpregoDominioResponse::ativo)
                 .toList();
     }
 
     public Optional<EmpregoDominioResponse> buscar(String dominio, String valor) {
+        String nome = validarNomeDominio(dominio);
         String valorNormalizado = EmpregoDominio.normalizar(valor);
         if (valorNormalizado == null) {
             return Optional.empty();
         }
-        String alias = EmpregoDominio.alias(dominio, valorNormalizado);
-        return listarPorDominio(dominio).stream()
-                .filter(item -> corresponde(item.valor(), valorNormalizado, alias)
-                        || corresponde(item.description(), valorNormalizado, alias))
-                .findFirst();
+        String alias = EmpregoDominio.alias(nome, valorNormalizado);
+        List<EmpregoDominioResponse> itensDoDad = repository.listarPorDominio(nome, dad);
+        Optional<EmpregoDominioResponse> encontrado = buscarNosItens(
+                itensDoDad.stream().filter(EmpregoDominioResponse::ativo).toList(),
+                valorNormalizado,
+                alias
+        );
+        if (encontrado.isPresent()) {
+            return encontrado;
+        }
+        return buscarNosItens(
+                repository.listarPorDominioGlobal(nome, dad).stream()
+                        .filter(EmpregoDominioResponse::ativo)
+                        .toList(),
+                valorNormalizado,
+                alias
+        );
     }
 
     public Optional<String> valorOficial(String dominio, String valor) {
@@ -60,7 +73,22 @@ public class EmpregoDominioService {
         if (valor == null || valor.isBlank()) {
             return valor;
         }
-        return buscar(dominio, valor)
+        String nome = validarNomeDominio(dominio);
+        String valorNormalizado = EmpregoDominio.normalizar(valor);
+        String alias = EmpregoDominio.alias(nome, valorNormalizado);
+        Optional<EmpregoDominioResponse> encontrado = buscarDescricaoNosItens(
+                repository.listarPorDominio(nome, dad),
+                valorNormalizado,
+                alias
+        );
+        if (encontrado.isEmpty()) {
+            encontrado = buscarDescricaoNosItens(
+                    repository.listarPorDominioGlobal(nome, dad),
+                    valorNormalizado,
+                    alias
+            );
+        }
+        return encontrado
                 .map(EmpregoDominioResponse::description)
                 .filter(descricao -> descricao != null && !descricao.isBlank())
                 .orElse(valor);
@@ -97,6 +125,34 @@ public class EmpregoDominioService {
             );
         }
         return nome;
+    }
+
+    private List<EmpregoDominioResponse> carregarDominio(String nome) {
+        List<EmpregoDominioResponse> itens = repository.listarPorDominio(nome, dad);
+        return itens.isEmpty() ? repository.listarPorDominioGlobal(nome, dad) : itens;
+    }
+
+    private Optional<EmpregoDominioResponse> buscarNosItens(
+            List<EmpregoDominioResponse> itens,
+            String valor,
+            String alias
+    ) {
+        return itens.stream()
+                .filter(item -> corresponde(item.valor(), valor, alias)
+                        || corresponde(item.description(), valor, alias))
+                .findFirst();
+    }
+
+    private Optional<EmpregoDominioResponse> buscarDescricaoNosItens(
+            List<EmpregoDominioResponse> itens,
+            String valor,
+            String alias
+    ) {
+        return itens.stream()
+                .filter(item -> item.description() != null && !item.description().isBlank())
+                .filter(item -> corresponde(item.valor(), valor, alias)
+                        || corresponde(item.description(), valor, alias))
+                .findFirst();
     }
 
     private boolean corresponde(String candidato, String valor, String alias) {

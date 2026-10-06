@@ -17,9 +17,4 @@ public class DocRelacaoBusImpl implements DocRelacaoBus {
         return docRelacaoRepository.findByIdRelacao(Long.valueOf(idRelacao));
     }
 
-    @Override
-    public List<DocRelacaoEntity> findByRelacao(Integer idRelacao, String tipoRelacao, String appCode) {
-        return docRelacaoRepository.findByIdRelacaoAndTipoRelacaoAndAppCode(
-                Long.valueOf(idRelacao), tipoRelacao, appCode);
-    }
 }

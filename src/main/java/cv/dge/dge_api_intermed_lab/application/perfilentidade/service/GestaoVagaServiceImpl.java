@@ -171,6 +171,7 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
                 origem.entidadeId(),
                 origem.denominacaoEntidade(),
                 origem.entidadeNif(),
+                origem.idCefp(),
                 origem.habilitacaoMinima(),
                 origem.nivelQualificacao(),
                 origem.numVagas(),
@@ -263,6 +264,11 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "A duração do contrato deve ser igual ou superior a zero.");
         }
+        if (request.idCefp() != null && request.idCefp() <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "O campo \"idCefp\" deve conter um identificador positivo. Valor recebido: \""
+                            + request.idCefp() + "\".");
+        }
         validarIntervaloDatas(request.dataInicioCandidatura(), request.dataFimCandidatura());
     }
 
@@ -318,6 +324,7 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
                 vaga.entidadeId(),
                 vaga.denominacaoEntidade(),
                 vaga.entidadeNif(),
+                vaga.idCefp(),
                 vaga.orientadorId(),
                 vaga.orientadorDenominacao(),
                 vaga.orientadorNome(),
@@ -352,6 +359,7 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
                 vaga.entidadeId(),
                 vaga.denominacaoEntidade(),
                 vaga.entidadeNif(),
+                vaga.idCefp(),
                 vaga.habilitacaoMinima(),
                 vaga.nivelQualificacao(),
                 vaga.numVagas(),
@@ -493,6 +501,7 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
                 ),
                 texto(request.denominacaoEntidade()),
                 texto(request.entidadeNif()),
+                request.idCefp(),
                 normalizarDominioOpcional(
                         EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA,
                         request.habilitacaoMinima(),

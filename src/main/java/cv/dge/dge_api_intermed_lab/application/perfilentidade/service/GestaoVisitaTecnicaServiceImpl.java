@@ -270,9 +270,12 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Selecione o Centro de Emprego e Formação Profissional responsável.");
         }
-        List<VisitaTecnicaCandidatoRequest> candidatos = normalizarCandidatosObrigatorios(
-                entidadeId,
-                request.candidatos()
+        Map<Long, VisitaTecnicaCandidatoSelectResponse> candidatosDisponiveis =
+                carregarCandidatosDisponiveis(entidadeId);
+        List<VisitaTecnicaCandidatoRequest> candidatos = normalizarCandidatosAssociados(
+                request.candidatos(),
+                true,
+                candidatosDisponiveis
         );
 
         String cefp = textoOuPadrao(
@@ -288,6 +291,7 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
                 texto(request.objetivos()),
                 request.cefpId(),
                 cefp,
+                normalizarDetalhesAvaliacao(request.detalhesAvaliacao(), candidatosDisponiveis),
                 texto(request.utilizador())
         );
     }
@@ -297,32 +301,27 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
             VisitaTecnicaAtualizacaoRequest request
     ) {
         validarIntervaloHoras(request.horaInicio(), request.horaFim());
+        Map<Long, VisitaTecnicaCandidatoSelectResponse> candidatosDisponiveis =
+                carregarCandidatosDisponiveis(entidadeId);
         return new VisitaTecnicaAtualizacaoRequest(
                 request.dataVisita(),
                 texto(request.visitante()),
                 request.horaInicio(),
                 request.horaFim(),
                 texto(request.objetivos()),
-                normalizarCandidatosAssociados(entidadeId, request.candidatos(), false),
+                normalizarCandidatosAssociados(request.candidatos(), false, candidatosDisponiveis),
                 texto(request.observacoesEntidade()),
                 texto(request.supervisorParticipante()),
                 texto(request.observacoesIefp()),
-                normalizarDetalhesAvaliacao(entidadeId, request.detalhesAvaliacao()),
+                normalizarDetalhesAvaliacao(request.detalhesAvaliacao(), candidatosDisponiveis),
                 texto(request.utilizador())
         );
     }
 
-    private List<VisitaTecnicaCandidatoRequest> normalizarCandidatosObrigatorios(
-            Integer entidadeId,
-            List<VisitaTecnicaCandidatoRequest> candidatos
-    ) {
-        return normalizarCandidatosAssociados(entidadeId, candidatos, true);
-    }
-
     private List<VisitaTecnicaCandidatoRequest> normalizarCandidatosAssociados(
-            Integer entidadeId,
             List<VisitaTecnicaCandidatoRequest> candidatos,
-            boolean obrigatorios
+            boolean obrigatorios,
+            Map<Long, VisitaTecnicaCandidatoSelectResponse> candidatosDisponiveis
     ) {
         List<VisitaTecnicaCandidatoRequest> normalizados = normalizarCandidatosOpcionais(candidatos);
         if (obrigatorios && normalizados.isEmpty()) {
@@ -332,13 +331,6 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
             return normalizados;
         }
 
-        Map<Long, VisitaTecnicaCandidatoSelectResponse> candidatosDisponiveis = visitaRepository.listarCandidatos(entidadeId)
-                .stream()
-                .collect(Collectors.toMap(
-                        VisitaTecnicaCandidatoSelectResponse::pessoaId,
-                        Function.identity(),
-                        (atual, ignorado) -> atual
-                ));
         for (VisitaTecnicaCandidatoRequest candidato : normalizados) {
             VisitaTecnicaCandidatoSelectResponse disponivel = candidatosDisponiveis.get(candidato.pessoaId());
             if (disponivel == null) {
@@ -384,9 +376,19 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
         return List.copyOf(normalizados);
     }
 
+    private Map<Long, VisitaTecnicaCandidatoSelectResponse> carregarCandidatosDisponiveis(Integer entidadeId) {
+        return visitaRepository.listarCandidatos(entidadeId)
+                .stream()
+                .collect(Collectors.toMap(
+                        VisitaTecnicaCandidatoSelectResponse::pessoaId,
+                        Function.identity(),
+                        (atual, ignorado) -> atual
+                ));
+    }
+
     private List<VisitaTecnicaAvaliacaoItemRequest> normalizarDetalhesAvaliacao(
-            Integer entidadeId,
-            List<VisitaTecnicaAvaliacaoItemRequest> detalhes
+            List<VisitaTecnicaAvaliacaoItemRequest> detalhes,
+            Map<Long, VisitaTecnicaCandidatoSelectResponse> candidatosDisponiveis
     ) {
         if (detalhes == null) {
             return Collections.emptyList();
@@ -402,7 +404,7 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
                 );
             }
             normalizados.add(new VisitaTecnicaAvaliacaoItemRequest(
-                    normalizarCandidatosAssociados(entidadeId, item.candidatos(), false),
+                    normalizarCandidatosAssociados(item.candidatos(), false, candidatosDisponiveis),
                     normalizarDominioObrigatorio(
                             EmpregoDominio.DOMINIO_CRITERIO_AVALIACAO,
                             item.criterio(),
