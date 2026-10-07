@@ -1,5 +1,6 @@
 package cv.dge.dge_api_intermed_lab.web.perfilentidade;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -30,7 +31,7 @@ class GestaoRelatorioAcompanhamentoControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders
-                .standaloneSetup(new GestaoRelatorioAcompanhamentoController(service))
+                .standaloneSetup(new GestaoRelatorioAcompanhamentoController(service, new ObjectMapper()))
                 .build();
     }
 

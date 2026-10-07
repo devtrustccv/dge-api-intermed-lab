@@ -1,5 +1,6 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 
+import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoFiltro;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoListaResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoRemoverRequest;
@@ -27,6 +28,7 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
     private static final String ESTADO_INATIVO = "I";
 
     private final ColocacaoCandidatoRepository colocacaoRepository;
+    private final DocumentService documentService;
 
     @Override
     @Transactional(readOnly = true)
@@ -200,7 +202,7 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
                 request.dataInicioPrevisto(),
                 request.dataFimPrevisto(),
                 texto(request.descricao()),
-                texto(request.contratoPath()),
+                normalizarReferenciaDocumento(request.contratoPath()),
                 texto(request.utilizador())
         );
     }
@@ -288,7 +290,7 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
                 item.dataInicioPrevisto(),
                 item.dataFimPrevisto(),
                 item.descricao(),
-                item.contratoPath(),
+                normalizarReferenciaDocumento(item.contratoPath()),
                 valorDominio(EmpregoDominio.DOMINIO_ESTADO, item.estado()),
                 empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO, item.estado()),
                 item.registadoCefp(),
@@ -304,6 +306,21 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Não foi possível identificar a colocação selecionada. Atualize a página e tente novamente.");
         }
+    }
+
+    private String normalizarReferenciaDocumento(String referencia) {
+        String valor = texto(referencia);
+        if (valor == null) {
+            return null;
+        }
+        if (valor.regionMatches(true, 0, "data:", 0, 5)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "O campo \"contratoPath\" não aceita ficheiros em Base64. Envie uma referência documental válida."
+            );
+        }
+        String link = documentService.gerarLinkPublico(valor);
+        return texto(link);
     }
 
     private void validarEntidade(Integer entidadeId) {

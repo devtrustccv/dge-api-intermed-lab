@@ -7,12 +7,24 @@ import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcomp
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoRemoverRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoRequest;
 import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface GestaoRelatorioAcompanhamentoService {
     List<RelatorioAcompanhamentoListaResponse> listar(RelatorioAcompanhamentoFiltro filtro);
     RelatorioAcompanhamentoDetalheResponse buscarPorId(Integer id, Integer entidadeId);
     RelatorioAcompanhamentoDetalheResponse criar(Integer entidadeId, RelatorioAcompanhamentoRequest request);
+    RelatorioAcompanhamentoDetalheResponse criar(
+            Integer entidadeId,
+            RelatorioAcompanhamentoRequest request,
+            MultipartFile relatorioAnexo
+    );
     RelatorioAcompanhamentoDetalheResponse atualizar(Integer id, Integer entidadeId, RelatorioAcompanhamentoRequest request);
+    RelatorioAcompanhamentoDetalheResponse atualizar(
+            Integer id,
+            Integer entidadeId,
+            RelatorioAcompanhamentoRequest request,
+            MultipartFile relatorioAnexo
+    );
     RelatorioAcompanhamentoDetalheResponse remover(Integer id, Integer entidadeId, RelatorioAcompanhamentoRemoverRequest request);
     List<RelatorioAcompanhamentoOfertaSelectResponse> listarOpcoes(Integer entidadeId);
 }

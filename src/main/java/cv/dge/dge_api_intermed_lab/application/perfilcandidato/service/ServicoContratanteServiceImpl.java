@@ -458,7 +458,11 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
             if (!temTexto(path)) {
                 throw new IllegalStateException("O serviço documental devolveu um path vazio.");
             }
-            return new AnexoArmazenado(nomeOriginal, path);
+            return new AnexoArmazenado(
+                    nomeOriginal,
+                    path,
+                    documentService.gerarLinkPublico(path)
+            );
         } catch (RuntimeException ex) {
             registarErroUpload(servicoId, idTipoDocumento, nomeOriginal, ex);
             throw new ResponseStatusException(
@@ -599,7 +603,9 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
                 .map(anexo -> new ServicoContratanteAnexoResponse(
                         anexo.nome(),
                         anexo.path(),
-                        documentService.gerarLinkPublico(anexo.path())
+                        documentService.gerarLinkPublico(
+                                temTexto(anexo.path()) ? anexo.path() : anexo.url()
+                        )
                 ))
                 .toList();
     }

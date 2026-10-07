@@ -284,7 +284,14 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
             return;
         }
         String path = guardarComprovativo(assiduidadeId, comprovativo);
-        if (!assiduidadeRepository.atualizarComprovativo(assiduidadeId, pessoaId, path)) {
+        String linkCompleto = documentService.gerarLinkPublico(path);
+        if (!temTexto(linkCompleto)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_GATEWAY,
+                    "O serviço documental não devolveu um link válido para o comprovativo."
+            );
+        }
+        if (!assiduidadeRepository.atualizarComprovativo(assiduidadeId, pessoaId, linkCompleto)) {
             throw assiduidadeNaoEncontrada();
         }
     }

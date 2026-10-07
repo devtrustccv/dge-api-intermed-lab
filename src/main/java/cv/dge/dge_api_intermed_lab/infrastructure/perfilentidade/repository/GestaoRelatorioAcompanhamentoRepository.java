@@ -262,6 +262,20 @@ public class GestaoRelatorioAcompanhamentoRepository {
                 """, Timestamp.valueOf(LocalDateTime.now()), utilizador, id, entidadeId);
     }
 
+    public void atualizarRelatorioAnexo(
+            Integer id,
+            Integer entidadeId,
+            String relatorioAnexo,
+            String utilizador
+    ) {
+        jdbcTemplate.update("""
+                UPDATE emprego_t_relatorio_acomp
+                SET relatorio_anexo = ?, date_update = ?, user_update = ?
+                WHERE id = ?
+                  AND entidade_id = ?
+                """, relatorioAnexo, Timestamp.valueOf(LocalDateTime.now()), utilizador, id, entidadeId);
+    }
+
     private RelatorioAcompanhamentoDetalheResponse mapDetalhe(
             java.sql.ResultSet rs,
             int rowNum

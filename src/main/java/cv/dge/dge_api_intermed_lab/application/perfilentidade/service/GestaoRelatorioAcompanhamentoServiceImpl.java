@@ -1,5 +1,8 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 
+import cv.dge.dge_api_intermed_lab.application.document.dto.DocRelacaoDTO;
+import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
+
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoDetalheResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoEstagiarioSelectResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoFiltro;
@@ -11,23 +14,42 @@ import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcomp
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.GestaoRelatorioAcompanhamentoRepository;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class GestaoRelatorioAcompanhamentoServiceImpl implements GestaoRelatorioAcompanhamentoService {
 
     private final EmpregoDominioService empregoDominioService;
     private static final String ESTADO_ATIVO = "A";
     private static final String ESTADO_INATIVO = "I";
+    private static final DateTimeFormatter SUFIXO_DOCUMENTO = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 
     private final GestaoRelatorioAcompanhamentoRepository repository;
+    private final DocumentService documentService;
+
+    @Value("${document.relatorio-acompanhamento.app-code:interm_laboral}")
+    private String appCodeDocumento;
+
+    @Value("${document.relatorio-acompanhamento.tipo-relacao:EMPREGO_T_RELATORIO_ACOMP}")
+    private String tipoRelacaoDocumento;
+
+    @Value("${document.relatorio-acompanhamento.estado:A}")
+    private String estadoDocumento;
 
     @Override
     @Transactional(readOnly = true)
@@ -64,10 +86,32 @@ public class GestaoRelatorioAcompanhamentoServiceImpl implements GestaoRelatorio
             Integer entidadeId,
             RelatorioAcompanhamentoRequest request
     ) {
+        return criar(entidadeId, request, null);
+    }
+
+    @Override
+    @Transactional
+    public RelatorioAcompanhamentoDetalheResponse criar(
+            Integer entidadeId,
+            RelatorioAcompanhamentoRequest request,
+            MultipartFile relatorioAnexo
+    ) {
         validarEntidade(entidadeId);
         RelatorioAcompanhamentoRequest dados = validarRequest(request);
         RelatorioAcompanhamentoVinculo vinculo = resolverVinculo(entidadeId, dados);
-        Integer id = repository.inserir(vinculo, dados, ESTADO_ATIVO, dados.utilizador());
+        String referencia = temFicheiro(relatorioAnexo)
+                ? null
+                : normalizarReferenciaDocumento(dados.relatorioAnexo());
+        Integer id = repository.inserir(
+                vinculo,
+                comRelatorioAnexo(dados, referencia),
+                ESTADO_ATIVO,
+                dados.utilizador()
+        );
+        if (temFicheiro(relatorioAnexo)) {
+            String linkCompleto = guardarRelatorio(id, relatorioAnexo);
+            repository.atualizarRelatorioAnexo(id, entidadeId, linkCompleto, dados.utilizador());
+        }
         return buscarPorId(id, entidadeId);
     }
 
@@ -78,11 +122,36 @@ public class GestaoRelatorioAcompanhamentoServiceImpl implements GestaoRelatorio
             Integer entidadeId,
             RelatorioAcompanhamentoRequest request
     ) {
+        return atualizar(id, entidadeId, request, null);
+    }
+
+    @Override
+    @Transactional
+    public RelatorioAcompanhamentoDetalheResponse atualizar(
+            Integer id,
+            Integer entidadeId,
+            RelatorioAcompanhamentoRequest request,
+            MultipartFile relatorioAnexo
+    ) {
         RelatorioAcompanhamentoDetalheResponse atual = buscarPorId(id, entidadeId);
         garantirAtivo(atual);
         RelatorioAcompanhamentoRequest dados = validarRequest(request);
         RelatorioAcompanhamentoVinculo vinculo = resolverVinculo(entidadeId, dados);
-        repository.atualizar(id, entidadeId, vinculo, dados, dados.utilizador());
+        String referencia;
+        if (temFicheiro(relatorioAnexo)) {
+            referencia = guardarRelatorio(id, relatorioAnexo);
+        } else if (temTexto(dados.relatorioAnexo())) {
+            referencia = normalizarReferenciaDocumento(dados.relatorioAnexo());
+        } else {
+            referencia = normalizarReferenciaDocumento(atual.relatorioAnexo());
+        }
+        repository.atualizar(
+                id,
+                entidadeId,
+                vinculo,
+                comRelatorioAnexo(dados, referencia),
+                dados.utilizador()
+        );
         return buscarPorId(id, entidadeId);
     }
 
@@ -139,6 +208,7 @@ public class GestaoRelatorioAcompanhamentoServiceImpl implements GestaoRelatorio
                 "A data de fim do relatório não pode ser anterior à data de início.");
         String utilizador = obrigatorio(request.utilizador(),
                 "Não foi possível identificar o utilizador. Inicie sessão novamente e repita a operação.");
+        rejeitarBase64(request.relatorioAnexo());
         return new RelatorioAcompanhamentoRequest(
                 request.pessoaId(), codigoReferencia, request.dataInicio(), request.dataFim(),
                 texto(request.atividadesRealizadas()), texto(request.dificuldades()),
@@ -161,7 +231,7 @@ public class GestaoRelatorioAcompanhamentoServiceImpl implements GestaoRelatorio
         String estado = valorEstado(item.estado());
         return new RelatorioAcompanhamentoListaResponse(
                 item.id(), item.pessoaId(), item.estagiario(), item.ofertaId(), item.codigoReferencia(),
-                item.dataRegisto(), item.relatorioAnexo(), estado,
+                item.dataRegisto(), linkDocumentoParaResposta(item.relatorioAnexo()), estado,
                 empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO, estado));
     }
 
@@ -170,9 +240,126 @@ public class GestaoRelatorioAcompanhamentoServiceImpl implements GestaoRelatorio
         return new RelatorioAcompanhamentoDetalheResponse(
                 item.id(), item.ofertaId(), item.codigoReferencia(), item.colocacaoId(), item.entidadeId(),
                 item.denominacaoEntidade(), item.pessoaId(), item.estagiario(), item.dataInicio(), item.dataFim(),
-                item.atividadesRealizadas(), item.dificuldades(), item.recomendacoes(), item.relatorioAnexo(),
+                item.atividadesRealizadas(), item.dificuldades(), item.recomendacoes(),
+                linkDocumentoParaResposta(item.relatorioAnexo()),
                 estado, empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO, estado),
                 item.dateCreate(), item.userCreate(), item.dateUpdate(), item.userUpdate());
+    }
+
+    private String guardarRelatorio(Integer relatorioId, MultipartFile ficheiro) {
+        String nomeOriginal = StringUtils.cleanPath(
+                Optional.ofNullable(ficheiro.getOriginalFilename()).orElse("relatorio")
+        );
+        String extensao = extensao(nomeOriginal);
+        String nomeArmazenamento = "RELATORIO-"
+                + LocalDateTime.now().format(SUFIXO_DOCUMENTO);
+        String path = appCodeDocumento
+                + "/" + LocalDateTime.now().getYear()
+                + "/modulos/" + sanitizarSegmentoPath(tipoRelacaoDocumento)
+                + "/" + relatorioId
+                + "/" + nomeArmazenamento + extensao;
+        try {
+            String pathGuardado = documentService.save(DocRelacaoDTO.builder()
+                    .idRelacao(relatorioId)
+                    .tipoRelacao(tipoRelacaoDocumento)
+                    .estado(estadoDocumento)
+                    .name(nomeOriginal)
+                    .fileName(nomeArmazenamento)
+                    .path(path)
+                    .appCode(appCodeDocumento)
+                    .file(ficheiro)
+                    .build());
+            if (!temTexto(pathGuardado)) {
+                throw new IllegalStateException("O serviço documental devolveu um caminho vazio.");
+            }
+            String linkCompleto = documentService.gerarLinkPublico(pathGuardado);
+            if (!temTexto(linkCompleto)) {
+                throw new IllegalStateException("O serviço documental devolveu um link inválido.");
+            }
+            return linkCompleto;
+        } catch (RuntimeException ex) {
+            log.error(
+                    "Falha ao guardar anexo do relatório de acompanhamento: relatorioId={}, ficheiro={}",
+                    relatorioId,
+                    nomeOriginal,
+                    ex
+            );
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_GATEWAY,
+                    "Não foi possível guardar o anexo do relatório de acompanhamento. Tente novamente mais tarde.",
+                    ex
+            );
+        }
+    }
+
+    private String normalizarReferenciaDocumento(String referencia) {
+        String valor = texto(referencia);
+        if (valor == null) {
+            return null;
+        }
+        rejeitarBase64(valor);
+        String link = documentService.gerarLinkPublico(valor);
+        return temTexto(link) ? link : null;
+    }
+
+    private String linkDocumentoParaResposta(String referencia) {
+        if (!temTexto(referencia) || ehDataUri(referencia)) {
+            return null;
+        }
+        String link = documentService.gerarLinkPublico(referencia);
+        return temTexto(link) ? link : null;
+    }
+
+    private void rejeitarBase64(String referencia) {
+        if (temTexto(referencia) && ehDataUri(referencia)) {
+            throw erro(
+                    "O campo \"relatorioAnexo\" não aceita ficheiros em Base64. "
+                            + "Envie o documento como multipart/form-data."
+            );
+        }
+    }
+
+    private boolean ehDataUri(String valor) {
+        return valor.trim().regionMatches(true, 0, "data:", 0, 5);
+    }
+
+    private boolean temFicheiro(MultipartFile ficheiro) {
+        return ficheiro != null && !ficheiro.isEmpty();
+    }
+
+    private boolean temTexto(String valor) {
+        return valor != null && !valor.trim().isEmpty();
+    }
+
+    private String extensao(String nome) {
+        int indice = nome.lastIndexOf('.');
+        if (indice < 0 || indice == nome.length() - 1) {
+            return "";
+        }
+        return nome.substring(indice).toLowerCase();
+    }
+
+    private String sanitizarSegmentoPath(String valor) {
+        String normalizado = valor == null ? "DOCUMENTO" : valor.trim();
+        normalizado = normalizado.replaceAll("[^A-Za-z0-9_-]", "-");
+        return normalizado.isBlank() ? "DOCUMENTO" : normalizado;
+    }
+
+    private RelatorioAcompanhamentoRequest comRelatorioAnexo(
+            RelatorioAcompanhamentoRequest dados,
+            String relatorioAnexo
+    ) {
+        return new RelatorioAcompanhamentoRequest(
+                dados.pessoaId(),
+                dados.codigoReferencia(),
+                dados.dataInicio(),
+                dados.dataFim(),
+                dados.atividadesRealizadas(),
+                dados.dificuldades(),
+                dados.recomendacoes(),
+                relatorioAnexo,
+                dados.utilizador()
+        );
     }
 
     private void garantirAtivo(RelatorioAcompanhamentoDetalheResponse item) {

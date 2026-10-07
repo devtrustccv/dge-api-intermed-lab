@@ -63,4 +63,11 @@ class DocumentServiceImplTest {
 
         assertThat(service.gerarLinkPublico(urlExterna)).isEqualTo(urlExterna);
     }
+
+    @Test
+    void naoDeveTransformarBase64EmLinkDoVisualizador() {
+        String dataUri = "data:application/pdf;base64,JVBERi0xLjYK";
+
+        assertThat(service.gerarLinkPublico(dataUri)).isEmpty();
+    }
 }

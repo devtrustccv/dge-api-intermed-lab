@@ -28,6 +28,7 @@ public class DocumentServiceImpl implements DocumentService {
     private static final String DOCUMENTOS_ENDPOINT = "/documentos";
     private static final String DEFAULT_N_PROCESSO = "SEM-PROCESSO";
     private static final String DEFAULT_DOCUMENT_TYPE = "application/pdf";
+    private static final String DATA_URI_PREFIX = "data:";
 
     private final RestClientHelper restClientHelper;
 
@@ -108,7 +109,13 @@ public class DocumentServiceImpl implements DocumentService {
 
     private String resolverPathDocumento(DocRelacaoDTO dto) {
         if (dto.getPath() != null && !dto.getPath().isBlank()) {
-            return dto.getPath();
+            String path = dto.getPath().trim();
+            if (ehUrlAbsoluta(path) || ehDataUri(path)) {
+                throw new IllegalArgumentException(
+                        "O registo documental deve receber apenas o caminho relativo do ficheiro, nunca URL ou Base64."
+                );
+            }
+            return path;
         }
 
         String ext = getFileExtension(dto.getFile().getOriginalFilename());
@@ -169,6 +176,9 @@ public class DocumentServiceImpl implements DocumentService {
         }
 
         String valor = pathOuUrl.trim();
+        if (ehDataUri(valor)) {
+            return "";
+        }
         if (ehUrlAbsoluta(valor)) {
             String pathExtraido = extrairParametroPathUrl(valor);
             if (pathExtraido == null || pathExtraido.isBlank()) {
@@ -194,6 +204,10 @@ public class DocumentServiceImpl implements DocumentService {
     private boolean ehUrlAbsoluta(String valor) {
         return valor.regionMatches(true, 0, "http://", 0, 7)
                 || valor.regionMatches(true, 0, "https://", 0, 8);
+    }
+
+    private boolean ehDataUri(String valor) {
+        return valor.regionMatches(true, 0, DATA_URI_PREFIX, 0, DATA_URI_PREFIX.length());
     }
 
     private String extrairParametroPathUrl(String urlDocumento) {

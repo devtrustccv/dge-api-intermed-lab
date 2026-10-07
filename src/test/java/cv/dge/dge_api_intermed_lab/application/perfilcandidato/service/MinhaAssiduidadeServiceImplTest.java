@@ -187,6 +187,7 @@ class MinhaAssiduidadeServiceImplTest {
         String path = "interm_laboral/2026/modulos/EMPREGO_T_ASSIDUIDADE/41/COMPROVATIVO-"
                 + "a".repeat(180)
                 + ".pdf";
+        String linkCompleto = "https://documentos/41";
         when(assiduidadeRepository.buscarColocacaoAtiva(9001L)).thenReturn(Optional.of(colocacao));
         when(assiduidadeRepository.inserir(eq(colocacao), argThat(dados -> true), eq("PENDENTE")))
                 .thenReturn(41);
@@ -200,15 +201,16 @@ class MinhaAssiduidadeServiceImplTest {
                         && "8".equals(documento.getIdTpDoc())
                         && documento.getFile() == comprovativo
         ))).thenReturn(path);
-        when(assiduidadeRepository.atualizarComprovativo(41, 9001L, path)).thenReturn(true);
-        when(assiduidadeRepository.buscarPorId(41, 9001L)).thenReturn(Optional.of(registo(path)));
-        when(documentService.gerarLinkPublico(path)).thenReturn("https://documentos/41");
+        when(assiduidadeRepository.atualizarComprovativo(41, 9001L, linkCompleto)).thenReturn(true);
+        when(assiduidadeRepository.buscarPorId(41, 9001L)).thenReturn(Optional.of(registo(linkCompleto)));
+        when(documentService.gerarLinkPublico(path)).thenReturn(linkCompleto);
+        when(documentService.gerarLinkPublico(linkCompleto)).thenReturn(linkCompleto);
 
         MinhaAssiduidadeDetalheResponse resultado = service.criar(9001L, request(), comprovativo);
 
-        assertThat(resultado.comprovativoPath()).isEqualTo(path);
-        assertThat(resultado.comprovativoUrl()).isEqualTo("https://documentos/41");
-        verify(assiduidadeRepository).atualizarComprovativo(41, 9001L, path);
+        assertThat(resultado.comprovativoPath()).isEqualTo(linkCompleto);
+        assertThat(resultado.comprovativoUrl()).isEqualTo(linkCompleto);
+        verify(assiduidadeRepository).atualizarComprovativo(41, 9001L, linkCompleto);
     }
 
     @Test

@@ -662,12 +662,18 @@ public class ServicoContratanteRepository {
             }
             return;
         }
-        String path = primeiroTexto(item, "path", "caminho", "url", "ver_documento");
-        if (!temTexto(path)) {
+        String path = primeiroTexto(item, "path", "caminho", "anexo");
+        String url = primeiroTexto(item, "url", "ver_documento", "previewUrl");
+        String referencia = temTexto(path) ? path : url;
+        if (!temTexto(referencia)) {
             return;
         }
         String nome = primeiroTexto(item, "nome", "name", "fileName", "ficheiro");
-        anexos.add(new AnexoArmazenado(temTexto(nome) ? nome : nomeDoPath(path), path));
+        anexos.add(new AnexoArmazenado(
+                temTexto(nome) ? nome : nomeDoPath(referencia),
+                path,
+                url
+        ));
     }
 
     private String primeiroTexto(JsonNode item, String... campos) {
@@ -721,7 +727,10 @@ public class ServicoContratanteRepository {
         return valor != null && !valor.trim().isEmpty();
     }
 
-    public record AnexoArmazenado(String nome, String path) {
+    public record AnexoArmazenado(String nome, String path, String url) {
+        public AnexoArmazenado(String nome, String path) {
+            this(nome, path, null);
+        }
     }
 
     public record ServicoRegisto(

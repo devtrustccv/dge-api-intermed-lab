@@ -178,7 +178,11 @@ class PerfilEntidadeEntidadeIdFluxoTest {
 
     @Test
     void colocacaoDeveResolverOfertaECandidaturaDentroDaEntidadeDaUrl() {
-        ColocacaoCandidatoServiceImpl service = new ColocacaoCandidatoServiceImpl(EmpregoDominioTestFixture.criar(), colocacaoRepository);
+        ColocacaoCandidatoServiceImpl service = new ColocacaoCandidatoServiceImpl(
+                EmpregoDominioTestFixture.criar(),
+                colocacaoRepository,
+                documentService
+        );
         ColocacaoCandidatoRequest request = new ColocacaoCandidatoRequest(
                 "OFERTA_ESTAGIO",
                 29,

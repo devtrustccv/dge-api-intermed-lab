@@ -211,7 +211,9 @@ public class ServicoCandidatoServiceImpl implements ServicoCandidatoService {
                 .map(anexo -> new ServicoContratanteAnexoResponse(
                         anexo.nome(),
                         anexo.path(),
-                        documentService.gerarLinkPublico(anexo.path())
+                        documentService.gerarLinkPublico(
+                                temTexto(anexo.path()) ? anexo.path() : anexo.url()
+                        )
                 ))
                 .toList();
     }
