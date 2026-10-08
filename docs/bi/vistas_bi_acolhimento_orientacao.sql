@@ -322,6 +322,9 @@ BEGIN
     IF to_regclass('public.emprego_t_agendamento_entrevista') IS NULL THEN
         IMPORT FOREIGN SCHEMA public LIMIT TO (emprego_t_agendamento_entrevista)
         FROM SERVER emprego_server INTO public;
+    ELSE
+        ALTER FOREIGN TABLE public.emprego_t_agendamento_entrevista
+            ADD COLUMN IF NOT EXISTS data_encaminhamento DATE;
     END IF;
 
     IF to_regclass('public.emprego_t_agendamento_balanco') IS NULL THEN
@@ -452,8 +455,9 @@ SELECT
     c.sigla                                    AS cefp_sigla,
     c.ilha                                     AS ilha,
     c.concelho                                 AS concelho,
-    -- encaminhamento (AVISO 2b)
-    enc.data_encaminhamento                    AS data_encaminhamento,
+    -- encaminhamento (obtido da entrevista agendada, com fallback para acolhimento_servico)
+    COALESCE(ent.data_encaminhamento, enc.data_encaminhamento)
+                                            AS data_encaminhamento,
     -- entrevista (AVISO 2c)
     CASE WHEN ent.id IS NULL THEN 'nao' ELSE 'sim' END
                                             AS entrevista_agendada,
@@ -498,9 +502,9 @@ LEFT JOIN LATERAL (
     LIMIT 1
 ) enc ON TRUE
 LEFT JOIN LATERAL (
-    -- Entrevista mais recente do acolhimento. A coluna
-    -- agendamento_entrevista.data_encaminhamento nao existe (AVISO 2c).
+    -- Entrevista mais recente do acolhimento.
     SELECT e.id,
+           e.data_encaminhamento,
            e.date_create        AS data_agendamento_entrevista,
            e.data_entrevista,
            e.dm_status_entrevista,
@@ -676,6 +680,7 @@ SELECT
     e.nome_tecnico                             AS tecnico,
     e.canal                                    AS canal,
     e.local_entrevista                         AS local_entrevista,
+    e.data_encaminhamento                      AS data_encaminhamento,
     e.date_create                              AS data_agendamento,
     EXTRACT(YEAR FROM e.date_create)::int      AS ano_agendamento,
     to_char(e.date_create, 'TMMonth')          AS mes_agendamento,

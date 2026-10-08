@@ -10,25 +10,35 @@
 -- (com extensoes, foreign tables e procedure criadas).
 --
 -- ALTERACOES INCLUIDAS:
---   1. vw_acolhimento:
+--   1. Foreign Table emprego_t_agendamento_entrevista:
+--      - Adicionada coluna data_encaminhamento DATE
+--   2. vw_acolhimento:
+--      - data_encaminhamento agora vem de emprego_t_agendamento_entrevista (com fallback para acolhimento_servico)
 --      - Removidas colunas: nome, sexo, origem_colocacao
 --      - Mantida habilitacao_literaria (historica por acolhimento)
 --      - estado_entrevista com COALESCE(ent.dm_status_entrevista, a.status_entrevista)
 --      - Adicionado indice idx_mv_acolhimento_habilitacao
---   2. vw_utente:
+--   3. vw_utente:
 --      - Adicionada coluna 'cefp' (e 'cefp_sigla') do primeiro acolhimento (data mais antiga)
 --      - Removidas colunas: habilitacao_literaria, total_acolhimentos, ultimo_acolhimento, servico_mais_solicitado
 --      - Adicionado indice idx_mv_utente_cefp
---   3. vw_entrevista:
+--   4. vw_entrevista:
+--      - Adicionada coluna data_encaminhamento
 --      - estado_entrevista com COALESCE(e.dm_status_entrevista, a.status_entrevista)
 -- ============================================================================
+
+-- ---------------------------------------------------------------------------
+-- 0. ATUALIZAR FOREIGN TABLE (garantir que db_emprego_bi ve a nova coluna de bd_dge_emprego)
+-- ---------------------------------------------------------------------------
+ALTER FOREIGN TABLE IF EXISTS public.emprego_t_agendamento_entrevista
+    ADD COLUMN IF NOT EXISTS data_encaminhamento DATE;
 
 
 -- ============================================================================
 -- 1. VISTA DE ACOLHIMENTOS  ->  mv_acolhimento / vw_acolhimento
 -- ============================================================================
 DROP VIEW IF EXISTS public.vw_acolhimento CASCADE;
-DROP MATERIALIZED VIEW IF EXISTS public.mv_acolhimento CASCADE; 
+DROP MATERIALIZED VIEW IF EXISTS public.mv_acolhimento CASCADE;
 
 CREATE MATERIALIZED VIEW public.mv_acolhimento AS
 SELECT
@@ -60,9 +70,10 @@ SELECT
     c.sigla                                    AS cefp_sigla,
     c.ilha                                     AS ilha,
     c.concelho                                 AS concelho,
-    -- encaminhamento (AVISO 2b)
-    enc.data_encaminhamento                    AS data_encaminhamento,
-    -- entrevista (AVISO 2c)
+    -- encaminhamento (obtido da entrevista agendada, com fallback para acolhimento_servico)
+    COALESCE(ent.data_encaminhamento, enc.data_encaminhamento)
+                                            AS data_encaminhamento,
+    -- entrevista
     CASE WHEN ent.id IS NULL THEN 'nao' ELSE 'sim' END
                                             AS entrevista_agendada,
     ent.data_agendamento_entrevista            AS data_agendamento_entrevista,
@@ -72,14 +83,14 @@ SELECT
     ent.parecer_io                             AS parecer_io,
     dom.description                           AS parecer_io_desc,
     ent.obs_parecer_io                         AS obs_parecer_io,
-    -- sessao de balanco (AVISO 2e)
+    -- sessao de balanco
     CASE WHEN bal.id IS NULL THEN 'nao' ELSE 'sim' END
                                             AS sessao_balanco,
     bal.data_agendamento_balanco               AS data_agendamento_balanco,
     bal.data_realizacao_balanco                AS data_realizacao_balanco,
     bal.tipo_balanco                           AS tipo_balanco,
     bal.estado_balanco                         AS estado_balanco,
-    -- colocacao (AVISO 2f e AVISO 3)
+    -- colocacao
     CASE UPPER(TRIM(COALESCE(a.tipo_servico, '')))
         WHEN 'EMPREGO'  THEN COALESCE(col_pac.data, col_emp.data)
         WHEN 'FORMACAO' THEN COALESCE(col_sgf.data, col_emp.data)
@@ -105,6 +116,7 @@ LEFT JOIN LATERAL (
 ) enc ON TRUE
 LEFT JOIN LATERAL (
     SELECT e.id,
+           e.data_encaminhamento,
            e.date_create        AS data_agendamento_entrevista,
            e.data_entrevista,
            e.dm_status_entrevista,
@@ -256,6 +268,7 @@ SELECT
     e.nome_tecnico                             AS tecnico,
     e.canal                                    AS canal,
     e.local_entrevista                         AS local_entrevista,
+    e.data_encaminhamento                      AS data_encaminhamento,
     e.date_create                              AS data_agendamento,
     EXTRACT(YEAR FROM e.date_create)::int      AS ano_agendamento,
     to_char(e.date_create, 'TMMonth')          AS mes_agendamento,
@@ -324,12 +337,12 @@ SELECT
     (SELECT COUNT(*) FROM public.vw_acolhimento)  AS total_acolhimentos,
     (SELECT COUNT(*) FROM public.vw_entrevista)   AS total_entrevistas;
 
--- Amostra de acolhimento (sem nome, sexo, origem_colocacao; com habilitacao)
-SELECT id, pessoa_id, id_utente, codigo_acolhimento, habilitacao_literaria, data, tipo_servico, cefp
+-- Amostra de acolhimento (com data_encaminhamento e habilitacao_literaria)
+SELECT id, pessoa_id, id_utente, codigo_acolhimento, data_encaminhamento, data, tipo_servico, cefp
 FROM public.vw_acolhimento
 LIMIT 5;
 
--- Amostra de utentes (sem habilitacao_literaria; com cefp)
-SELECT id, nome, sexo, data_registo, cefp, cefp_sigla
-FROM public.vw_utente
+-- Amostra de entrevista (com data_encaminhamento)
+SELECT id, id_acolhimento, data_encaminhamento, data_agendamento, data_realizacao, estado_entrevista
+FROM public.vw_entrevista
 LIMIT 5;
