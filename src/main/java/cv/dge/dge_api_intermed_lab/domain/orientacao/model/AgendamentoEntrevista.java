@@ -42,6 +42,9 @@ public class AgendamentoEntrevista {
     @Column(name = "data_entrevista")
     private LocalDate dataEntrevista;
 
+    @Column(name = "data_encaminhamento")
+    private LocalDate dataEncaminhamento;
+
     @Column(name = "hora_inicio")
     private LocalTime horaInicio;
 

@@ -163,8 +163,7 @@
 --   qualquer outro       ->  emprego_t_colocacao_candidato                #
 --                           (ex.: SUB_DESEMP)                              #
 --                                                                          #
--- # A coluna origem_colocacao diz de que tabela veio cada valor, para o      #
--- # dashboard conseguir auditar.                                             #
+-- # A busca de data_colocacao segue essa prioridade de tabelas conforme o tipo.#
 -- #                                                                          #
 -- # >>> DADO SUJO: 'SUB_DESEMP' esta gravado com um ESPACO DE ALTURA ZERO     #
 -- #     (U+200B, bytes e2 80 8b) no fim da string.                            #
@@ -429,10 +428,12 @@ SELECT
     a.id                                       AS id,
     a.id_pessoa                                AS pessoa_id,
     a.id_utente                                AS id_utente,
-    u.nome                                     AS nome,
-    u.sexo                                     AS sexo,
-    u.habilitacao_literaria                    AS habilitacao_literaria,
     a.num_inscricao                            AS codigo_acolhimento,
+    COALESCE(
+        a.detalhes->>'habilitacaoLiteraria',
+        a.detalhes->>'habilitacao_literaria',
+        u.habilitacao_literaria
+    )                                          AS habilitacao_literaria,
     -- data do acolhimento
     a.date_create                              AS data,
     EXTRACT(YEAR FROM a.date_create)::int      AS ano,
@@ -458,7 +459,8 @@ SELECT
                                             AS entrevista_agendada,
     ent.data_agendamento_entrevista            AS data_agendamento_entrevista,
     ent.data_entrevista                        AS data_realizacao_entrevista,
-    ent.dm_status_entrevista                   AS estado_entrevista,
+    COALESCE(ent.dm_status_entrevista, a.status_entrevista)
+                                            AS estado_entrevista,
     ent.parecer_io                             AS parecer_io,
     dom.description                           AS parecer_io_desc,
     ent.obs_parecer_io                         AS obs_parecer_io,
@@ -474,21 +476,10 @@ SELECT
         WHEN 'EMPREGO'  THEN COALESCE(col_pac.data, col_emp.data)
         WHEN 'FORMACAO' THEN COALESCE(col_sgf.data, col_emp.data)
         ELSE                 col_emp.data
-    END                                        AS data_colocacao,
-    CASE
-        WHEN UPPER(TRIM(COALESCE(a.tipo_servico, ''))) = 'EMPREGO'
-             AND col_pac.data IS NOT NULL              THEN 'PAC'
-        WHEN UPPER(TRIM(COALESCE(a.tipo_servico, ''))) = 'FORMACAO'
-             AND col_sgf.data IS NOT NULL              THEN 'SGF'
-        WHEN col_emp.data IS NOT NULL                  THEN 'COLOCACAO_CANDIDATO'
-    END                                        AS origem_colocacao
+    END                                        AS data_colocacao
 FROM public.emprego_t_detalhes_acolhimento a
 LEFT JOIN LATERAL (
-    -- Relacao pedida no documento:
-    --     emprego_t_utente.pessoa_id = emprego_t_detalhes_acolhimento.id_pessoa
-    -- id_utente e a FK real e por isso tem prioridade; so quando vem nulo
-    -- (dados antigos) se usa a pessoa_id. Ver AVISO 4.
-    SELECT ut.nome, ut.sexo, ut.habilitacao_literaria
+    SELECT ut.habilitacao_literaria
     FROM public.emprego_t_utente ut
     WHERE ut.id = a.id_utente
        OR (a.id_utente IS NULL AND ut.pessoa_id = a.id_pessoa)
@@ -593,6 +584,9 @@ ON public.mv_acolhimento (pessoa_id);
 CREATE INDEX IF NOT EXISTS idx_mv_acolhimento_entrevista
 ON public.mv_acolhimento (entrevista_agendada);
 
+CREATE INDEX IF NOT EXISTS idx_mv_acolhimento_habilitacao
+ON public.mv_acolhimento (habilitacao_literaria);
+
 CREATE OR REPLACE VIEW public.vw_acolhimento AS
 SELECT * FROM public.mv_acolhimento;
 
@@ -616,34 +610,27 @@ SELECT
     u.nome                                     AS nome,
     u.sexo                                     AS sexo,
     u.data_nascimento                          AS data_nascimento,
-    u.habilitacao_literaria                    AS habilitacao_literaria,
     u.tipo_documento                           AS tipo_documento,
     u.num_documento                            AS num_documento,
     u.date_create                              AS data_registo,
     EXTRACT(YEAR FROM u.date_create)::int      AS ano,
     to_char(u.date_create, 'TMMonth')          AS mes,
-    ac.total_acolhimentos                      AS total_acolhimentos,
-    ac.ultimo_acolhimento                      AS ultimo_acolhimento,
-    top.tipo_servico                           AS servico_mais_solicitado
+    -- CEFP do primeiro acolhimento (centro onde fez o registo inicial)
+    prim_ac.cefp                               AS cefp,
+    prim_ac.cefp_sigla                         AS cefp_sigla
 FROM public.emprego_t_utente u
 LEFT JOIN LATERAL (
-    SELECT COUNT(*)           AS total_acolhimentos,
-           MAX(a.date_create) AS ultimo_acolhimento
+    -- Primeiro acolhimento do utente (considerando a data mais antiga)
+    -- para associar o CEFP de acolhimento inicial / origem do utente.
+    SELECT c.denominacao AS cefp,
+           c.sigla       AS cefp_sigla
     FROM public.emprego_t_detalhes_acolhimento a
+    LEFT JOIN public.emprego_t_cefp c ON c.id = a.cefp_id
     WHERE a.id_utente = u.id
-) ac ON TRUE
-LEFT JOIN LATERAL (
-    -- Top 1 de servicos. Nao da para usar ARRAY_AGG(... ORDER BY COUNT(*)):
-    -- o Postgres nao permite aninhar agregados. Logo, agrupa-se primeiro e
-    -- ordena-se o resultado da agregacao.
-    SELECT a.tipo_servico
-    FROM public.emprego_t_detalhes_acolhimento a
-    WHERE a.id_utente = u.id
-      AND a.tipo_servico IS NOT NULL
-    GROUP BY a.tipo_servico
-    ORDER BY COUNT(*) DESC, a.tipo_servico
+       OR (a.id_utente IS NULL AND a.id_pessoa = u.pessoa_id)
+    ORDER BY a.date_create ASC NULLS LAST, a.id ASC
     LIMIT 1
-) top ON TRUE;
+) prim_ac ON TRUE;
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_mv_utente_id
 ON public.mv_utente (id);
@@ -653,6 +640,9 @@ ON public.mv_utente (ano);
 
 CREATE INDEX IF NOT EXISTS idx_mv_utente_sexo
 ON public.mv_utente (sexo);
+
+CREATE INDEX IF NOT EXISTS idx_mv_utente_cefp
+ON public.mv_utente (cefp);
 
 CREATE OR REPLACE VIEW public.vw_utente AS
 SELECT * FROM public.mv_utente;
@@ -690,7 +680,8 @@ SELECT
     EXTRACT(YEAR FROM e.date_create)::int      AS ano_agendamento,
     to_char(e.date_create, 'TMMonth')          AS mes_agendamento,
     e.data_entrevista                          AS data_realizacao,
-    e.dm_status_entrevista                     AS estado_entrevista,
+    COALESCE(e.dm_status_entrevista, a.status_entrevista)
+                                            AS estado_entrevista,
     e.parecer_io                               AS parecer_io,
     dom.description                           AS parecer_io_desc,
     e.obs_parecer_io                           AS obs_parecer_io,
@@ -861,8 +852,7 @@ END $$;
 --    Total de acolhimento por servico ......... tipo_servico / tipo_servico_desc
 --    Total de acolhimento por canal .......... canal / canal_desc
 --    Total de acolhimento por tecnico ........ tecnico (filtro por cefp)
---    Total de utentes registados por CEFP ..... vw_utente x vw_acolhimento (cefp)
---                                              ou: vw_entrevista (cefp)
+--    Total de utentes registados por CEFP ..... vw_utente.cefp
 --
 --  Encaminhamento e Entrevistas
 --    Total de sessoes de entrevistas realizadas vw_entrevista.data_realizacao
@@ -874,15 +864,14 @@ END $$;
 --
 --  Utentes
 --    Total de utentes por sexo ................. vw_utente.sexo
---    Top 3 de servicos mais solicitados ...... vw_utente.servico_mais_solicitado
---                                              ou vw_acolhimento.tipo_servico
---    Total de utentes registados por CEFP ..... vw_entrevista (cefp, ilha, concelho)
+--    Top 3 de servicos mais solicitados ...... vw_acolhimento.tipo_servico (gráfico Top N)
+--    Total de utentes registados por CEFP ..... vw_utente.cefp
 --    Evolucao anual de acolhimento ............ vw_acolhimento.ano
 --                                              (filtros: ano, cefp, tipo_servico)
 --
 --  EXTRA (nao pedidos no documento, uteis para os KPI acima)
---    vw_acolhimento.data_colocacao / origem_colocacao -> "tempo ate colocacao"
---    vw_acolhimento.parecer / parecer_io_desc        -> resultado do parecer
+--    vw_acolhimento.data_colocacao                 -> "tempo ate colocacao"
+--    vw_acolhimento.parecer_io / parecer_io_desc    -> resultado do parecer
 -- ============================================================================
 
 
@@ -948,14 +937,14 @@ END $$;
 --  GROUP BY 1, 2 ORDER BY 3 DESC;   -- ver AVISO 7 (estao desalinhados)
 -- SELECT canal,                COUNT(*) FROM public.vw_acolhimento GROUP BY 1 ORDER BY 2 DESC;
 -- SELECT estado_entrevista,    COUNT(*) FROM public.vw_entrevista  GROUP BY 1 ORDER BY 2 DESC;
--- SELECT origem_colocacao,     COUNT(*) FROM public.vw_acolhimento GROUP BY 1 ORDER BY 2 DESC;
+-- SELECT habilitacao_literaria, COUNT(*) FROM public.vw_acolhimento GROUP BY 1 ORDER BY 2 DESC;
 -- SELECT tecnico,              COUNT(*) FROM public.vw_acolhimento GROUP BY 1 ORDER BY 2 DESC;
 --
 -- 7.8. Amostra da view principal
--- SELECT id, pessoa_id, nome, codigo_acolhimento, data, tipo_servico, cefp,
---        tecnico, data_encaminhamento, entrevista_agendada, estado_entrevista,
---        parecer_io, parecer_io_desc, sessao_balanco, data_colocacao,
---        origem_colocacao
+-- SELECT id, pessoa_id, id_utente, codigo_acolhimento, habilitacao_literaria,
+--        data, tipo_servico, cefp, tecnico, data_encaminhamento,
+--        entrevista_agendada, estado_entrevista, parecer_io, parecer_io_desc,
+--        sessao_balanco, data_colocacao
 -- FROM public.vw_acolhimento
 -- ORDER BY data DESC
 -- LIMIT 20;
