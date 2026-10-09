@@ -290,7 +290,7 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
                 item.dataInicioPrevisto(),
                 item.dataFimPrevisto(),
                 item.descricao(),
-                normalizarReferenciaDocumento(item.contratoPath()),
+                linkDocumentoParaResposta(item.contratoPath()),
                 valorDominio(EmpregoDominio.DOMINIO_ESTADO, item.estado()),
                 empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO, item.estado()),
                 item.registadoCefp(),
@@ -319,8 +319,15 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
                     "O campo \"contratoPath\" não aceita ficheiros em Base64. Envie uma referência documental válida."
             );
         }
-        String link = documentService.gerarLinkPublico(valor);
-        return texto(link);
+        return valor;
+    }
+
+    private String linkDocumentoParaResposta(String referencia) {
+        String valor = normalizarReferenciaDocumento(referencia);
+        if (valor == null) {
+            return null;
+        }
+        return texto(documentService.gerarLinkPublico(valor));
     }
 
     private void validarEntidade(Integer entidadeId) {
