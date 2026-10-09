@@ -22,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
         PerfilCandidatoCertificadoController.class,
         PerfilCandidatoVagaController.class,
         PerfilCandidatoCandidaturaController.class,
+        PerfilCandidatoEntrevistaController.class,
         PerfilCandidatoColocacaoController.class,
         PerfilCandidatoAvaliacaoController.class,
         PerfilCandidatoAlertaOfertaController.class,
