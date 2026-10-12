@@ -19,11 +19,12 @@ public class PerfilCandidatoEntrevistaController {
 
     @GetMapping
     public PerfilCandidatoApiResponse<List<MinhaEntrevistaListaResponse>> listar(
-            @RequestParam(required = false) Long pessoaId
+            @RequestParam(required = false) Long pessoaId,
+            @RequestParam(required = false) String pesquisa
     ) {
         return PerfilCandidatoApiResponse.sucesso(
                 "Entrevistas carregadas com sucesso.",
-                entrevistaService.listar(pessoaId)
+                entrevistaService.listar(pessoaId, pesquisa)
         );
     }
 }

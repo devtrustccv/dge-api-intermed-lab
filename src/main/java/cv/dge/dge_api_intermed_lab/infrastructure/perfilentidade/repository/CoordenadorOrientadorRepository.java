@@ -280,6 +280,15 @@ public class CoordenadorOrientadorRepository {
             where.append(" AND c.date_create::date <= ?");
             params.add(filtro.dataFim());
         }
+        if (temTexto(filtro.pesquisa())) {
+            where.append("""
+                     AND CONCAT_WS(' ',
+                         c.tipo, c.nome, c.cargo, c.email, c.telemovel,
+                         c.estado, c.date_create::text, c.user_create
+                     ) ILIKE ?
+                    """);
+            params.add("%" + filtro.pesquisa().trim() + "%");
+        }
         return where + " ";
     }
 

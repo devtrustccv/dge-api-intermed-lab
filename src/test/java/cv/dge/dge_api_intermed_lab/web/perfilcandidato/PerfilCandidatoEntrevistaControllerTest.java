@@ -47,7 +47,7 @@ class PerfilCandidatoEntrevistaControllerTest {
 
     @Test
     void deveListarEntrevistasDoCandidato() throws Exception {
-        when(entrevistaService.listar(9001L)).thenReturn(List.of(new MinhaEntrevistaListaResponse(
+        when(entrevistaService.listar(9001L, null)).thenReturn(List.of(new MinhaEntrevistaListaResponse(
                 25,
                 12,
                 LocalDate.of(2026, 10, 8),
@@ -72,13 +72,13 @@ class PerfilCandidatoEntrevistaControllerTest {
                 .andExpect(jsonPath("$.dados[0].dataEncaminhamento").value("2026-10-08"))
                 .andExpect(jsonPath("$.dados[0].dataEntrevista").value("2026-10-15"));
 
-        verify(entrevistaService).listar(9001L);
+        verify(entrevistaService).listar(9001L, null);
     }
 
     @Test
     void deveDevolverErroPadronizadoSemPessoaId() throws Exception {
         String mensagem = "Não foi possível identificar o candidato. Atualize a página, entre novamente e tente de novo.";
-        when(entrevistaService.listar(null))
+        when(entrevistaService.listar(null, null))
                 .thenThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, mensagem));
 
         mockMvc.perform(get("/v1/perfil-candidato/entrevistas"))
@@ -88,6 +88,19 @@ class PerfilCandidatoEntrevistaControllerTest {
                 .andExpect(jsonPath("$.dados").isEmpty())
                 .andExpect(jsonPath("$.erros[0]").value(mensagem));
 
-        verify(entrevistaService).listar(null);
+        verify(entrevistaService).listar(null, null);
+    }
+
+    @Test
+    void deveEncaminharPesquisaGlobalAoServico() throws Exception {
+        when(entrevistaService.listar(9001L, "presencial")).thenReturn(List.of());
+
+        mockMvc.perform(get("/v1/perfil-candidato/entrevistas")
+                        .param("pessoaId", "9001")
+                        .param("pesquisa", "presencial"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sucesso").value(true));
+
+        verify(entrevistaService).listar(9001L, "presencial");
     }
 }

@@ -126,7 +126,8 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
                 filtro.data(),
                 filtro.horaEntrada(),
                 filtro.horaSaida(),
-                normalizarDominioOpcional(EmpregoDominio.DOMINIO_ESTADO_ASSIDUIDADE, filtro.estado())
+                normalizarDominioOpcional(EmpregoDominio.DOMINIO_ESTADO_ASSIDUIDADE, filtro.estado()),
+                texto(filtro.pesquisa())
         );
     }
 

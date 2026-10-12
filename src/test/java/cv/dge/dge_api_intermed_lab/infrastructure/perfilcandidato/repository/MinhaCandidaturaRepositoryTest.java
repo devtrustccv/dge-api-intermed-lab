@@ -44,4 +44,26 @@ class MinhaCandidaturaRepositoryTest {
                 .contains("o.denominacao_entidade ILIKE ?");
         assertThat(parametros).containsExactly(9001L, "Entidade Exemplo", "%Entidade Exemplo%");
     }
+
+    @Test
+    void deveAplicarPesquisaGlobalSemDistinguirMaiusculasEMinusculas() {
+        MinhaCandidaturaRepository repository = new MinhaCandidaturaRepository(
+                mock(DataSource.class),
+                new ObjectMapper()
+        );
+        List<Object> parametros = new ArrayList<>();
+
+        String where = ReflectionTestUtils.invokeMethod(
+                repository,
+                "construirWhere",
+                new MinhaCandidaturaFiltro(
+                        9001L, null, null, null, null, null,
+                        null, null, null, null, "EmPrEgO"
+                ),
+                parametros
+        );
+
+        assertThat(where).contains("CONCAT_WS").contains("ILIKE ?");
+        assertThat(parametros).containsExactly(9001L, "%EmPrEgO%");
+    }
 }

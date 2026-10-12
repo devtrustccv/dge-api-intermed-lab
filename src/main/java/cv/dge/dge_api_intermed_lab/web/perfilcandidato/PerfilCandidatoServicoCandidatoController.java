@@ -34,7 +34,8 @@ public class PerfilCandidatoServicoCandidatoController {
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
+            @RequestParam(required = false) String pesquisa
     ) {
         return PerfilCandidatoApiResponse.sucesso(
                 "Serviços indicados ao candidato carregados com sucesso.",
@@ -43,7 +44,8 @@ public class PerfilCandidatoServicoCandidatoController {
                         tipoServico,
                         estado,
                         dataInicio,
-                        dataFim
+                        dataFim,
+                        pesquisa
                 ))
         );
     }

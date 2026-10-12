@@ -159,7 +159,8 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
                 filtro.dataInicioPrevisto(),
                 filtro.dataRegistoInicio(),
                 filtro.dataRegistoFim(),
-                filtro.entidadeId()
+                filtro.entidadeId(),
+                texto(filtro.pesquisa())
         );
     }
 

@@ -23,12 +23,13 @@ public class GestaoAvaliacaoEstagiarioController {
             @RequestParam(required=false) String periodoReferencia,
             @RequestParam(required=false) LocalDate dataRegistro,
             @RequestParam(required=false) LocalDate dataInicio,
-            @RequestParam(required=false) LocalDate dataFim) {
+            @RequestParam(required=false) LocalDate dataFim,
+            @RequestParam(required=false) String pesquisa) {
         String nome = estagiario == null || estagiario.isBlank() ? nomeEstagiario : estagiario;
         String periodo = periodoRef == null || periodoRef.isBlank() ? periodoReferencia : periodoRef;
         return EmpregoApiResponse.sucesso("Avaliacoes de estagiarios listadas com sucesso.",
                 service.listar(new AvaliacaoEstagiarioFiltro(entidadeId, nome, tipoAvaliacao,
-                        periodo, dataRegistro, dataInicio, dataFim)));
+                        periodo, dataRegistro, dataInicio, dataFim, pesquisa)));
     }
 
     @GetMapping("/{id}")

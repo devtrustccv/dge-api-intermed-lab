@@ -242,7 +242,8 @@ public class GestaoVisitaTecnicaServiceImpl implements GestaoVisitaTecnicaServic
                 texto(filtro.cefp()),
                 filtro.dataVisita(),
                 filtro.dataInicio(),
-                filtro.dataFim()
+                filtro.dataFim(),
+                texto(filtro.pesquisa())
         );
     }
 

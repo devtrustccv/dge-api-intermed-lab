@@ -25,9 +25,12 @@ public class MinhaAvaliacaoServiceImpl implements MinhaAvaliacaoService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<MinhaAvaliacaoListaResponse> listar(Long pessoaId) {
+    public List<MinhaAvaliacaoListaResponse> listar(Long pessoaId, String pesquisa) {
         validarPessoa(pessoaId);
-        return avaliacaoRepository.listar(pessoaId).stream()
+        List<AvaliacaoListaRegisto> registos = pesquisa == null || pesquisa.isBlank()
+                ? avaliacaoRepository.listar(pessoaId)
+                : avaliacaoRepository.listar(pessoaId, pesquisa.trim());
+        return registos.stream()
                 .map(this::mapearLista)
                 .toList();
     }

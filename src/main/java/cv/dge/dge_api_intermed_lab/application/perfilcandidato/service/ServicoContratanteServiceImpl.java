@@ -279,7 +279,8 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
                         filtro.estado()
                 ),
                 filtro.dataInicio(),
-                filtro.dataFim()
+                filtro.dataFim(),
+                textoOpcional(filtro.pesquisa())
         );
     }
 
@@ -307,7 +308,8 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
                         filtro.estado()
                 ),
                 filtro.dataInicio(),
-                filtro.dataFim()
+                filtro.dataFim(),
+                textoOpcional(filtro.pesquisa())
         );
     }
 

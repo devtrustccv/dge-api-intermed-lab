@@ -6,7 +6,11 @@ import java.util.List;
 
 public interface MinhaColocacaoService {
 
-    List<MinhaColocacaoListaResponse> listar(Long pessoaId);
+    List<MinhaColocacaoListaResponse> listar(Long pessoaId, String pesquisa);
+
+    default List<MinhaColocacaoListaResponse> listar(Long pessoaId) {
+        return listar(pessoaId, null);
+    }
 
     MinhaColocacaoDetalheResponse buscarPorId(Integer colocacaoId, Long pessoaId);
 }

@@ -156,12 +156,16 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<EntrevistaResponse> listarEntrevistas(Integer candidaturaId, Integer entidadeId) {
+    public List<EntrevistaResponse> listarEntrevistas(
+            Integer candidaturaId,
+            Integer entidadeId,
+            String pesquisa
+    ) {
         validarId(candidaturaId,
                 "Não foi possível identificar a candidatura selecionada. Atualize a página e tente novamente.");
         validarEntidade(entidadeId);
         buscarPorId(candidaturaId, entidadeId);
-        return candidaturaRepository.listarEntrevistas(candidaturaId).stream()
+        return candidaturaRepository.listarEntrevistas(candidaturaId, texto(pesquisa)).stream()
                 .map(this::enriquecerEntrevista)
                 .toList();
     }
@@ -221,7 +225,8 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
                 texto(filtro.tituloOferta()),
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_CANAL_OFERTA, filtro.canal()),
                 filtro.dataInicio(),
-                filtro.dataFim()
+                filtro.dataFim(),
+                texto(filtro.pesquisa())
         );
     }
 

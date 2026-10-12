@@ -18,6 +18,11 @@ public class MinhaEntrevistaRepository {
     }
 
     public List<EntrevistaRegisto> listar(Long pessoaId) {
+        return listar(pessoaId, null);
+    }
+
+    public List<EntrevistaRegisto> listar(Long pessoaId, String pesquisa) {
+        boolean pesquisar = pesquisa != null && !pesquisa.isBlank();
         return empregoJdbcTemplate.query(
                 """
                         SELECT
@@ -39,12 +44,29 @@ public class MinhaEntrevistaRepository {
                         INNER JOIN emprego_t_utente utente
                             ON utente.id = entrevista.id_utente
                         WHERE CAST(utente.pessoa_id AS BIGINT) = ?
+                        """ + (pesquisar ? """
+                          AND CONCAT_WS(' ',
+                              entrevista.nome_tecnico,
+                              entrevista.local,
+                              entrevista.dm_status_entrevista,
+                              entrevista.cefp,
+                              entrevista.tipo_servico,
+                              entrevista.canal,
+                              entrevista.local_entrevista,
+                              CAST(entrevista.data_encaminhamento AS VARCHAR),
+                              CAST(entrevista.data_entrevista AS VARCHAR),
+                              CAST(entrevista.hora_inicio AS VARCHAR),
+                              CAST(entrevista.hora_fim AS VARCHAR)
+                          ) ILIKE ?
+                        """ : "") + """
                         ORDER BY entrevista.data_entrevista DESC NULLS LAST,
                                  entrevista.hora_inicio DESC NULLS LAST,
                                  entrevista.id DESC
-                        """,
+                """,
                 this::mapEntrevista,
-                pessoaId
+                pesquisar
+                        ? new Object[]{pessoaId, "%" + pesquisa.trim() + "%"}
+                        : new Object[]{pessoaId}
         );
     }
 

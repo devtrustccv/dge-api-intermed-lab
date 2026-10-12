@@ -21,11 +21,12 @@ public class PerfilCandidatoAvaliacaoController {
 
     @GetMapping
     public PerfilCandidatoApiResponse<List<MinhaAvaliacaoListaResponse>> listar(
-            @RequestParam(required = false) Long pessoaId
+            @RequestParam(required = false) Long pessoaId,
+            @RequestParam(required = false) String pesquisa
     ) {
         return PerfilCandidatoApiResponse.sucesso(
                 "Avaliações carregadas com sucesso.",
-                avaliacaoService.listar(pessoaId)
+                avaliacaoService.listar(pessoaId, pesquisa)
         );
     }
 

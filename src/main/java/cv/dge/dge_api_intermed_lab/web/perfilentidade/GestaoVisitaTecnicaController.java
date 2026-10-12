@@ -47,7 +47,8 @@ public class GestaoVisitaTecnicaController {
             @RequestParam(value = "dataInicio", required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
             @RequestParam(value = "dataFim", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
+            @RequestParam(value = "pesquisa", required = false) String pesquisa
     ) {
         return EmpregoApiResponse.sucesso(
                 "Visitas tecnicas listadas com sucesso.",
@@ -59,7 +60,8 @@ public class GestaoVisitaTecnicaController {
                         cefp,
                         dataVisita,
                         dataInicio,
-                        dataFim
+                        dataFim,
+                        pesquisa
                 ))
         );
     }

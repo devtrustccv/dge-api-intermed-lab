@@ -32,7 +32,7 @@ public class GestaoAcompanhamentoServiceImpl implements GestaoAcompanhamentoServ
         validarEntidade(filtro.entidadeId());
         AcompanhamentoEstagiarioFiltro dados = new AcompanhamentoEstagiarioFiltro(
                 filtro.entidadeId(), filtro.estagiarioId(), texto(filtro.estagiario()),
-                filtro.ofertaId(), texto(filtro.oferta()));
+                filtro.ofertaId(), texto(filtro.oferta()), texto(filtro.pesquisa()));
         return acompanhamentoRepository.listarEstagiariosSelecionados(dados).stream()
                 .map(this::enriquecer)
                 .toList();

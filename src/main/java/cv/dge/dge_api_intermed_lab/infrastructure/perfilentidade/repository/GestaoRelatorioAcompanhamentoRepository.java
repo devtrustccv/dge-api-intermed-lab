@@ -81,6 +81,17 @@ public class GestaoRelatorioAcompanhamentoRepository {
             where.append(" AND r.date_create::date <= ?");
             params.add(filtro.dataFim());
         }
+        if (filtro.pesquisa() != null && !filtro.pesquisa().isBlank()) {
+            where.append("""
+                     AND CONCAT_WS(' ',
+                         r.nome, COALESCE(NULLIF(TRIM(o.codigo_referencia), ''), c.codigo_referencia),
+                         r.denominacao_entidade, r.data_inicio::text, r.data_fim::text,
+                         r.atividades_realizadas, r.dificuldades, r.recomendacoes,
+                         r.relatorio_anexo, r.estado, r.date_create::text, r.user_create
+                     ) ILIKE ?
+                    """);
+            params.add("%" + filtro.pesquisa().trim() + "%");
+        }
         String sql = SELECT_BASE + where + " ORDER BY r.date_create DESC NULLS LAST, r.id DESC";
         return jdbcTemplate.query(sql, (rs, rowNum) -> new RelatorioAcompanhamentoListaResponse(
                 getInteger(rs, "id"),

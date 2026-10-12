@@ -8,7 +8,11 @@ import java.util.List;
 
 public interface ConfiguracaoAlertaOfertaService {
 
-    List<AlertaOfertaListaResponse> listar(Long pessoaId);
+    List<AlertaOfertaListaResponse> listar(Long pessoaId, String pesquisa);
+
+    default List<AlertaOfertaListaResponse> listar(Long pessoaId) {
+        return listar(pessoaId, null);
+    }
 
     AlertaOfertaOpcoesResponse listarOpcoes(Long pessoaId, String ilha);
 

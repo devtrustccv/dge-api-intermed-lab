@@ -51,7 +51,8 @@ public class PerfilCandidatoServicoContratanteController {
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
+            @RequestParam(required = false) String pesquisa
     ) {
         return PerfilCandidatoApiResponse.sucesso(
                 "Serviços a contratar carregados com sucesso.",
@@ -60,7 +61,8 @@ public class PerfilCandidatoServicoContratanteController {
                         tipoServico,
                         estado,
                         dataInicio,
-                        dataFim
+                        dataFim,
+                        pesquisa
                 ))
         );
     }
@@ -201,7 +203,8 @@ public class PerfilCandidatoServicoContratanteController {
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
+            @RequestParam(required = false) String pesquisa
     ) {
         return PerfilCandidatoApiResponse.sucesso(
                 "Candidatos do serviço carregados com sucesso.",
@@ -211,7 +214,8 @@ public class PerfilCandidatoServicoContratanteController {
                         candidatoId,
                         estado,
                         dataInicio,
-                        dataFim
+                        dataFim,
+                        pesquisa
                 ))
         );
     }

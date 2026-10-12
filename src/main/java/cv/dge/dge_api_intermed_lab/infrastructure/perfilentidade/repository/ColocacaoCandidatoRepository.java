@@ -360,6 +360,15 @@ public class ColocacaoCandidatoRepository {
             where.append(" AND date_create::date <= ?");
             params.add(filtro.dataRegistoFim());
         }
+        if (temTexto(filtro.pesquisa())) {
+            where.append("""
+                     AND CONCAT_WS(' ',
+                         tipo_oferta, codigo_referencia, nome, tipo_contrato,
+                         data_inicio_previsto::text, date_create::text
+                     ) ILIKE ?
+                    """);
+            params.add("%" + filtro.pesquisa().trim() + "%");
+        }
 
         return where + " ";
     }

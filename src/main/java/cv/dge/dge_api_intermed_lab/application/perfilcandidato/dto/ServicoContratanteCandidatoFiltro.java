@@ -8,6 +8,17 @@ public record ServicoContratanteCandidatoFiltro(
         Long candidatoId,
         String estado,
         LocalDate dataInicio,
-        LocalDate dataFim
+        LocalDate dataFim,
+        String pesquisa
 ) {
+    public ServicoContratanteCandidatoFiltro(
+            Integer servicoId,
+            Long contratanteId,
+            Long candidatoId,
+            String estado,
+            LocalDate dataInicio,
+            LocalDate dataFim
+    ) {
+        this(servicoId, contratanteId, candidatoId, estado, dataInicio, dataFim, null);
+    }
 }

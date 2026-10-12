@@ -138,7 +138,8 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
                 ),
                 textoOpcional(filtro.codigoReferencia()),
                 filtro.dataInicio(),
-                filtro.dataFim()
+                filtro.dataFim(),
+                textoOpcional(filtro.pesquisa())
         );
     }
 
@@ -153,7 +154,8 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
                 filtro.estado(),
                 filtro.codigoReferencia(),
                 filtro.dataInicio(),
-                filtro.dataFim()
+                filtro.dataFim(),
+                filtro.pesquisa()
         );
     }
 

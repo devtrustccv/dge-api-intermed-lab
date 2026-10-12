@@ -207,6 +207,23 @@ public class MinhaCandidaturaRepository {
             where.append("AND c.date_create <= ?\n");
             parametros.add(LocalDateTime.of(filtro.dataFim(), LocalTime.MAX));
         }
+        if (temTexto(filtro.pesquisa())) {
+            where.append("""
+                    AND CONCAT_WS(' ',
+                        COALESCE(c.tipo_oferta, o.tipo_oferta),
+                        o.titulo,
+                        o.codigo_referencia,
+                        o.denominacao_entidade,
+                        o.ilha,
+                        o.concelho,
+                        c.status_candidatura,
+                        c.motivo_recusa,
+                        c.canal,
+                        CAST(c.date_create AS VARCHAR)
+                    ) ILIKE ?
+                    """);
+            parametros.add("%" + filtro.pesquisa().trim() + "%");
+        }
         return where.toString();
     }
 

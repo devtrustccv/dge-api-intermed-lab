@@ -180,6 +180,17 @@ public class GestaoAssiduidadeRepository {
             where.append(" AND UPPER(a.estado) = UPPER(?)");
             params.add(filtro.estado());
         }
+        if (temTexto(filtro.pesquisa())) {
+            where.append("""
+                     AND CONCAT_WS(' ',
+                         COALESCE(NULLIF(TRIM(a.nome), ''), cc.nome), o.titulo,
+                         a.denominacao_entidade, a.data::text, a.hora_entrada::text,
+                         a.hora_saida::text, a.tipo_assiduidade, a.justificacao,
+                         a.estado, a.observacao, a.date_create::text, a.user_create
+                     ) ILIKE ?
+                    """);
+            params.add("%" + filtro.pesquisa().trim() + "%");
+        }
         return where + " ";
     }
 

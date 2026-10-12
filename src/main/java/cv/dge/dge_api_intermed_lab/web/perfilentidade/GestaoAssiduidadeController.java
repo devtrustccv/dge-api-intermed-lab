@@ -38,7 +38,8 @@ public class GestaoAssiduidadeController {
             @RequestParam(value = "data", required = false) LocalDate data,
             @RequestParam(value = "horaEntrada", required = false) LocalTime horaEntrada,
             @RequestParam(value = "horaSaida", required = false) LocalTime horaSaida,
-            @RequestParam(value = "estado", required = false) String estado
+            @RequestParam(value = "estado", required = false) String estado,
+            @RequestParam(value = "pesquisa", required = false) String pesquisa
     ) {
         return EmpregoApiResponse.sucesso(
                 "Assiduidades listadas com sucesso.",
@@ -52,7 +53,8 @@ public class GestaoAssiduidadeController {
                         data,
                         horaEntrada,
                         horaSaida,
-                        estado
+                        estado,
+                        pesquisa
                 ))
         );
     }

@@ -63,7 +63,7 @@ public class GestaoRelatorioAcompanhamentoServiceImpl implements GestaoRelatorio
         RelatorioAcompanhamentoFiltro dados = new RelatorioAcompanhamentoFiltro(
                 filtro.entidadeId(), filtro.pessoaId(), texto(filtro.estagiario()),
                 texto(filtro.codigoReferencia()),
-                filtro.dataInicio(), filtro.dataFim());
+                filtro.dataInicio(), filtro.dataFim(), texto(filtro.pesquisa()));
         return repository.listar(dados).stream().map(this::enriquecerLista).toList();
     }
 

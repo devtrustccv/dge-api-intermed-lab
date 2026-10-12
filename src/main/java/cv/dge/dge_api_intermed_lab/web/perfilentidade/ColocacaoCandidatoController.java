@@ -45,7 +45,8 @@ public class ColocacaoCandidatoController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataRegistoInicio,
             @RequestParam(value = "dataRegistoFim", required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataRegistoFim,
-            @RequestParam("entidadeId") Integer entidadeId
+            @RequestParam("entidadeId") Integer entidadeId,
+            @RequestParam(value = "pesquisa", required = false) String pesquisa
     ) {
         return EmpregoApiResponse.sucesso(
                 "Colocacoes listadas com sucesso.",
@@ -58,7 +59,8 @@ public class ColocacaoCandidatoController {
                         dataInicioPrevisto,
                         dataRegistoInicio,
                         dataRegistoFim,
-                        entidadeId
+                        entidadeId,
+                        pesquisa
                 ))
         );
     }

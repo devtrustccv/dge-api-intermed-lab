@@ -26,13 +26,14 @@ public class GestaoAcompanhamentoController {
             @RequestParam(value = "estagiarioId", required = false) Long estagiarioId,
             @RequestParam(value = "estagiario", required = false) String estagiario,
             @RequestParam(value = "ofertaId", required = false) Integer ofertaId,
-            @RequestParam(value = "oferta", required = false) String oferta
+            @RequestParam(value = "oferta", required = false) String oferta,
+            @RequestParam(value = "pesquisa", required = false) String pesquisa
     ) {
         return EmpregoApiResponse.sucesso(
                 "Estagiarios selecionados listados com sucesso.",
                 gestaoAcompanhamentoService.listarEstagiariosSelecionados(
                         new AcompanhamentoEstagiarioFiltro(
-                                entidadeId, estagiarioId, estagiario, ofertaId, oferta)
+                                entidadeId, estagiarioId, estagiario, ofertaId, oferta, pesquisa)
                 )
         );
     }

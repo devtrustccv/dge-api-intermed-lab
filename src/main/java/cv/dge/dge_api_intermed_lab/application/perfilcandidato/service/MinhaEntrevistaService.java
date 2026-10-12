@@ -5,5 +5,9 @@ import java.util.List;
 
 public interface MinhaEntrevistaService {
 
-    List<MinhaEntrevistaListaResponse> listar(Long pessoaId);
+    List<MinhaEntrevistaListaResponse> listar(Long pessoaId, String pesquisa);
+
+    default List<MinhaEntrevistaListaResponse> listar(Long pessoaId) {
+        return listar(pessoaId, null);
+    }
 }

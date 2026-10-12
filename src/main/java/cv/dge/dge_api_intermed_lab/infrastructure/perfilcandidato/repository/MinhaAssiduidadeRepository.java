@@ -205,6 +205,22 @@ public class MinhaAssiduidadeRepository {
             where.append("AND assiduidade.data <= ?\n");
             parametros.add(filtro.dataFim());
         }
+        if (temTexto(filtro.pesquisa())) {
+            where.append("""
+                    AND CONCAT_WS(' ',
+                        assiduidade.denominacao_entidade,
+                        assiduidade.nome,
+                        CAST(assiduidade.data AS VARCHAR),
+                        CAST(assiduidade.hora_entrada AS VARCHAR),
+                        CAST(assiduidade.hora_saida AS VARCHAR),
+                        assiduidade.tipo_assiduidade,
+                        assiduidade.justificacao,
+                        assiduidade.estado,
+                        assiduidade.observacao
+                    ) ILIKE ?
+                    """);
+            parametros.add("%" + filtro.pesquisa().trim() + "%");
+        }
         return where.toString();
     }
 

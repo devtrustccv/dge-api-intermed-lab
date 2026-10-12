@@ -255,7 +255,13 @@ public class GestaoCandidaturaRepository {
     }
 
     public List<EntrevistaResponse> listarEntrevistas(Integer candidaturaId) {
-        return empregoJdbcTemplate.query(
+        return listarEntrevistas(candidaturaId, null);
+    }
+
+    public List<EntrevistaResponse> listarEntrevistas(Integer candidaturaId, String pesquisa) {
+        List<Object> params = new ArrayList<>();
+        params.add(candidaturaId);
+        StringBuilder sql = new StringBuilder(
                 """
                         SELECT
                             id,
@@ -275,10 +281,22 @@ public class GestaoCandidaturaRepository {
                             user_update
                         FROM emprego_t_entrevista_oferta
                         WHERE id_candidatura = ?
-                        ORDER BY date_create DESC NULLS LAST, id DESC
-                        """,
+                        """);
+        if (temTexto(pesquisa)) {
+            sql.append("""
+                     AND CONCAT_WS(' ',
+                         nome, data_entrevista::text, horario::text, canal,
+                         local_entrevista, parecer_entrevista, resultado_entrevista,
+                         estado, date_create::text, user_create
+                     ) ILIKE ?
+                    """);
+            params.add("%" + pesquisa.trim() + "%");
+        }
+        sql.append(" ORDER BY date_create DESC NULLS LAST, id DESC");
+        return empregoJdbcTemplate.query(
+                sql.toString(),
                 this::mapEntrevista,
-                candidaturaId
+                params.toArray()
         );
     }
 
@@ -477,6 +495,17 @@ public class GestaoCandidaturaRepository {
         if (filtro.dataFim() != null) {
             where.append(" AND c.date_create::date <= ?");
             params.add(filtro.dataFim());
+        }
+        if (temTexto(filtro.pesquisa())) {
+            where.append("""
+                     AND CONCAT_WS(' ',
+                         c.nome, c.tipo_oferta, o.codigo_referencia, o.titulo,
+                         c.canal, c.status_candidatura, c.selecao_iefp::text,
+                         c.habilitacao_academica, c.motivo_recusa,
+                         c.date_create::text, c.user_create
+                     ) ILIKE ?
+                    """);
+            params.add("%" + filtro.pesquisa().trim() + "%");
         }
 
         return where + " ";

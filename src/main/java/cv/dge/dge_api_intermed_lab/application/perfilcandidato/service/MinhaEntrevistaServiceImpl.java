@@ -18,9 +18,12 @@ public class MinhaEntrevistaServiceImpl implements MinhaEntrevistaService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<MinhaEntrevistaListaResponse> listar(Long pessoaId) {
+    public List<MinhaEntrevistaListaResponse> listar(Long pessoaId, String pesquisa) {
         validarPessoa(pessoaId);
-        return entrevistaRepository.listar(pessoaId).stream()
+        List<EntrevistaRegisto> registos = pesquisa == null || pesquisa.isBlank()
+                ? entrevistaRepository.listar(pessoaId)
+                : entrevistaRepository.listar(pessoaId, pesquisa.trim());
+        return registos.stream()
                 .map(this::mapear)
                 .toList();
     }

@@ -29,7 +29,8 @@ public class GestaoAvaliacaoEstagiarioServiceImpl implements GestaoAvaliacaoEsta
         AvaliacaoEstagiarioFiltro dados = new AvaliacaoEstagiarioFiltro(
                 filtro.entidadeId(), texto(filtro.estagiario()),
                 dominioOpcional(EmpregoDominio.DOMINIO_TIPO_AVALIACAO, filtro.tipoAvaliacao()),
-                texto(filtro.periodoReferencia()), filtro.dataRegistro(), filtro.dataInicio(), filtro.dataFim());
+                texto(filtro.periodoReferencia()), filtro.dataRegistro(), filtro.dataInicio(), filtro.dataFim(),
+                texto(filtro.pesquisa()));
         return repository.listar(dados).stream().map(this::enriquecerLista).toList();
     }
 

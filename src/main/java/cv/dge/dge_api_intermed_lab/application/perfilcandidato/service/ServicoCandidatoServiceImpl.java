@@ -134,7 +134,8 @@ public class ServicoCandidatoServiceImpl implements ServicoCandidatoService {
                         filtro.estado()
                 ),
                 filtro.dataInicio(),
-                filtro.dataFim()
+                filtro.dataFim(),
+                textoOpcional(filtro.pesquisa())
         );
     }
 

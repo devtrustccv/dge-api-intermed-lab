@@ -9,6 +9,15 @@ public record AvaliacaoEstagiarioFiltro(
         String periodoReferencia,
         LocalDate dataRegistro,
         LocalDate dataInicio,
-        LocalDate dataFim
+        LocalDate dataFim,
+        String pesquisa
 ) {
+    public AvaliacaoEstagiarioFiltro(
+            Integer entidadeId, String estagiario, String tipoAvaliacao,
+            String periodoReferencia, LocalDate dataRegistro,
+            LocalDate dataInicio, LocalDate dataFim
+    ) {
+        this(entidadeId, estagiario, tipoAvaliacao, periodoReferencia,
+                dataRegistro, dataInicio, dataFim, null);
+    }
 }

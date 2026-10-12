@@ -93,9 +93,10 @@ public class AcolhimentoController {
     @GetMapping("pac-candidatura/contratacao")
     public List<PacCandidaturaResponse> listarUtentes(
             @RequestParam(required = false) Integer cefpId,
-            @RequestParam(required = false) String denominacao
+            @RequestParam(required = false) String denominacao,
+            @RequestParam(required = false) String pesquisa
     ) {
-        return acolhimentoConsultaService.listarCandidaturas(cefpId, denominacao);
+        return acolhimentoConsultaService.listarCandidaturas(cefpId, denominacao, pesquisa);
     }
 
     @GetMapping("pessoa/{id_pessoa}")

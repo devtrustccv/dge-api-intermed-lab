@@ -23,5 +23,9 @@ public interface CoordenadorOrientadorService {
 
     CoordenadorOrientadorResponse remover(Integer id, Integer entidadeId, CoordenadorOrientadorRemoverRequest request);
 
-    List<VagaListaResponse> listarOfertasAssociadas(Integer id, Integer entidadeId);
+    List<VagaListaResponse> listarOfertasAssociadas(Integer id, Integer entidadeId, String pesquisa);
+
+    default List<VagaListaResponse> listarOfertasAssociadas(Integer id, Integer entidadeId) {
+        return listarOfertasAssociadas(id, entidadeId, null);
+    }
 }

@@ -23,7 +23,11 @@ public interface GestaoCandidaturaService {
             EntrevistaAgendamentoRequest request
     );
 
-    List<EntrevistaResponse> listarEntrevistas(Integer candidaturaId, Integer entidadeId);
+    List<EntrevistaResponse> listarEntrevistas(Integer candidaturaId, Integer entidadeId, String pesquisa);
+
+    default List<EntrevistaResponse> listarEntrevistas(Integer candidaturaId, Integer entidadeId) {
+        return listarEntrevistas(candidaturaId, entidadeId, null);
+    }
 
     EntrevistaResponse registarResultadoEntrevista(
             Integer candidaturaId,

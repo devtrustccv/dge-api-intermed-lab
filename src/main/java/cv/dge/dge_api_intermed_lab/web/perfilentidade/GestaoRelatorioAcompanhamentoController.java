@@ -44,12 +44,14 @@ public class GestaoRelatorioAcompanhamentoController {
             @RequestParam(required = false) String estagiario,
             @RequestParam(required = false) String codigoReferencia,
             @RequestParam(required = false) LocalDate dataInicio,
-            @RequestParam(required = false) LocalDate dataFim
+            @RequestParam(required = false) LocalDate dataFim,
+            @RequestParam(required = false) String pesquisa
     ) {
         return EmpregoApiResponse.sucesso(
                 "Relatorios de acompanhamento listados com sucesso.",
                 service.listar(new RelatorioAcompanhamentoFiltro(
-                        entidadeId, pessoaId, estagiario, codigoReferencia, dataInicio, dataFim)));
+                        entidadeId, pessoaId, estagiario, codigoReferencia,
+                        dataInicio, dataFim, pesquisa)));
     }
 
     @GetMapping("{id}")

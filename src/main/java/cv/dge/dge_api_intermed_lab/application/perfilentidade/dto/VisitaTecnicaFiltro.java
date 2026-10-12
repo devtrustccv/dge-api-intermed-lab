@@ -10,6 +10,14 @@ public record VisitaTecnicaFiltro(
         String cefp,
         LocalDate dataVisita,
         LocalDate dataInicio,
-        LocalDate dataFim
+        LocalDate dataFim,
+        String pesquisa
 ) {
+    public VisitaTecnicaFiltro(
+            Integer entidadeId, String estado, String agendadoPor, Integer cefpId,
+            String cefp, LocalDate dataVisita, LocalDate dataInicio, LocalDate dataFim
+    ) {
+        this(entidadeId, estado, agendadoPor, cefpId, cefp,
+                dataVisita, dataInicio, dataFim, null);
+    }
 }

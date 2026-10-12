@@ -28,6 +28,11 @@ public class MinhaAvaliacaoRepository {
     }
 
     public List<AvaliacaoListaRegisto> listar(Long pessoaId) {
+        return listar(pessoaId, null);
+    }
+
+    public List<AvaliacaoListaRegisto> listar(Long pessoaId, String pesquisa) {
+        boolean pesquisar = pesquisa != null && !pesquisa.isBlank();
         String sql = """
                 SELECT avaliacao.id AS avaliacao_id,
                        avaliacao.tipo_avaliacao,
@@ -36,10 +41,20 @@ public class MinhaAvaliacaoRepository {
                        avaliacao.date_create AS data_registo
                 FROM emprego_t_avaliacao_estagiario avaliacao
                 WHERE avaliacao.pessoa_id = ?
+                """ + (pesquisar ? """
+                  AND CONCAT_WS(' ',
+                      avaliacao.tipo_avaliacao,
+                      avaliacao.periodo_referencia,
+                      CAST(avaliacao.classificacao AS VARCHAR),
+                      CAST(avaliacao.date_create AS VARCHAR)
+                  ) ILIKE ?
+                """ : "") + """
                 ORDER BY avaliacao.date_create DESC NULLS LAST, avaliacao.id DESC
                 """;
 
-        return empregoJdbcTemplate.query(sql, this::mapearLista, pessoaId);
+        return pesquisar
+                ? empregoJdbcTemplate.query(sql, this::mapearLista, pessoaId, "%" + pesquisa.trim() + "%")
+                : empregoJdbcTemplate.query(sql, this::mapearLista, pessoaId);
     }
 
     public Optional<AvaliacaoDetalheRegisto> buscarPorId(Integer avaliacaoId, Long pessoaId) {

@@ -121,6 +121,15 @@ public class GestaoAcompanhamentoRepository {
             where.append(" AND UPPER(COALESCE(o.titulo, '')) LIKE UPPER(?)");
             params.add("%" + filtro.oferta() + "%");
         }
+        if (filtro.pesquisa() != null && !filtro.pesquisa().isBlank()) {
+            where.append("""
+                     AND CONCAT_WS(' ',
+                         c.nome, o.titulo, e.parecer_entrevista, e.estado,
+                         c.status_candidatura, c.date_create::text
+                     ) ILIKE ?
+                    """);
+            params.add("%" + filtro.pesquisa().trim() + "%");
+        }
         return where.toString();
     }
 

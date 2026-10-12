@@ -26,11 +26,12 @@ public class PerfilCandidatoAlertaOfertaController {
 
     @GetMapping
     public PerfilCandidatoApiResponse<List<AlertaOfertaListaResponse>> listar(
-            @RequestParam(required = false) Long pessoaId
+            @RequestParam(required = false) Long pessoaId,
+            @RequestParam(required = false) String pesquisa
     ) {
         return PerfilCandidatoApiResponse.sucesso(
                 "Configurações de alerta carregadas com sucesso.",
-                alertaService.listar(pessoaId)
+                alertaService.listar(pessoaId, pesquisa)
         );
     }
 

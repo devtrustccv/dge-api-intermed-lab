@@ -35,16 +35,36 @@ public class MinhaColocacaoRepository {
     }
 
     public List<ColocacaoRegisto> listar(Long pessoaId) {
+        return listar(pessoaId, null);
+    }
+
+    public List<ColocacaoRegisto> listar(Long pessoaId, String pesquisa) {
+        boolean pesquisar = pesquisa != null && !pesquisa.isBlank();
         String sql = """
                 SELECT
                 """ + CAMPOS_COLOCACAO + """
                 FROM emprego_t_colocacao_candidato colocacao
                 LEFT JOIN emprego_t_oferta oferta ON oferta.id = colocacao.id_oferta
                 WHERE colocacao.pessoa_id = ?
+                """ + (pesquisar ? """
+                  AND CONCAT_WS(' ',
+                      COALESCE(colocacao.tipo_oferta, oferta.tipo_oferta),
+                      oferta.titulo,
+                      COALESCE(colocacao.codigo_referencia, oferta.codigo_referencia),
+                      colocacao.tipo_contrato,
+                      colocacao.descricao,
+                      colocacao.estado,
+                      CAST(colocacao.data_inicio_previsto AS VARCHAR),
+                      CAST(colocacao.data_fim_previsto AS VARCHAR),
+                      CAST(colocacao.date_create AS VARCHAR)
+                  ) ILIKE ?
+                """ : "") + """
                 ORDER BY colocacao.date_create DESC NULLS LAST, colocacao.id DESC
                 """;
 
-        return empregoJdbcTemplate.query(sql, this::mapColocacao, pessoaId);
+        return pesquisar
+                ? empregoJdbcTemplate.query(sql, this::mapColocacao, pessoaId, "%" + pesquisa.trim() + "%")
+                : empregoJdbcTemplate.query(sql, this::mapColocacao, pessoaId);
     }
 
     public Optional<ColocacaoRegisto> buscarPorId(Integer colocacaoId, Long pessoaId) {

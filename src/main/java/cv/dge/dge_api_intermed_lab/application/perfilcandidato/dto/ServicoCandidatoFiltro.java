@@ -7,6 +7,16 @@ public record ServicoCandidatoFiltro(
         String tipoServico,
         String estado,
         LocalDate dataInicio,
-        LocalDate dataFim
+        LocalDate dataFim,
+        String pesquisa
 ) {
+    public ServicoCandidatoFiltro(
+            Long pessoaId,
+            String tipoServico,
+            String estado,
+            LocalDate dataInicio,
+            LocalDate dataFim
+    ) {
+        this(pessoaId, tipoServico, estado, dataInicio, dataFim, null);
+    }
 }

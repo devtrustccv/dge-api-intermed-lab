@@ -24,9 +24,12 @@ public class MinhaColocacaoServiceImpl implements MinhaColocacaoService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<MinhaColocacaoListaResponse> listar(Long pessoaId) {
+    public List<MinhaColocacaoListaResponse> listar(Long pessoaId, String pesquisa) {
         validarPessoa(pessoaId);
-        return colocacaoRepository.listar(pessoaId).stream()
+        List<ColocacaoRegisto> registos = pesquisa == null || pesquisa.isBlank()
+                ? colocacaoRepository.listar(pessoaId)
+                : colocacaoRepository.listar(pessoaId, pesquisa.trim());
+        return registos.stream()
                 .map(this::mapearLista)
                 .toList();
     }

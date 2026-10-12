@@ -30,9 +30,13 @@ public class ConfiguracaoAlertaOfertaServiceImpl implements ConfiguracaoAlertaOf
 
     @Override
     @Transactional(readOnly = true)
-    public List<AlertaOfertaListaResponse> listar(Long pessoaId) {
+    public List<AlertaOfertaListaResponse> listar(Long pessoaId, String pesquisa) {
         validarPessoa(pessoaId);
-        return alertaRepository.listar(pessoaId).stream()
+        String termo = textoOpcional(pesquisa);
+        List<AlertaOfertaListaRegisto> registos = termo == null
+                ? alertaRepository.listar(pessoaId)
+                : alertaRepository.listar(pessoaId, termo);
+        return registos.stream()
                 .map(this::mapearLista)
                 .toList();
     }

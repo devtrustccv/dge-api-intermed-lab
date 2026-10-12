@@ -12,6 +12,15 @@ public record CandidaturaFiltro(
         String tituloOferta,
         String canal,
         LocalDate dataInicio,
-        LocalDate dataFim
+        LocalDate dataFim,
+        String pesquisa
 ) {
+    public CandidaturaFiltro(
+            Integer entidadeId, Long candidatoId, String candidato, String estado,
+            String tipoOferta, Integer ofertaId, String tituloOferta, String canal,
+            LocalDate dataInicio, LocalDate dataFim
+    ) {
+        this(entidadeId, candidatoId, candidato, estado, tipoOferta, ofertaId,
+                tituloOferta, canal, dataInicio, dataFim, null);
+    }
 }

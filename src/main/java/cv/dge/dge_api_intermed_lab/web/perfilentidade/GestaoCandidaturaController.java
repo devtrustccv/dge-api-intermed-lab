@@ -44,7 +44,8 @@ public class GestaoCandidaturaController {
             @RequestParam(value = "dataInicio", required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
             @RequestParam(value = "dataFim", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
+            @RequestParam(value = "pesquisa", required = false) String pesquisa
     ) {
         return EmpregoApiResponse.sucesso(
                 "Candidaturas listadas com sucesso.",
@@ -58,7 +59,8 @@ public class GestaoCandidaturaController {
                         tituloOferta,
                         canal,
                         dataInicio,
-                        dataFim
+                        dataFim,
+                        pesquisa
                 ))
         );
     }
@@ -89,11 +91,12 @@ public class GestaoCandidaturaController {
     @GetMapping("{id}/entrevistas")
     public EmpregoApiResponse<List<EntrevistaResponse>> listarEntrevistas(
             @PathVariable Integer id,
-            @RequestParam("entidadeId") Integer entidadeId
+            @RequestParam("entidadeId") Integer entidadeId,
+            @RequestParam(value = "pesquisa", required = false) String pesquisa
     ) {
         return EmpregoApiResponse.sucesso(
                 "Entrevistas listadas com sucesso.",
-                gestaoCandidaturaService.listarEntrevistas(id, entidadeId)
+                gestaoCandidaturaService.listarEntrevistas(id, entidadeId, pesquisa)
         );
     }
 

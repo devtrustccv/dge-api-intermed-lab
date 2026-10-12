@@ -41,7 +41,8 @@ public class CoordenadorOrientadorController {
             @RequestParam(value = "dataInicio", required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
             @RequestParam(value = "dataFim", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
+            @RequestParam(value = "pesquisa", required = false) String pesquisa
     ) {
         return EmpregoApiResponse.sucesso(
                 "Coordenadores e orientadores listados com sucesso.",
@@ -51,7 +52,8 @@ public class CoordenadorOrientadorController {
                         tipo,
                         estado,
                         dataInicio,
-                        dataFim
+                        dataFim,
+                        pesquisa
                 ))
         );
     }
@@ -82,11 +84,12 @@ public class CoordenadorOrientadorController {
     @GetMapping("{id}/ofertas")
     public EmpregoApiResponse<List<VagaListaResponse>> listarOfertasAssociadas(
             @PathVariable Integer id,
-            @RequestParam("entidadeId") Integer entidadeId
+            @RequestParam("entidadeId") Integer entidadeId,
+            @RequestParam(value = "pesquisa", required = false) String pesquisa
     ) {
         return EmpregoApiResponse.sucesso(
                 "Ofertas associadas listadas com sucesso.",
-                coordenadorOrientadorService.listarOfertasAssociadas(id, entidadeId)
+                coordenadorOrientadorService.listarOfertasAssociadas(id, entidadeId, pesquisa)
         );
     }
 

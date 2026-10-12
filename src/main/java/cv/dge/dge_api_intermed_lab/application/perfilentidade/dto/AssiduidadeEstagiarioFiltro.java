@@ -13,6 +13,15 @@ public record AssiduidadeEstagiarioFiltro(
         LocalDate data,
         LocalTime horaEntrada,
         LocalTime horaSaida,
-        String estado
+        String estado,
+        String pesquisa
 ) {
+    public AssiduidadeEstagiarioFiltro(
+            Integer entidadeId, Long estagiarioId, String estagiario, Integer ofertaId,
+            String oferta, String tipoAssiduidade, LocalDate data, LocalTime horaEntrada,
+            LocalTime horaSaida, String estado
+    ) {
+        this(entidadeId, estagiarioId, estagiario, ofertaId, oferta, tipoAssiduidade,
+                data, horaEntrada, horaSaida, estado, null);
+    }
 }

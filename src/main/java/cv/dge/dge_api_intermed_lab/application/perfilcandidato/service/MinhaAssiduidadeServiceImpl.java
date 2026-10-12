@@ -157,7 +157,8 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
                         filtro.estado()
                 ),
                 filtro.dataInicio(),
-                filtro.dataFim()
+                filtro.dataFim(),
+                textoOpcional(filtro.pesquisa())
         );
     }
 

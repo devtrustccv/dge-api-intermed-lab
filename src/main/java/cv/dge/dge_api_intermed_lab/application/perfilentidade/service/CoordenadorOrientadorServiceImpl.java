@@ -134,7 +134,7 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
 
     @Override
     @Transactional(readOnly = true)
-    public List<VagaListaResponse> listarOfertasAssociadas(Integer id, Integer entidadeId) {
+    public List<VagaListaResponse> listarOfertasAssociadas(Integer id, Integer entidadeId, String pesquisa) {
         CoordenadorOrientadorResponse colaborador = buscarPorId(id, entidadeId);
         Integer orientadorId = TIPO_ORIENTADOR.equalsIgnoreCase(String.valueOf(colaborador.tipo())) ? id : null;
         Integer coordenadorId = TIPO_COORDENADOR.equalsIgnoreCase(String.valueOf(colaborador.tipo())) ? id : null;
@@ -158,7 +158,7 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
                 coordenadorId,
                 null,
                 null,
-                null
+                texto(pesquisa)
         ));
     }
 
@@ -174,7 +174,8 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
                 normalizarTipoOpcional(filtro.tipo()),
                 normalizarEstadoOpcional(filtro.estado()),
                 filtro.dataInicio(),
-                filtro.dataFim()
+                filtro.dataFim(),
+                texto(filtro.pesquisa())
         );
     }
 

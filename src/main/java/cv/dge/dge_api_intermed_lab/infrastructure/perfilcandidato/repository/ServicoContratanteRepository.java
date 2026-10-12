@@ -103,6 +103,7 @@ public class ServicoContratanteRepository {
             where.append("AND servico.fim_candidatura <= ?\n");
             parametros.add(filtro.dataFim());
         }
+        adicionarPesquisaServico(where, parametros, filtro.pesquisa());
         return where.toString();
     }
 
@@ -139,6 +140,7 @@ public class ServicoContratanteRepository {
             where.append("AND servico.date_create < ?\n");
             parametros.add(filtro.dataFim().plusDays(1).atStartOfDay());
         }
+        adicionarPesquisaServico(where, parametros, filtro.pesquisa());
 
         String sql = """
                 SELECT
@@ -440,6 +442,20 @@ public class ServicoContratanteRepository {
             where.append("AND candidatura.data_candidatura <= ?\n");
             parametros.add(filtro.dataFim());
         }
+        if (temTexto(filtro.pesquisa())) {
+            where.append("""
+                    AND CONCAT_WS(' ',
+                        candidatura.nome,
+                        candidatura.telefone,
+                        candidatura.status_candidatura,
+                        candidatura.status_aceitacao_candidato,
+                        servico.tipo_servico,
+                        servico.titulo,
+                        CAST(candidatura.data_candidatura AS VARCHAR)
+                    ) ILIKE ?
+                    """);
+            parametros.add("%" + filtro.pesquisa().trim() + "%");
+        }
 
         String sql = """
                 SELECT candidatura.id,
@@ -461,6 +477,36 @@ public class ServicoContratanteRepository {
                          candidatura.id DESC
                 """;
         return empregoJdbcTemplate.query(sql, this::mapearCandidato, parametros.toArray());
+    }
+
+    private void adicionarPesquisaServico(
+            StringBuilder where,
+            List<Object> parametros,
+            String pesquisa
+    ) {
+        if (!temTexto(pesquisa)) {
+            return;
+        }
+        where.append("""
+                AND CONCAT_WS(' ',
+                    servico.nome,
+                    servico.tipo_servico,
+                    servico.titulo,
+                    servico.descricao,
+                    servico.competencias_exigidas,
+                    servico.ilha,
+                    servico.concelho,
+                    servico.zona,
+                    servico.telefone,
+                    servico.email,
+                    servico.estado,
+                    CAST(servico.data_pretendida AS VARCHAR),
+                    CAST(servico.inicio_candidatura AS VARCHAR),
+                    CAST(servico.fim_candidatura AS VARCHAR),
+                    CAST(servico.valor_previsto AS VARCHAR)
+                ) ILIKE ?
+                """);
+        parametros.add("%" + pesquisa.trim() + "%");
     }
 
     public Optional<CandidatoRegisto> buscarCandidato(

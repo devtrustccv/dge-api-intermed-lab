@@ -8,6 +8,13 @@ public record CoordenadorOrientadorFiltro(
         String tipo,
         String estado,
         LocalDate dataInicio,
-        LocalDate dataFim
+        LocalDate dataFim,
+        String pesquisa
 ) {
+    public CoordenadorOrientadorFiltro(
+            Integer entidadeId, String nome, String tipo, String estado,
+            LocalDate dataInicio, LocalDate dataFim
+    ) {
+        this(entidadeId, nome, tipo, estado, dataInicio, dataFim, null);
+    }
 }

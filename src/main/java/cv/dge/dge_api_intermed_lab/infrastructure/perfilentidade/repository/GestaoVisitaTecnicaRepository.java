@@ -343,6 +343,19 @@ public class GestaoVisitaTecnicaRepository {
             where.append(" AND v.date_create::date <= ?");
             params.add(filtro.dataFim());
         }
+        if (temTexto(filtro.pesquisa())) {
+            where.append("""
+                     AND CONCAT_WS(' ',
+                         v.data_visita::text, v.hora_inicio::text, v.hora_fim::text,
+                         v.visitante, v.objetivos, v.agendado_por,
+                         COALESCE(NULLIF(TRIM(v.cefp), ''), c.denominacao), v.estado,
+                         v.candidatos::text, v.nova_data::text, v.motivo_indeferimento,
+                         v.observacoes_entidade, v.supervisor_participante,
+                         v.observacoes_iefp, v.conteudo_reuniao, v.date_create::text
+                     ) ILIKE ?
+                    """);
+            params.add("%" + filtro.pesquisa().trim() + "%");
+        }
         return where + " ";
     }
 

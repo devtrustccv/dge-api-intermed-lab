@@ -16,6 +16,8 @@ public interface AcolhimentoConsultaService {
 
     List<PacCandidaturaResponse> listarCandidaturas(Integer cefpId, String denominacao);
 
+    List<PacCandidaturaResponse> listarCandidaturas(Integer cefpId, String denominacao, String pesquisa);
+
     AcolhimentoPessoaResponse buscarPorIdPessoa(Integer idPessoa);
 
     AcolhimentoEntidadeResponse buscarPorIdEntidade(Integer globalIdEntidade);

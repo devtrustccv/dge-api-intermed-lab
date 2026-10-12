@@ -5,6 +5,13 @@ public record AcompanhamentoEstagiarioFiltro(
         Long estagiarioId,
         String estagiario,
         Integer ofertaId,
-        String oferta
+        String oferta,
+        String pesquisa
 ) {
+    public AcompanhamentoEstagiarioFiltro(
+            Integer entidadeId, Long estagiarioId, String estagiario,
+            Integer ofertaId, String oferta
+    ) {
+        this(entidadeId, estagiarioId, estagiario, ofertaId, oferta, null);
+    }
 }

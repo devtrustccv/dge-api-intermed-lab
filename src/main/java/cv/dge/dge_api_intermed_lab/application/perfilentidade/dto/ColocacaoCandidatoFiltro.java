@@ -11,6 +11,15 @@ public record ColocacaoCandidatoFiltro(
         LocalDate dataInicioPrevisto,
         LocalDate dataRegistoInicio,
         LocalDate dataRegistoFim,
-        Integer entidadeId
+        Integer entidadeId,
+        String pesquisa
 ) {
+    public ColocacaoCandidatoFiltro(
+            String tipoOferta, String codigoReferencia, Long pessoaId, String candidato,
+            String tipoContrato, LocalDate dataInicioPrevisto, LocalDate dataRegistoInicio,
+            LocalDate dataRegistoFim, Integer entidadeId
+    ) {
+        this(tipoOferta, codigoReferencia, pessoaId, candidato, tipoContrato,
+                dataInicioPrevisto, dataRegistoInicio, dataRegistoFim, entidadeId, null);
+    }
 }
