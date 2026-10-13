@@ -3,14 +3,14 @@ package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocRelacaoDTO;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoEstagiarioSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoOfertaSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoRemoverRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoVinculo;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoEstagiarioSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoOfertaSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoRemoverRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoVinculo;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.GestaoRelatorioAcompanhamentoRepository;
 import java.time.LocalDate;
@@ -63,7 +63,7 @@ public class GestaoRelatorioAcompanhamentoServiceImpl implements GestaoRelatorio
         RelatorioAcompanhamentoFiltro dados = new RelatorioAcompanhamentoFiltro(
                 filtro.entidadeId(), filtro.pessoaId(), texto(filtro.estagiario()),
                 texto(filtro.codigoReferencia()),
-                filtro.dataInicio(), filtro.dataFim(), texto(filtro.pesquisa()));
+                filtro.dataInicio(), filtro.dataFim(), texto(filtro.search()));
         return repository.listar(dados).stream().map(this::enriquecerLista).toList();
     }
 

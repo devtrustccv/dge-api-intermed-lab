@@ -3,7 +3,7 @@ package cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoFiltro;
 import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;

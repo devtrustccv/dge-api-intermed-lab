@@ -1,6 +1,6 @@
 package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaEntrevistaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.entrevista.MinhaEntrevistaListaResponse;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaEntrevistaRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaEntrevistaRepository.EntrevistaRegisto;
 import java.util.List;
@@ -18,11 +18,11 @@ public class MinhaEntrevistaServiceImpl implements MinhaEntrevistaService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<MinhaEntrevistaListaResponse> listar(Long pessoaId, String pesquisa) {
+    public List<MinhaEntrevistaListaResponse> listar(Long pessoaId, String search) {
         validarPessoa(pessoaId);
-        List<EntrevistaRegisto> registos = pesquisa == null || pesquisa.isBlank()
+        List<EntrevistaRegisto> registos = search == null || search.isBlank()
                 ? entrevistaRepository.listar(pessoaId)
-                : entrevistaRepository.listar(pessoaId, pesquisa.trim());
+                : entrevistaRepository.listar(pessoaId, search.trim());
         return registos.stream()
                 .map(this::mapear)
                 .toList();

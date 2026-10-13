@@ -3,8 +3,8 @@ package cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaOpcaoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagaOpcaoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.MinhaCandidaturaFiltro;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Optional;
 import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -207,7 +206,7 @@ public class MinhaCandidaturaRepository {
             where.append("AND c.date_create <= ?\n");
             parametros.add(LocalDateTime.of(filtro.dataFim(), LocalTime.MAX));
         }
-        if (temTexto(filtro.pesquisa())) {
+        if (temTexto(filtro.search())) {
             where.append("""
                     AND CONCAT_WS(' ',
                         COALESCE(c.tipo_oferta, o.tipo_oferta),
@@ -222,7 +221,7 @@ public class MinhaCandidaturaRepository {
                         CAST(c.date_create AS VARCHAR)
                     ) ILIKE ?
                     """);
-            parametros.add("%" + filtro.pesquisa().trim() + "%");
+            parametros.add("%" + filtro.search().trim() + "%");
         }
         return where.toString();
     }
@@ -251,10 +250,30 @@ public class MinhaCandidaturaRepository {
             return null;
         }
         try {
-            return objectMapper.readTree(json);
+            JsonNode valor = objectMapper.readTree(json);
+            for (int nivel = 0; nivel < 2 && valor != null && valor.isTextual(); nivel++) {
+                String texto = valor.asText();
+                if (!pareceJson(texto)) {
+                    break;
+                }
+                valor = objectMapper.readTree(texto);
+            }
+            return valor;
         } catch (JsonProcessingException ex) {
-            throw new DataRetrievalFailureException("Conteúdo inválido no campo de anexos da candidatura.", ex);
+            // Existem registos antigos em que o campo JSONB recebeu apenas o caminho do ficheiro.
+            // Mantemos esses registos legíveis em vez de falhar todo o detalhe da candidatura.
+            return objectMapper.getNodeFactory().textNode(json.trim());
         }
+    }
+
+    private boolean pareceJson(String valor) {
+        if (!temTexto(valor)) {
+            return false;
+        }
+        String texto = valor.trim();
+        return (texto.startsWith("{") && texto.endsWith("}"))
+                || (texto.startsWith("[") && texto.endsWith("]"))
+                || (texto.startsWith("\"") && texto.endsWith("\""));
     }
 
     private ConsultaVagaOpcaoResponse mapOpcaoGeografia(String codigo) {

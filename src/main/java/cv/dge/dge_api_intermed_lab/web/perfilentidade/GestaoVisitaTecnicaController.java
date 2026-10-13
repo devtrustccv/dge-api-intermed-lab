@@ -1,16 +1,16 @@
 package cv.dge.dge_api_intermed_lab.web.perfilentidade;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EmpregoApiResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaAtualizacaoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaCandidatoSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaCefpSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaExecutadoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaObservacaoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaValidacaoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.comum.EmpregoApiResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita.VisitaTecnicaAtualizacaoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita.VisitaTecnicaCandidatoSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita.VisitaTecnicaCefpSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita.VisitaTecnicaDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita.VisitaTecnicaExecutadoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita.VisitaTecnicaFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita.VisitaTecnicaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita.VisitaTecnicaObservacaoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita.VisitaTecnicaRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita.VisitaTecnicaValidacaoRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.GestaoVisitaTecnicaService;
 import java.time.LocalDate;
 import java.util.List;
@@ -48,7 +48,7 @@ public class GestaoVisitaTecnicaController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
             @RequestParam(value = "dataFim", required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
-            @RequestParam(value = "pesquisa", required = false) String pesquisa
+            @RequestParam(value = "search", required = false) String search
     ) {
         return EmpregoApiResponse.sucesso(
                 "Visitas tecnicas listadas com sucesso.",
@@ -61,7 +61,7 @@ public class GestaoVisitaTecnicaController {
                         dataVisita,
                         dataInicio,
                         dataFim,
-                        pesquisa
+                        search
                 ))
         );
     }

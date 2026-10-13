@@ -1,8 +1,8 @@
 package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
 import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CertificadoEstagioEmissaoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CertificadoEstagioResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.certificado.CertificadoEstagioEmissaoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.certificado.CertificadoEstagioResponse;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.PerfilCandidatoCertificadoRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.PerfilCandidatoCertificadoRepository.CertificadoEmitido;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.PerfilCandidatoCertificadoRepository.FonteEmprego;

@@ -1,6 +1,6 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.*;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.avaliacao.*;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.GestaoAvaliacaoEstagiarioRepository;
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ public class GestaoAvaliacaoEstagiarioServiceImpl implements GestaoAvaliacaoEsta
                 filtro.entidadeId(), texto(filtro.estagiario()),
                 dominioOpcional(EmpregoDominio.DOMINIO_TIPO_AVALIACAO, filtro.tipoAvaliacao()),
                 texto(filtro.periodoReferencia()), filtro.dataRegistro(), filtro.dataInicio(), filtro.dataFim(),
-                texto(filtro.pesquisa()));
+                texto(filtro.search()));
         return repository.listar(dados).stream().map(this::enriquecerLista).toList();
     }
 

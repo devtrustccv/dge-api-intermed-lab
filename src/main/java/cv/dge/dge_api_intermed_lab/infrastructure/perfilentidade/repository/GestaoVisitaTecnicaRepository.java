@@ -2,15 +2,15 @@ package cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaAtualizacaoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaAvaliacaoItemRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaCandidatoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaCandidatoSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaCefpSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita.VisitaTecnicaAtualizacaoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita.VisitaTecnicaAvaliacaoItemRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita.VisitaTecnicaCandidatoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita.VisitaTecnicaCandidatoSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita.VisitaTecnicaCefpSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita.VisitaTecnicaDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita.VisitaTecnicaFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita.VisitaTecnicaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita.VisitaTecnicaRequest;
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -343,7 +343,7 @@ public class GestaoVisitaTecnicaRepository {
             where.append(" AND v.date_create::date <= ?");
             params.add(filtro.dataFim());
         }
-        if (temTexto(filtro.pesquisa())) {
+        if (temTexto(filtro.search())) {
             where.append("""
                      AND CONCAT_WS(' ',
                          v.data_visita::text, v.hora_inicio::text, v.hora_fim::text,
@@ -354,7 +354,7 @@ public class GestaoVisitaTecnicaRepository {
                          v.observacoes_iefp, v.conteudo_reuniao, v.date_create::text
                      ) ILIKE ?
                     """);
-            params.add("%" + filtro.pesquisa().trim() + "%");
+            params.add("%" + filtro.search().trim() + "%");
         }
         return where + " ";
     }

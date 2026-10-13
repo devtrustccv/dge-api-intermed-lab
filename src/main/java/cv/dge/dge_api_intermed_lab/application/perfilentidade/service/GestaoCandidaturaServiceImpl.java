@@ -1,14 +1,14 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaDocumentoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaAvaliacaoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EntrevistaAgendamentoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EntrevistaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EntrevistaResultadoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.CandidaturaDocumentoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaAvaliacaoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaAgendamentoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaResultadoRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.GestaoCandidaturaRepository;
 import java.util.ArrayList;
@@ -159,13 +159,13 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
     public List<EntrevistaResponse> listarEntrevistas(
             Integer candidaturaId,
             Integer entidadeId,
-            String pesquisa
+            String search
     ) {
         validarId(candidaturaId,
                 "Não foi possível identificar a candidatura selecionada. Atualize a página e tente novamente.");
         validarEntidade(entidadeId);
         buscarPorId(candidaturaId, entidadeId);
-        return candidaturaRepository.listarEntrevistas(candidaturaId, texto(pesquisa)).stream()
+        return candidaturaRepository.listarEntrevistas(candidaturaId, texto(search)).stream()
                 .map(this::enriquecerEntrevista)
                 .toList();
     }
@@ -226,7 +226,7 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_CANAL_OFERTA, filtro.canal()),
                 filtro.dataInicio(),
                 filtro.dataFim(),
-                texto(filtro.pesquisa())
+                texto(filtro.search())
         );
     }
 

@@ -3,13 +3,13 @@ package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
 import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaDocumentoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaOpcaoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaOpcaoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaOpcoesResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.CandidaturaDocumentoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagaOpcaoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.MinhaCandidaturaDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.MinhaCandidaturaFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.MinhaCandidaturaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.MinhaCandidaturaOpcaoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.MinhaCandidaturaOpcoesResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.EmpregoDominioService;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaCandidaturaRepository;
@@ -139,7 +139,7 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
                 textoOpcional(filtro.codigoReferencia()),
                 filtro.dataInicio(),
                 filtro.dataFim(),
-                textoOpcional(filtro.pesquisa())
+                textoOpcional(filtro.search())
         );
     }
 
@@ -155,7 +155,7 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
                 filtro.codigoReferencia(),
                 filtro.dataInicio(),
                 filtro.dataFim(),
-                filtro.pesquisa()
+                filtro.search()
         );
     }
 
@@ -290,7 +290,7 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
         List<CandidaturaDocumentoResponse> documentos = new ArrayList<>();
         Set<String> documentosAdicionados = new LinkedHashSet<>();
         if (anexos.isObject()) {
-            adicionarDocumento(
+            adicionarDocumentos(
                     primeiroNo(anexos, "curriculumVitae", "curriculoVitae", "curriculo", "cv"),
                     TIPO_DOCUMENTO_CURRICULO,
                     documentos,
@@ -329,20 +329,12 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
         }
         if (valor.isObject()) {
             valor.elements().forEachRemaining(
-                    item -> adicionarDocumentos(item, tipoPadrao, documentos, documentosAdicionados)
+                    item -> {
+                        if (item.isContainerNode()) {
+                            adicionarDocumentos(item, tipoPadrao, documentos, documentosAdicionados);
+                        }
+                    }
             );
-        }
-    }
-
-    private void adicionarDocumento(
-            JsonNode valor,
-            String tipoPadrao,
-            List<CandidaturaDocumentoResponse> documentos,
-            Set<String> documentosAdicionados
-    ) {
-        CandidaturaDocumentoResponse documento = converterDocumento(valor, tipoPadrao);
-        if (documento != null) {
-            adicionarSemDuplicar(documento, documentos, documentosAdicionados);
         }
     }
 
@@ -362,12 +354,17 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
             return null;
         }
         if (valor.isTextual()) {
-            String path = textoOpcional(valor.asText());
-            return path == null ? null : new CandidaturaDocumentoResponse(
+            String referencia = textoOpcional(valor.asText());
+            if (!ehReferenciaDocumento(referencia)) {
+                return null;
+            }
+            String path = ehUrlAbsoluta(referencia) ? null : referencia;
+            String url = documentService.gerarLinkPublico(referencia);
+            return !temTexto(url) ? null : new CandidaturaDocumentoResponse(
                     tipoPadrao,
-                    nomeDoPath(path),
+                    nomeDoPath(referencia),
                     path,
-                    documentService.gerarLinkPublico(path)
+                    url
             );
         }
         if (!valor.isObject()) {
@@ -375,15 +372,46 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
         }
 
         String tipo = primeiroTexto(valor, "tipo", "tipoDocumento", "idTpDoc", "id_tp_doc");
-        String path = primeiroTexto(valor, "path", "caminho");
-        String url = primeiroTexto(valor, "url", "previewUrl", "ver_documento");
-        String nome = primeiroTexto(valor, "nome", "name", "fileName", "ficheiro");
+        String path = primeiroTexto(
+                valor,
+                "path",
+                "caminho",
+                "anexo",
+                "documento",
+                "ficheiroPath",
+                "filePath",
+                "pathUrl",
+                "path_url",
+                "referencia"
+        );
+        String url = primeiroTexto(
+                valor,
+                "url",
+                "previewUrl",
+                "preview",
+                "ver_documento",
+                "documentoUrl",
+                "downloadUrl"
+        );
+        String nome = primeiroTexto(
+                valor,
+                "nome",
+                "name",
+                "fileName",
+                "file_name",
+                "nomeFicheiro",
+                "ficheiro"
+        );
         if (!temTexto(path) && !temTexto(url)) {
             return null;
         }
-        url = documentService.gerarLinkPublico(temTexto(path) ? path : url);
+        String referencia = temTexto(path) ? path : url;
+        url = documentService.gerarLinkPublico(referencia);
+        if (!temTexto(url)) {
+            return null;
+        }
         if (!temTexto(nome)) {
-            nome = nomeDoPath(temTexto(path) ? path : url);
+            nome = nomeDoPath(referencia);
         }
         return new CandidaturaDocumentoResponse(
                 temTexto(tipo) ? tipo : tipoPadrao,
@@ -391,6 +419,23 @@ public class MinhaCandidaturaServiceImpl implements MinhaCandidaturaService {
                 path,
                 url
         );
+    }
+
+    private boolean ehReferenciaDocumento(String valor) {
+        if (!temTexto(valor) || valor.regionMatches(true, 0, "data:", 0, 5)) {
+            return false;
+        }
+        String texto = valor.trim();
+        if (ehUrlAbsoluta(texto) || texto.contains("/") || texto.contains("\\")) {
+            return true;
+        }
+        int ultimoPonto = texto.lastIndexOf('.');
+        return ultimoPonto > 0 && ultimoPonto < texto.length() - 1 && !texto.contains(" ");
+    }
+
+    private boolean ehUrlAbsoluta(String valor) {
+        return valor != null && (valor.regionMatches(true, 0, "http://", 0, 7)
+                || valor.regionMatches(true, 0, "https://", 0, 8));
     }
 
     private JsonNode primeiroNo(JsonNode objeto, String... campos) {

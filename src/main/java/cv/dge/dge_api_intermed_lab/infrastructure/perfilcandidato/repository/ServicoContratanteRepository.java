@@ -2,12 +2,12 @@ package cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaOpcaoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteCandidatoFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteCandidatoOpcaoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoCandidatoFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagaOpcaoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoContratanteCandidatoFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoContratanteCandidatoOpcaoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoContratanteFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoContratanteRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoCandidatoFiltro;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -103,7 +103,7 @@ public class ServicoContratanteRepository {
             where.append("AND servico.fim_candidatura <= ?\n");
             parametros.add(filtro.dataFim());
         }
-        adicionarPesquisaServico(where, parametros, filtro.pesquisa());
+        adicionarPesquisaServico(where, parametros, filtro.search());
         return where.toString();
     }
 
@@ -140,7 +140,7 @@ public class ServicoContratanteRepository {
             where.append("AND servico.date_create < ?\n");
             parametros.add(filtro.dataFim().plusDays(1).atStartOfDay());
         }
-        adicionarPesquisaServico(where, parametros, filtro.pesquisa());
+        adicionarPesquisaServico(where, parametros, filtro.search());
 
         String sql = """
                 SELECT
@@ -442,7 +442,7 @@ public class ServicoContratanteRepository {
             where.append("AND candidatura.data_candidatura <= ?\n");
             parametros.add(filtro.dataFim());
         }
-        if (temTexto(filtro.pesquisa())) {
+        if (temTexto(filtro.search())) {
             where.append("""
                     AND CONCAT_WS(' ',
                         candidatura.nome,
@@ -454,7 +454,7 @@ public class ServicoContratanteRepository {
                         CAST(candidatura.data_candidatura AS VARCHAR)
                     ) ILIKE ?
                     """);
-            parametros.add("%" + filtro.pesquisa().trim() + "%");
+            parametros.add("%" + filtro.search().trim() + "%");
         }
 
         String sql = """
@@ -482,9 +482,9 @@ public class ServicoContratanteRepository {
     private void adicionarPesquisaServico(
             StringBuilder where,
             List<Object> parametros,
-            String pesquisa
+            String search
     ) {
-        if (!temTexto(pesquisa)) {
+        if (!temTexto(search)) {
             return;
         }
         where.append("""
@@ -506,7 +506,7 @@ public class ServicoContratanteRepository {
                     CAST(servico.valor_previsto AS VARCHAR)
                 ) ILIKE ?
                 """);
-        parametros.add("%" + pesquisa.trim() + "%");
+        parametros.add("%" + search.trim() + "%");
     }
 
     public Optional<CandidatoRegisto> buscarCandidato(

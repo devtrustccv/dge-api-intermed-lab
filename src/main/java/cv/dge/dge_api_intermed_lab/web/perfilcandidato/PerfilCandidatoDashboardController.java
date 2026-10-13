@@ -1,7 +1,7 @@
 package cv.dge.dge_api_intermed_lab.web.perfilcandidato;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.PerfilCandidatoApiResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.PerfilCandidatoDashboardResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.comum.PerfilCandidatoApiResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.dashboard.PerfilCandidatoDashboardResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.service.PerfilCandidatoDashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;

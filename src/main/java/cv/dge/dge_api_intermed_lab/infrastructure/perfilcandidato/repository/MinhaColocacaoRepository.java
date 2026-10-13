@@ -38,8 +38,8 @@ public class MinhaColocacaoRepository {
         return listar(pessoaId, null);
     }
 
-    public List<ColocacaoRegisto> listar(Long pessoaId, String pesquisa) {
-        boolean pesquisar = pesquisa != null && !pesquisa.isBlank();
+    public List<ColocacaoRegisto> listar(Long pessoaId, String search) {
+        boolean pesquisar = search != null && !search.isBlank();
         String sql = """
                 SELECT
                 """ + CAMPOS_COLOCACAO + """
@@ -63,7 +63,7 @@ public class MinhaColocacaoRepository {
                 """;
 
         return pesquisar
-                ? empregoJdbcTemplate.query(sql, this::mapColocacao, pessoaId, "%" + pesquisa.trim() + "%")
+                ? empregoJdbcTemplate.query(sql, this::mapColocacao, pessoaId, "%" + search.trim() + "%")
                 : empregoJdbcTemplate.query(sql, this::mapColocacao, pessoaId);
     }
 

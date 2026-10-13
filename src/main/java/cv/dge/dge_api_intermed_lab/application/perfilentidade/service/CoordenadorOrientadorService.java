@@ -1,12 +1,12 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CoordenadorOrientadorFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CoordenadorOrientadorListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CoordenadorOrientadorRemoverRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CoordenadorOrientadorRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CoordenadorOrientadorResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.PessoaGlobalResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.CoordenadorOrientadorFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.CoordenadorOrientadorListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.CoordenadorOrientadorRemoverRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.CoordenadorOrientadorRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.CoordenadorOrientadorResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.PessoaGlobalResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaListaResponse;
 import java.util.List;
 
 public interface CoordenadorOrientadorService {
@@ -23,7 +23,7 @@ public interface CoordenadorOrientadorService {
 
     CoordenadorOrientadorResponse remover(Integer id, Integer entidadeId, CoordenadorOrientadorRemoverRequest request);
 
-    List<VagaListaResponse> listarOfertasAssociadas(Integer id, Integer entidadeId, String pesquisa);
+    List<VagaListaResponse> listarOfertasAssociadas(Integer id, Integer entidadeId, String search);
 
     default List<VagaListaResponse> listarOfertasAssociadas(Integer id, Integer entidadeId) {
         return listarOfertasAssociadas(id, entidadeId, null);

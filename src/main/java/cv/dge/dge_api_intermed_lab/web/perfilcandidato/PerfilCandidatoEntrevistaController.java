@@ -1,7 +1,7 @@
 package cv.dge.dge_api_intermed_lab.web.perfilcandidato;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaEntrevistaListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.PerfilCandidatoApiResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.entrevista.MinhaEntrevistaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.comum.PerfilCandidatoApiResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.service.MinhaEntrevistaService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -20,11 +20,11 @@ public class PerfilCandidatoEntrevistaController {
     @GetMapping
     public PerfilCandidatoApiResponse<List<MinhaEntrevistaListaResponse>> listar(
             @RequestParam(required = false) Long pessoaId,
-            @RequestParam(required = false) String pesquisa
+            @RequestParam(value = "search", required = false) String search
     ) {
         return PerfilCandidatoApiResponse.sucesso(
                 "Entrevistas carregadas com sucesso.",
-                entrevistaService.listar(pessoaId, pesquisa)
+                entrevistaService.listar(pessoaId, search)
         );
     }
 }

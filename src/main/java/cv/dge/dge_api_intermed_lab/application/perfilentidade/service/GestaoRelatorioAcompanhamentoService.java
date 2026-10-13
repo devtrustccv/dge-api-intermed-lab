@@ -1,11 +1,11 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoOfertaSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoRemoverRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoOfertaSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoRemoverRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoRequest;
 import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 

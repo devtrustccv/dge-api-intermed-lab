@@ -1,9 +1,9 @@
 package cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AreaGeograficaProcuradaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaPorTipoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ColocacaoRecenteResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.EvolucaoCandidaturaMensalResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.alerta.AreaGeograficaProcuradaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.dashboard.CandidaturaPorTipoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.dashboard.ColocacaoRecenteResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.dashboard.EvolucaoCandidaturaMensalResponse;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;

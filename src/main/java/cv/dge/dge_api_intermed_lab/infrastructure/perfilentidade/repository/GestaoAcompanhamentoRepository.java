@@ -1,9 +1,9 @@
 package cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AcompanhamentoEstagiarioFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AcompanhamentoEstagiarioListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AcompanhamentoEstagiarioSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AcompanhamentoOfertaSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.acompanhamento.AcompanhamentoEstagiarioFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.acompanhamento.AcompanhamentoEstagiarioListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.acompanhamento.AcompanhamentoEstagiarioSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.acompanhamento.AcompanhamentoOfertaSelectResponse;
 import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
@@ -121,14 +121,14 @@ public class GestaoAcompanhamentoRepository {
             where.append(" AND UPPER(COALESCE(o.titulo, '')) LIKE UPPER(?)");
             params.add("%" + filtro.oferta() + "%");
         }
-        if (filtro.pesquisa() != null && !filtro.pesquisa().isBlank()) {
+        if (filtro.search() != null && !filtro.search().isBlank()) {
             where.append("""
                      AND CONCAT_WS(' ',
                          c.nome, o.titulo, e.parecer_entrevista, e.estado,
                          c.status_candidatura, c.date_create::text
                      ) ILIKE ?
                     """);
-            params.add("%" + filtro.pesquisa().trim() + "%");
+            params.add("%" + filtro.search().trim() + "%");
         }
         return where.toString();
     }

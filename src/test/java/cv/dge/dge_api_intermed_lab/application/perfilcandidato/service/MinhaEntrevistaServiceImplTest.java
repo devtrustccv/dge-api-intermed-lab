@@ -6,7 +6,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaEntrevistaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.entrevista.MinhaEntrevistaListaResponse;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaEntrevistaRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaEntrevistaRepository.EntrevistaRegisto;
 import java.time.LocalDate;

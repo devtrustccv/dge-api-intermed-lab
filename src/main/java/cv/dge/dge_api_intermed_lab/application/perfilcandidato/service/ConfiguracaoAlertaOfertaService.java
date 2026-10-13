@@ -1,14 +1,14 @@
 package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AlertaOfertaDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AlertaOfertaListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AlertaOfertaOpcoesResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AlertaOfertaRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.alerta.AlertaOfertaDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.alerta.AlertaOfertaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.alerta.AlertaOfertaOpcoesResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.alerta.AlertaOfertaRequest;
 import java.util.List;
 
 public interface ConfiguracaoAlertaOfertaService {
 
-    List<AlertaOfertaListaResponse> listar(Long pessoaId, String pesquisa);
+    List<AlertaOfertaListaResponse> listar(Long pessoaId, String search);
 
     default List<AlertaOfertaListaResponse> listar(Long pessoaId) {
         return listar(pessoaId, null);

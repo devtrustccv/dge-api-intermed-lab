@@ -14,9 +14,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
 import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.MinhaCandidaturaDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.MinhaCandidaturaFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.MinhaCandidaturaListaResponse;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaCandidaturaRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaCandidaturaRepository.CandidaturaRegisto;
 import java.time.LocalDate;
@@ -195,6 +195,38 @@ class MinhaCandidaturaServiceImplTest {
         assertThat(resultado.anexos().get(0).url()).isEqualTo("https://documentos.test/cv");
         assertThat(resultado.anexos().get(1).tipo()).isEqualTo("OUTRO_DOCUMENTO");
         assertThat(resultado.anexos().get(1).url()).isEqualTo("https://documentos.test/diploma");
+    }
+
+    @Test
+    void deveDevolverAnexoHistoricoComCamposAlternativosNoDetalhe() throws Exception {
+        JsonNode anexos = new ObjectMapper().readTree("""
+                {
+                  "tipoDocumento": "CURRICULO_VITAE",
+                  "file_name": "cv-antigo.pdf",
+                  "anexo": "candidaturas/88/cv-antigo.pdf"
+                }
+                """);
+        when(candidaturaRepository.buscarPorId(88, 9001L)).thenReturn(Optional.of(registo(
+                88,
+                "OFERTA_EMPREGO",
+                "TRIAGEM",
+                "PORTAL",
+                "101",
+                "102",
+                anexos,
+                LocalDateTime.of(2026, 10, 12, 9, 0)
+        )));
+        when(documentService.gerarLinkPublico("candidaturas/88/cv-antigo.pdf"))
+                .thenReturn("https://documentos.test/cv-antigo");
+
+        MinhaCandidaturaDetalheResponse resultado = service.buscarPorId(88, 9001L);
+
+        assertThat(resultado.anexos()).singleElement().satisfies(anexo -> {
+            assertThat(anexo.tipo()).isEqualTo("CURRICULO_VITAE");
+            assertThat(anexo.nome()).isEqualTo("cv-antigo.pdf");
+            assertThat(anexo.path()).isEqualTo("candidaturas/88/cv-antigo.pdf");
+            assertThat(anexo.url()).isEqualTo("https://documentos.test/cv-antigo");
+        });
     }
 
     @Test

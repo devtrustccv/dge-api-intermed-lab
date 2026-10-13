@@ -1,8 +1,8 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.DashboardGrupoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.DashboardResumoOfertaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.IntermediacaoLaboralDashboardResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.dashboard.DashboardGrupoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.dashboard.DashboardResumoOfertaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.dashboard.IntermediacaoLaboralDashboardResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.IntermediacaoLaboralDashboardRepository;
 import java.util.List;

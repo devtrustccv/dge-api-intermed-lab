@@ -1,13 +1,13 @@
 package cv.dge.dge_api_intermed_lab.web.perfilentidade;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CoordenadorOrientadorFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CoordenadorOrientadorListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CoordenadorOrientadorRemoverRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CoordenadorOrientadorRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CoordenadorOrientadorResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EmpregoApiResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.PessoaGlobalResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.CoordenadorOrientadorFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.CoordenadorOrientadorListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.CoordenadorOrientadorRemoverRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.CoordenadorOrientadorRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.CoordenadorOrientadorResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.comum.EmpregoApiResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.PessoaGlobalResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaListaResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.CoordenadorOrientadorService;
 import java.time.LocalDate;
 import java.util.List;
@@ -42,7 +42,7 @@ public class CoordenadorOrientadorController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
             @RequestParam(value = "dataFim", required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
-            @RequestParam(value = "pesquisa", required = false) String pesquisa
+            @RequestParam(value = "search", required = false) String search
     ) {
         return EmpregoApiResponse.sucesso(
                 "Coordenadores e orientadores listados com sucesso.",
@@ -53,7 +53,7 @@ public class CoordenadorOrientadorController {
                         estado,
                         dataInicio,
                         dataFim,
-                        pesquisa
+                        search
                 ))
         );
     }
@@ -85,11 +85,11 @@ public class CoordenadorOrientadorController {
     public EmpregoApiResponse<List<VagaListaResponse>> listarOfertasAssociadas(
             @PathVariable Integer id,
             @RequestParam("entidadeId") Integer entidadeId,
-            @RequestParam(value = "pesquisa", required = false) String pesquisa
+            @RequestParam(value = "search", required = false) String search
     ) {
         return EmpregoApiResponse.sucesso(
                 "Ofertas associadas listadas com sucesso.",
-                coordenadorOrientadorService.listarOfertasAssociadas(id, entidadeId, pesquisa)
+                coordenadorOrientadorService.listarOfertasAssociadas(id, entidadeId, search)
         );
     }
 

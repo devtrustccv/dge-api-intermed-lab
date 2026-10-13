@@ -1,10 +1,10 @@
 package cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeEstagiarioDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeEstagiarioFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeEstagiarioListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeEstagiarioSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeOfertaSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.assiduidade.AssiduidadeEstagiarioDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.assiduidade.AssiduidadeEstagiarioFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.assiduidade.AssiduidadeEstagiarioListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.assiduidade.AssiduidadeEstagiarioSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.assiduidade.AssiduidadeOfertaSelectResponse;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -180,7 +180,7 @@ public class GestaoAssiduidadeRepository {
             where.append(" AND UPPER(a.estado) = UPPER(?)");
             params.add(filtro.estado());
         }
-        if (temTexto(filtro.pesquisa())) {
+        if (temTexto(filtro.search())) {
             where.append("""
                      AND CONCAT_WS(' ',
                          COALESCE(NULLIF(TRIM(a.nome), ''), cc.nome), o.titulo,
@@ -189,7 +189,7 @@ public class GestaoAssiduidadeRepository {
                          a.estado, a.observacao, a.date_create::text, a.user_create
                      ) ILIKE ?
                     """);
-            params.add("%" + filtro.pesquisa().trim() + "%");
+            params.add("%" + filtro.search().trim() + "%");
         }
         return where + " ";
     }

@@ -141,9 +141,9 @@ public class AcolhimentoConsultaServiceImpl implements AcolhimentoConsultaServic
     public List<PacCandidaturaResponse> listarCandidaturas(
             Integer cefpId,
             String denominacao,
-            String pesquisa
+            String search
     ) {
-        String termo = pesquisa == null ? null : pesquisa.trim().toLowerCase(Locale.ROOT);
+        String termo = search == null ? null : search.trim().toLowerCase(Locale.ROOT);
         List<PacCandidaturaResponse> candidaturas = listarCandidaturas(cefpId, denominacao);
         if (termo == null || termo.isBlank()) {
             return candidaturas;

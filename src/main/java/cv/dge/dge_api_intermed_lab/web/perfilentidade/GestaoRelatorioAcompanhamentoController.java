@@ -2,13 +2,13 @@ package cv.dge.dge_api_intermed_lab.web.perfilentidade;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EmpregoApiResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoOfertaSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoRemoverRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.comum.EmpregoApiResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoOfertaSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoRemoverRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.GestaoRelatorioAcompanhamentoService;
 import cv.dge.dge_api_intermed_lab.web.ApiErrorMessageResolver;
 import java.time.LocalDate;
@@ -45,13 +45,13 @@ public class GestaoRelatorioAcompanhamentoController {
             @RequestParam(required = false) String codigoReferencia,
             @RequestParam(required = false) LocalDate dataInicio,
             @RequestParam(required = false) LocalDate dataFim,
-            @RequestParam(required = false) String pesquisa
+            @RequestParam(value = "search", required = false) String search
     ) {
         return EmpregoApiResponse.sucesso(
                 "Relatorios de acompanhamento listados com sucesso.",
                 service.listar(new RelatorioAcompanhamentoFiltro(
                         entidadeId, pessoaId, estagiario, codigoReferencia,
-                        dataInicio, dataFim, pesquisa)));
+                        dataInicio, dataFim, search)));
     }
 
     @GetMapping("{id}")

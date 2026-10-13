@@ -1,8 +1,8 @@
 package cv.dge.dge_api_intermed_lab.web.perfilcandidato;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AdesaoJovemRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AdesaoJovemResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.PerfilCandidatoApiResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.adesao.AdesaoJovemRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.adesao.AdesaoJovemResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.comum.PerfilCandidatoApiResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.service.PerfilCandidatoAdesaoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

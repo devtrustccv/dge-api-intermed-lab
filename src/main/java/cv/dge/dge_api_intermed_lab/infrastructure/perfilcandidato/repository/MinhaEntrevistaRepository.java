@@ -21,8 +21,8 @@ public class MinhaEntrevistaRepository {
         return listar(pessoaId, null);
     }
 
-    public List<EntrevistaRegisto> listar(Long pessoaId, String pesquisa) {
-        boolean pesquisar = pesquisa != null && !pesquisa.isBlank();
+    public List<EntrevistaRegisto> listar(Long pessoaId, String search) {
+        boolean pesquisar = search != null && !search.isBlank();
         return empregoJdbcTemplate.query(
                 """
                         SELECT
@@ -65,7 +65,7 @@ public class MinhaEntrevistaRepository {
                 """,
                 this::mapEntrevista,
                 pesquisar
-                        ? new Object[]{pessoaId, "%" + pesquisa.trim() + "%"}
+                        ? new Object[]{pessoaId, "%" + search.trim() + "%"}
                         : new Object[]{pessoaId}
         );
     }

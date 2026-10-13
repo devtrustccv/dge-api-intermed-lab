@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EmpregoDominioResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.comum.EmpregoDominioResponse;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.IgrpDominioRepository;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;

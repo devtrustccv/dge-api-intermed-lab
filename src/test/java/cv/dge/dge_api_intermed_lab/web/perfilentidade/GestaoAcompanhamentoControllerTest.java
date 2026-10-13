@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AcompanhamentoEstagiarioFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.acompanhamento.AcompanhamentoEstagiarioFiltro;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.GestaoAcompanhamentoService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;

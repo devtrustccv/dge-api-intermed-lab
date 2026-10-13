@@ -1,11 +1,11 @@
 package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
 import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AlertaOfertaDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AlertaOfertaListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AlertaOfertaOpcoesResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AlertaOfertaRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaOpcaoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.alerta.AlertaOfertaDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.alerta.AlertaOfertaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.alerta.AlertaOfertaOpcoesResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.alerta.AlertaOfertaRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.MinhaCandidaturaOpcaoResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.EmpregoDominioService;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ConfiguracaoAlertaOfertaRepository;
@@ -30,9 +30,9 @@ public class ConfiguracaoAlertaOfertaServiceImpl implements ConfiguracaoAlertaOf
 
     @Override
     @Transactional(readOnly = true)
-    public List<AlertaOfertaListaResponse> listar(Long pessoaId, String pesquisa) {
+    public List<AlertaOfertaListaResponse> listar(Long pessoaId, String search) {
         validarPessoa(pessoaId);
-        String termo = textoOpcional(pesquisa);
+        String termo = textoOpcional(search);
         List<AlertaOfertaListaRegisto> registos = termo == null
                 ? alertaRepository.listar(pessoaId)
                 : alertaRepository.listar(pessoaId, termo);

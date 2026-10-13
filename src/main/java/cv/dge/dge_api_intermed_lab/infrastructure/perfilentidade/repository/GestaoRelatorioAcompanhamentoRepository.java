@@ -1,12 +1,12 @@
 package cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoEstagiarioSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoOfertaSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.RelatorioAcompanhamentoVinculo;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoEstagiarioSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoOfertaSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.relatorio.RelatorioAcompanhamentoVinculo;
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -81,7 +81,7 @@ public class GestaoRelatorioAcompanhamentoRepository {
             where.append(" AND r.date_create::date <= ?");
             params.add(filtro.dataFim());
         }
-        if (filtro.pesquisa() != null && !filtro.pesquisa().isBlank()) {
+        if (filtro.search() != null && !filtro.search().isBlank()) {
             where.append("""
                      AND CONCAT_WS(' ',
                          r.nome, COALESCE(NULLIF(TRIM(o.codigo_referencia), ''), c.codigo_referencia),
@@ -90,7 +90,7 @@ public class GestaoRelatorioAcompanhamentoRepository {
                          r.relatorio_anexo, r.estado, r.date_create::text, r.user_create
                      ) ILIKE ?
                     """);
-            params.add("%" + filtro.pesquisa().trim() + "%");
+            params.add("%" + filtro.search().trim() + "%");
         }
         String sql = SELECT_BASE + where + " ORDER BY r.date_create DESC NULLS LAST, r.id DESC";
         return jdbcTemplate.query(sql, (rs, rowNum) -> new RelatorioAcompanhamentoListaResponse(

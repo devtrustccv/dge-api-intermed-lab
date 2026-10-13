@@ -1,4 +1,4 @@
-﻿{
+{
     "info":  {
                  "_postman_id":  "194029bf-4b25-4437-b72e-consulta-vagas",
                  "name":  "Perfil Candidato - Consulta de Vagas",
@@ -46,7 +46,7 @@
 
                                                 ],
                                      "url":  {
-                                                 "raw":  "{{baseUrl}}/v1/perfil-candidato/vagas?entidadeId={{entidadeId}}\u0026tipoOferta={{tipoOferta}}\u0026ilha={{ilha}}\u0026concelho={{concelho}}\u0026estado={{estadoOferta}}\u0026codigoReferencia={{codigoReferencia}}\u0026dataInicio={{dataInicio}}\u0026dataFim={{dataFim}}\u0026pesquisa={{pesquisa}}",
+                                                 "raw":  "{{baseUrl}}/v1/perfil-candidato/vagas?entidadeId={{entidadeId}}\u0026tipoOferta={{tipoOferta}}\u0026ilha={{ilha}}\u0026concelho={{concelho}}\u0026estado={{estadoOferta}}\u0026codigoReferencia={{codigoReferencia}}\u0026dataInicio={{dataInicio}}\u0026dataFim={{dataFim}}\u0026search={{search}}",
                                                  "host":  [
                                                               "{{baseUrl}}"
                                                           ],
@@ -104,8 +104,8 @@
                                                                    "disabled":  true
                                                                },
                                                                {
-                                                                   "key":  "pesquisa",
-                                                                   "value":  "{{pesquisa}}",
+                                                                   "key":  "search",
+                                                                   "value":  "{{search}}",
                                                                    "description":  "Pesquisa por título, entidade ou código.",
                                                                    "disabled":  true
                                                                }
@@ -333,7 +333,7 @@
                          "value":  "2026-08-31"
                      },
                      {
-                         "key":  "pesquisa",
+                         "key":  "search",
                          "value":  "Assistente"
                      }
                  ]

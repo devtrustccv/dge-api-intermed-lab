@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaEntrevistaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.entrevista.MinhaEntrevistaListaResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.service.MinhaEntrevistaService;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -97,7 +97,7 @@ class PerfilCandidatoEntrevistaControllerTest {
 
         mockMvc.perform(get("/v1/perfil-candidato/entrevistas")
                         .param("pessoaId", "9001")
-                        .param("pesquisa", "presencial"))
+                        .param("search", "presencial"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.sucesso").value(true));
 

@@ -1,6 +1,6 @@
 package cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EmpregoDominioResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.comum.EmpregoDominioResponse;
 import java.util.List;
 import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Qualifier;

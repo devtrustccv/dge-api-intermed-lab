@@ -1,7 +1,7 @@
 package cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AlertaOfertaRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaOpcaoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.alerta.AlertaOfertaRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagaOpcaoResponse;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -50,8 +50,8 @@ public class ConfiguracaoAlertaOfertaRepository {
         return listar(pessoaId, null);
     }
 
-    public List<AlertaOfertaListaRegisto> listar(Long pessoaId, String pesquisa) {
-        boolean pesquisar = temTexto(pesquisa);
+    public List<AlertaOfertaListaRegisto> listar(Long pessoaId, String search) {
+        boolean pesquisar = temTexto(search);
         String sql = """
                 SELECT alerta.id,
                        alerta.tipo_oferta,
@@ -74,7 +74,7 @@ public class ConfiguracaoAlertaOfertaRepository {
                 """;
 
         return pesquisar
-                ? empregoJdbcTemplate.query(sql, this::mapearLista, pessoaId, "%" + pesquisa.trim() + "%")
+                ? empregoJdbcTemplate.query(sql, this::mapearLista, pessoaId, "%" + search.trim() + "%")
                 : empregoJdbcTemplate.query(sql, this::mapearLista, pessoaId);
     }
 

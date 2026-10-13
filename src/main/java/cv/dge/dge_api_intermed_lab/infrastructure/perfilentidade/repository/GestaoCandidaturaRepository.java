@@ -2,12 +2,12 @@ package cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidatoDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EntrevistaAgendamentoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EntrevistaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidatoDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaAgendamentoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaResponse;
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -258,7 +258,7 @@ public class GestaoCandidaturaRepository {
         return listarEntrevistas(candidaturaId, null);
     }
 
-    public List<EntrevistaResponse> listarEntrevistas(Integer candidaturaId, String pesquisa) {
+    public List<EntrevistaResponse> listarEntrevistas(Integer candidaturaId, String search) {
         List<Object> params = new ArrayList<>();
         params.add(candidaturaId);
         StringBuilder sql = new StringBuilder(
@@ -282,7 +282,7 @@ public class GestaoCandidaturaRepository {
                         FROM emprego_t_entrevista_oferta
                         WHERE id_candidatura = ?
                         """);
-        if (temTexto(pesquisa)) {
+        if (temTexto(search)) {
             sql.append("""
                      AND CONCAT_WS(' ',
                          nome, data_entrevista::text, horario::text, canal,
@@ -290,7 +290,7 @@ public class GestaoCandidaturaRepository {
                          estado, date_create::text, user_create
                      ) ILIKE ?
                     """);
-            params.add("%" + pesquisa.trim() + "%");
+            params.add("%" + search.trim() + "%");
         }
         sql.append(" ORDER BY date_create DESC NULLS LAST, id DESC");
         return empregoJdbcTemplate.query(
@@ -496,7 +496,7 @@ public class GestaoCandidaturaRepository {
             where.append(" AND c.date_create::date <= ?");
             params.add(filtro.dataFim());
         }
-        if (temTexto(filtro.pesquisa())) {
+        if (temTexto(filtro.search())) {
             where.append("""
                      AND CONCAT_WS(' ',
                          c.nome, c.tipo_oferta, o.codigo_referencia, o.titulo,
@@ -505,7 +505,7 @@ public class GestaoCandidaturaRepository {
                          c.date_create::text, c.user_create
                      ) ILIKE ?
                     """);
-            params.add("%" + filtro.pesquisa().trim() + "%");
+            params.add("%" + filtro.search().trim() + "%");
         }
 
         return where + " ";
@@ -524,11 +524,26 @@ public class GestaoCandidaturaRepository {
             return null;
         }
         try {
-            return objectMapper.readValue(value.toString(), new TypeReference<>() {
+            Object resultado = objectMapper.readValue(value.toString(), new TypeReference<>() {
             });
+            for (int nivel = 0; nivel < 2 && resultado instanceof String texto && pareceJson(texto); nivel++) {
+                resultado = objectMapper.readValue(texto, new TypeReference<>() {
+                });
+            }
+            return resultado;
         } catch (Exception ex) {
             return value.toString();
         }
+    }
+
+    private boolean pareceJson(String valor) {
+        if (!temTexto(valor)) {
+            return false;
+        }
+        String texto = valor.trim();
+        return (texto.startsWith("{") && texto.endsWith("}"))
+                || (texto.startsWith("[") && texto.endsWith("]"))
+                || (texto.startsWith("\"") && texto.endsWith("\""));
     }
 
     private String extrairTipoDocumento(Object anexos) {

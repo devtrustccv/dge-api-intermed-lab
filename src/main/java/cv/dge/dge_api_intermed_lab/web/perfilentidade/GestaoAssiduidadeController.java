@@ -1,12 +1,12 @@
 package cv.dge.dge_api_intermed_lab.web.perfilentidade;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeEstagiarioDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeEstagiarioFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeEstagiarioListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeEstagiarioSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeOfertaSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeValidacaoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EmpregoApiResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.assiduidade.AssiduidadeEstagiarioDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.assiduidade.AssiduidadeEstagiarioFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.assiduidade.AssiduidadeEstagiarioListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.assiduidade.AssiduidadeEstagiarioSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.assiduidade.AssiduidadeOfertaSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.assiduidade.AssiduidadeValidacaoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.comum.EmpregoApiResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.GestaoAssiduidadeService;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -39,7 +39,7 @@ public class GestaoAssiduidadeController {
             @RequestParam(value = "horaEntrada", required = false) LocalTime horaEntrada,
             @RequestParam(value = "horaSaida", required = false) LocalTime horaSaida,
             @RequestParam(value = "estado", required = false) String estado,
-            @RequestParam(value = "pesquisa", required = false) String pesquisa
+            @RequestParam(value = "search", required = false) String search
     ) {
         return EmpregoApiResponse.sucesso(
                 "Assiduidades listadas com sucesso.",
@@ -54,7 +54,7 @@ public class GestaoAssiduidadeController {
                         horaEntrada,
                         horaSaida,
                         estado,
-                        pesquisa
+                        search
                 ))
         );
     }

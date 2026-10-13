@@ -1,8 +1,8 @@
 package cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaOpcaoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagaFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagaOpcaoResponse;
 import java.sql.PreparedStatement;
 import java.sql.Types;
 import java.time.LocalDate;
@@ -323,7 +323,7 @@ public class ConsultaVagaRepository {
             where.append(" AND o.data_fim_candidatura <= ?");
             parametros.add(filtro.dataFim());
         }
-        if (temTexto(filtro.pesquisa())) {
+        if (temTexto(filtro.search())) {
             where.append("""
                     AND (
                         o.titulo ILIKE ?
@@ -331,10 +331,10 @@ public class ConsultaVagaRepository {
                         OR o.codigo_referencia ILIKE ?
                     )
                     """);
-            String pesquisa = "%" + filtro.pesquisa().trim() + "%";
-            parametros.add(pesquisa);
-            parametros.add(pesquisa);
-            parametros.add(pesquisa);
+            String search = "%" + filtro.search().trim() + "%";
+            parametros.add(search);
+            parametros.add(search);
+            parametros.add(search);
         }
         return where.toString();
     }

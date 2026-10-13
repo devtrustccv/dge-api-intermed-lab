@@ -11,8 +11,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AvaliacaoEstagiarioFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AvaliacaoEstagiarioListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.avaliacao.AvaliacaoEstagiarioFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.avaliacao.AvaliacaoEstagiarioListaResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.GestaoAvaliacaoEstagiarioService;
 import java.math.BigDecimal;
 import java.time.LocalDate;

@@ -31,8 +31,8 @@ public class MinhaAvaliacaoRepository {
         return listar(pessoaId, null);
     }
 
-    public List<AvaliacaoListaRegisto> listar(Long pessoaId, String pesquisa) {
-        boolean pesquisar = pesquisa != null && !pesquisa.isBlank();
+    public List<AvaliacaoListaRegisto> listar(Long pessoaId, String search) {
+        boolean pesquisar = search != null && !search.isBlank();
         String sql = """
                 SELECT avaliacao.id AS avaliacao_id,
                        avaliacao.tipo_avaliacao,
@@ -53,7 +53,7 @@ public class MinhaAvaliacaoRepository {
                 """;
 
         return pesquisar
-                ? empregoJdbcTemplate.query(sql, this::mapearLista, pessoaId, "%" + pesquisa.trim() + "%")
+                ? empregoJdbcTemplate.query(sql, this::mapearLista, pessoaId, "%" + search.trim() + "%")
                 : empregoJdbcTemplate.query(sql, this::mapearLista, pessoaId);
     }
 

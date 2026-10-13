@@ -1,12 +1,12 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeEstagiarioDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeEstagiarioFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeEstagiarioListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeEstagiarioSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeOfertaSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeValidacaoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.assiduidade.AssiduidadeEstagiarioDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.assiduidade.AssiduidadeEstagiarioFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.assiduidade.AssiduidadeEstagiarioListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.assiduidade.AssiduidadeEstagiarioSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.assiduidade.AssiduidadeOfertaSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.assiduidade.AssiduidadeValidacaoRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.GestaoAssiduidadeRepository;
 import java.util.List;
@@ -127,7 +127,7 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
                 filtro.horaEntrada(),
                 filtro.horaSaida(),
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_ESTADO_ASSIDUIDADE, filtro.estado()),
-                texto(filtro.pesquisa())
+                texto(filtro.search())
         );
     }
 

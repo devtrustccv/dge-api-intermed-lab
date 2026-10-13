@@ -1,7 +1,7 @@
 package cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.DashboardGrupoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.DashboardResumoOfertaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.dashboard.DashboardGrupoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.dashboard.DashboardResumoOfertaResponse;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;

@@ -1,5 +1,7 @@
 package cv.dge.dge_api_intermed_lab.web.perfilentidade;
 
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaFiltro;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -10,8 +12,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaDocumentoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.CandidaturaDocumentoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaListaResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.GestaoCandidaturaService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -115,9 +117,9 @@ class GestaoCandidaturaControllerTest {
                         .param("dataFim", "2026-09-30"))
                 .andExpect(status().isOk());
 
-        ArgumentCaptor<cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaFiltro> captor =
+        ArgumentCaptor<cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaFiltro> captor =
                 ArgumentCaptor.forClass(
-                        cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaFiltro.class);
+                        cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaFiltro.class);
         verify(candidaturaService).listar(captor.capture());
         assertEquals("Programação", captor.getValue().tituloOferta());
         assertEquals(LocalDate.of(2026, 9, 1), captor.getValue().dataInicio());

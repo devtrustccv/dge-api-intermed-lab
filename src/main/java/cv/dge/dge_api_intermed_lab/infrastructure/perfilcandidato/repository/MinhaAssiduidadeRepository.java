@@ -1,7 +1,7 @@
 package cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAssiduidadeFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAssiduidadeRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.assiduidade.MinhaAssiduidadeFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.assiduidade.MinhaAssiduidadeRequest;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -205,7 +205,7 @@ public class MinhaAssiduidadeRepository {
             where.append("AND assiduidade.data <= ?\n");
             parametros.add(filtro.dataFim());
         }
-        if (temTexto(filtro.pesquisa())) {
+        if (temTexto(filtro.search())) {
             where.append("""
                     AND CONCAT_WS(' ',
                         assiduidade.denominacao_entidade,
@@ -219,7 +219,7 @@ public class MinhaAssiduidadeRepository {
                         assiduidade.observacao
                     ) ILIKE ?
                     """);
-            parametros.add("%" + filtro.pesquisa().trim() + "%");
+            parametros.add("%" + filtro.search().trim() + "%");
         }
         return where.toString();
     }

@@ -1,6 +1,6 @@
 package cv.dge.dge_api_intermed_lab.web.perfilentidade;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EmpregoApiResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.comum.EmpregoApiResponse;
 import cv.dge.dge_api_intermed_lab.web.ApiErrorMessageResolver;
 import cv.dge.dge_api_intermed_lab.web.acolhimento.AcolhimentoController;
 import cv.dge.dge_api_intermed_lab.web.document.DocumentController;

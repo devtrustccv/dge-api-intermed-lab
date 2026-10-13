@@ -2,11 +2,11 @@ package cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaColaboradorSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaColaboradorSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaResponse;
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -329,7 +329,7 @@ public class GestaoVagaRepository {
             where.append(" AND o.date_create::date <= ?");
             params.add(filtro.dataFim());
         }
-        if (temTexto(filtro.pesquisa())) {
+        if (temTexto(filtro.search())) {
             where.append("""
                     AND (
                         o.titulo ILIKE ?
@@ -341,9 +341,9 @@ public class GestaoVagaRepository {
                         OR o.concelho ILIKE ?
                     )
                     """);
-            String pesquisa = "%" + filtro.pesquisa().trim() + "%";
+            String search = "%" + filtro.search().trim() + "%";
             for (int i = 0; i < 7; i++) {
-                params.add(pesquisa);
+                params.add(search);
             }
         }
 

@@ -1,8 +1,8 @@
 package cv.dge.dge_api_intermed_lab.web.perfilcandidato;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CertificadoEstagioEmissaoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CertificadoEstagioResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.PerfilCandidatoApiResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.certificado.CertificadoEstagioEmissaoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.certificado.CertificadoEstagioResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.comum.PerfilCandidatoApiResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.service.PerfilCandidatoCertificadoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

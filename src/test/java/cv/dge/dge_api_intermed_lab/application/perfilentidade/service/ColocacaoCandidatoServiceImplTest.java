@@ -6,10 +6,11 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import cv.dge.dge_api_intermed_lab.application.document.dto.DocRelacaoDTO;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoVinculo;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoVinculo;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.ColocacaoCandidatoRepository;
 import cv.dge.dge_api_intermed_lab.support.EmpregoDominioTestFixture;
 import java.time.LocalDate;
@@ -21,6 +22,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class ColocacaoCandidatoServiceImplTest {
@@ -41,6 +44,9 @@ class ColocacaoCandidatoServiceImplTest {
                 repository,
                 documentService
         );
+        ReflectionTestUtils.setField(service, "appCodeDocumento", "interm_laboral");
+        ReflectionTestUtils.setField(service, "estadoDocumento", "A");
+        ReflectionTestUtils.setField(service, "tipoRelacaoDocumento", "EMPREGO_T_COLOCACAO_CANDIDATO");
     }
 
     @Test
@@ -81,6 +87,41 @@ class ColocacaoCandidatoServiceImplTest {
         assertThat(dadosPersistidos.getValue().contratoPath()).isEqualTo(path);
         assertThat(resposta.contratoPath()).isEqualTo(link);
         verify(documentService).gerarLinkPublico(path);
+    }
+
+    @Test
+    void deveGuardarContratoMultipartEDevolverLinkPublico() {
+        String path = "interm_laboral/2026/modulos/EMPREGO_T_COLOCACAO_CANDIDATO/60/CONTRATO.pdf";
+        String link = "https://documentos/document-viewer?path_url=" + path + "&type=application/pdf";
+        ColocacaoCandidatoRequest request = request(null);
+        ColocacaoCandidatoVinculo vinculo = new ColocacaoCandidatoVinculo(
+                15, 126L, "Candidato", 29, "OFERTA_ESTAGIO", "4/2026", ENTIDADE_ID, "Entidade"
+        );
+        MockMultipartFile contrato = new MockMultipartFile(
+                "contrato",
+                "contrato.pdf",
+                "application/pdf",
+                "conteudo".getBytes()
+        );
+
+        when(repository.buscarVinculoCandidatura(29, 126L, ENTIDADE_ID))
+                .thenReturn(Optional.of(vinculo));
+        when(repository.inserir(any(), eq(vinculo), eq("A"), eq(false), eq("utilizador")))
+                .thenReturn(60);
+        when(documentService.save(any())).thenReturn(path);
+        when(documentService.gerarLinkPublico(path)).thenReturn(link);
+        when(documentService.gerarLinkPublico(link)).thenReturn(link);
+        when(repository.buscarPorId(60, ENTIDADE_ID)).thenReturn(Optional.of(detalhe(link)));
+
+        ColocacaoCandidatoResponse resposta = service.criar(ENTIDADE_ID, request, contrato);
+
+        ArgumentCaptor<DocRelacaoDTO> documento = ArgumentCaptor.forClass(DocRelacaoDTO.class);
+        verify(documentService).save(documento.capture());
+        assertThat(documento.getValue().getIdRelacao()).isEqualTo(60);
+        assertThat(documento.getValue().getTipoRelacao()).isEqualTo("EMPREGO_T_COLOCACAO_CANDIDATO");
+        assertThat(documento.getValue().getFile()).isSameAs(contrato);
+        verify(repository).atualizarContratoPath(60, ENTIDADE_ID, link, "utilizador");
+        assertThat(resposta.contratoPath()).isEqualTo(link);
     }
 
     private ColocacaoCandidatoRequest request(String contratoPath) {
