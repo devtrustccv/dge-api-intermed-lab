@@ -1,6 +1,7 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura;
 
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.CandidaturaDocumentoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,6 +35,8 @@ public record CandidaturaListaResponse(
         Boolean podeAgendarEntrevista,
         Integer entrevistaId,
         Boolean podeRegistarResultadoEntrevista,
-        LocalDateTime dataCandidatura
+        LocalDateTime dataCandidatura,
+        CandidaturaAvaliacaoResponse avaliacao,
+        List<EntrevistaResponse> entrevistas
 ) {
 }

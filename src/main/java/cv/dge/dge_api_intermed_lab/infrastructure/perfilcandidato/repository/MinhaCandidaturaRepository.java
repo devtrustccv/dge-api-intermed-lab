@@ -3,11 +3,14 @@ package cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagaOpcaoResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.MinhaCandidaturaFiltro;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import javax.sql.DataSource;
@@ -49,6 +52,7 @@ public class MinhaCandidaturaRepository {
             o.ilha,
             o.concelho,
             c.status_candidatura,
+            c.selecao_iefp,
             c.motivo_recusa,
             c.canal,
             c.anexos,
@@ -94,6 +98,42 @@ public class MinhaCandidaturaRepository {
         return empregoJdbcTemplate.query(sql, this::mapCandidatura, candidaturaId, pessoaId)
                 .stream()
                 .findFirst();
+    }
+
+    public List<EntrevistaResponse> listarEntrevistasPorCandidaturas(
+            List<Integer> candidaturaIds,
+            Long pessoaId
+    ) {
+        if (candidaturaIds == null || candidaturaIds.isEmpty() || pessoaId == null) {
+            return List.of();
+        }
+        String placeholders = String.join(",", Collections.nCopies(candidaturaIds.size(), "?"));
+        String sql = """
+                SELECT
+                    e.id,
+                    e.id_candidatura,
+                    e.pessoa_id,
+                    e.nome,
+                    e.data_entrevista,
+                    e.horario,
+                    e.canal,
+                    e.local_entrevista,
+                    e.parecer_entrevista,
+                    e.resultado_entrevista,
+                    e.estado,
+                    e.date_create,
+                    e.user_create,
+                    e.date_update,
+                    e.user_update
+                FROM emprego_t_entrevista_oferta e
+                INNER JOIN emprego_t_candidatura_oferta c ON c.id = e.id_candidatura
+                WHERE e.id_candidatura IN (%s)
+                  AND c.pessoa_id = ?
+                ORDER BY e.id_candidatura, e.date_create DESC NULLS LAST, e.id DESC
+                """.formatted(placeholders);
+        List<Object> parametros = new ArrayList<>(candidaturaIds);
+        parametros.add(pessoaId);
+        return empregoJdbcTemplate.query(sql, this::mapEntrevista, parametros.toArray());
     }
 
     public List<ConsultaVagaOpcaoResponse> listarEntidades(Long pessoaId) {
@@ -238,10 +278,34 @@ public class MinhaCandidaturaRepository {
                 rs.getString("ilha"),
                 rs.getString("concelho"),
                 rs.getString("status_candidatura"),
+                rs.getObject("selecao_iefp", Boolean.class),
                 rs.getString("motivo_recusa"),
                 rs.getString("canal"),
                 lerJson(rs.getString("anexos")),
                 rs.getObject("date_create", LocalDateTime.class)
+        );
+    }
+
+    private EntrevistaResponse mapEntrevista(java.sql.ResultSet rs, int rowNum) throws java.sql.SQLException {
+        return new EntrevistaResponse(
+                rs.getInt("id"),
+                rs.getObject("id_candidatura", Integer.class),
+                getLong(rs, "pessoa_id"),
+                rs.getString("nome"),
+                rs.getObject("data_entrevista", LocalDate.class),
+                rs.getObject("horario", LocalTime.class),
+                rs.getString("canal"),
+                rs.getString("canal"),
+                rs.getString("local_entrevista"),
+                rs.getString("parecer_entrevista"),
+                rs.getString("parecer_entrevista"),
+                rs.getString("resultado_entrevista"),
+                rs.getString("estado"),
+                rs.getString("estado"),
+                rs.getObject("date_create", LocalDateTime.class),
+                rs.getString("user_create"),
+                rs.getObject("date_update", LocalDateTime.class),
+                rs.getString("user_update")
         );
     }
 
@@ -292,6 +356,17 @@ public class MinhaCandidaturaRepository {
         return valor != null && !valor.trim().isEmpty();
     }
 
+    private Long getLong(java.sql.ResultSet rs, String column) throws java.sql.SQLException {
+        Object value = rs.getObject(column);
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        return Long.valueOf(value.toString());
+    }
+
     public record CandidaturaRegisto(
             Integer candidaturaId,
             String tipoOferta,
@@ -303,6 +378,7 @@ public class MinhaCandidaturaRepository {
             String ilha,
             String concelho,
             String estado,
+            Boolean selecaoIefp,
             String motivoRecusa,
             String canal,
             JsonNode anexos,

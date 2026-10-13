@@ -14,9 +14,11 @@ import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.Ca
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaDetalheResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaFiltro;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaResponse;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.GestaoCandidaturaRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -106,6 +108,44 @@ class GestaoCandidaturaServiceImplTest {
     }
 
     @Test
+    void deveIncluirAvaliacaoEEntrevistasDentroDaCandidatura() {
+        when(candidaturaRepository.listar(filtroVazio())).thenReturn(List.of(
+                candidatura(null, "OFERTA_ESTAGIO", true)
+        ));
+        when(candidaturaRepository.listarEntrevistasPorCandidaturas(List.of(1))).thenReturn(List.of(
+                new EntrevistaResponse(
+                        9,
+                        1,
+                        143L,
+                        "Candidato",
+                        LocalDate.of(2026, 10, 20),
+                        LocalTime.of(9, 30),
+                        "PRESENCIAL",
+                        "Presencial",
+                        "Sede da entidade",
+                        null,
+                        null,
+                        null,
+                        "PENDENTE",
+                        "Pendente",
+                        LocalDateTime.of(2026, 10, 13, 15, 0),
+                        "utilizador",
+                        null,
+                        null
+                )
+        ));
+
+        CandidaturaListaResponse resultado = service.listar(filtroVazio()).get(0);
+
+        assertThat(resultado.avaliacao().parecer()).isEqualTo("TRIAGEM");
+        assertThat(resultado.avaliacao().selecaoIefp()).isTrue();
+        assertThat(resultado.avaliacao().podeAvaliar()).isTrue();
+        assertThat(resultado.entrevistas())
+                .extracting(EntrevistaResponse::id)
+                .containsExactly(9);
+    }
+
+    @Test
     void devePermitirAvaliarOfertaDeEmpregoSemSelecaoIefp() {
         when(candidaturaRepository.buscarPorId(1, 23))
                 .thenReturn(Optional.of(candidaturaDetalhe("OFERTA_EMPREGO", false)));
@@ -184,7 +224,9 @@ class GestaoCandidaturaServiceImplTest {
                 null,
                 null,
                 false,
-                LocalDateTime.of(2026, 8, 31, 15, 14, 50)
+                LocalDateTime.of(2026, 8, 31, 15, 14, 50),
+                null,
+                List.of()
         );
     }
 

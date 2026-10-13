@@ -1,5 +1,7 @@
 package cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura;
 
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaAvaliacaoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -22,6 +24,8 @@ public record MinhaCandidaturaDetalheResponse(
         String canal,
         String canalDescricao,
         LocalDateTime dataCandidatura,
-        List<CandidaturaDocumentoResponse> anexos
+        List<CandidaturaDocumentoResponse> anexos,
+        CandidaturaAvaliacaoResponse avaliacao,
+        List<EntrevistaResponse> entrevistas
 ) {
 }

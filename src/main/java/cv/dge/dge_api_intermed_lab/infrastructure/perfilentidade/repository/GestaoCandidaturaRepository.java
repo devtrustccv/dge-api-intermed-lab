@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import javax.sql.DataSource;
@@ -136,7 +137,9 @@ public class GestaoCandidaturaRepository {
                     null,
                     entrevistaId,
                     entrevistaId != null,
-                    rs.getObject("date_create", LocalDateTime.class)
+                    rs.getObject("date_create", LocalDateTime.class),
+                    null,
+                    List.of()
             );
         }, params.toArray());
     }
@@ -298,6 +301,35 @@ public class GestaoCandidaturaRepository {
                 this::mapEntrevista,
                 params.toArray()
         );
+    }
+
+    public List<EntrevistaResponse> listarEntrevistasPorCandidaturas(List<Integer> candidaturaIds) {
+        if (candidaturaIds == null || candidaturaIds.isEmpty()) {
+            return List.of();
+        }
+        String placeholders = String.join(",", Collections.nCopies(candidaturaIds.size(), "?"));
+        String sql = """
+                SELECT
+                    id,
+                    id_candidatura,
+                    pessoa_id,
+                    nome,
+                    data_entrevista,
+                    horario,
+                    canal,
+                    local_entrevista,
+                    parecer_entrevista,
+                    resultado_entrevista,
+                    estado,
+                    date_create,
+                    user_create,
+                    date_update,
+                    user_update
+                FROM emprego_t_entrevista_oferta
+                WHERE id_candidatura IN (%s)
+                ORDER BY id_candidatura, date_create DESC NULLS LAST, id DESC
+                """.formatted(placeholders);
+        return empregoJdbcTemplate.query(sql, this::mapEntrevista, candidaturaIds.toArray());
     }
 
     public Optional<EntrevistaResponse> buscarEntrevista(Integer candidaturaId, Integer entrevistaId) {
