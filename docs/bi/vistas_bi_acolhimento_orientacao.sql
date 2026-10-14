@@ -1064,3 +1064,4 @@ SELECT
     (SELECT COUNT(*) FROM public.vw_entrevista WHERE data_realizacao IS NOT NULL) AS entrevistas_realizadas,
     (SELECT COUNT(*) FROM public.vw_acolhimento WHERE sessao_balanco = 'sim') AS sessoes_balanco,
     (SELECT COUNT(*) FROM public.vw_acolhimento WHERE data_colocacao IS NOT NULL) AS colocacoes;
+    
