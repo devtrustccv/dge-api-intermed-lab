@@ -1,12 +1,12 @@
 package cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoVinculo;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoOfertaSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoVinculo;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoOfertaSelectResponse;
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -317,6 +317,29 @@ public class ColocacaoCandidatoRepository {
         );
     }
 
+    public void atualizarContratoPath(
+            Integer id,
+            Integer entidadeId,
+            String contratoPath,
+            String utilizador
+    ) {
+        jdbcTemplate.update(
+                """
+                        UPDATE emprego_t_colocacao_candidato
+                        SET contrato_path = ?,
+                            date_update = ?,
+                            user_update = ?
+                        WHERE id = ?
+                          AND entidade_id = ?
+                        """,
+                contratoPath,
+                Timestamp.valueOf(LocalDateTime.now()),
+                utilizador,
+                id,
+                entidadeId
+        );
+    }
+
     public void remover(Integer id, Integer entidadeId, String estado, String utilizador) {
         jdbcTemplate.update(
                 """
@@ -359,6 +382,15 @@ public class ColocacaoCandidatoRepository {
         if (filtro.dataRegistoFim() != null) {
             where.append(" AND date_create::date <= ?");
             params.add(filtro.dataRegistoFim());
+        }
+        if (temTexto(filtro.search())) {
+            where.append("""
+                     AND CONCAT_WS(' ',
+                         tipo_oferta, codigo_referencia, nome, tipo_contrato,
+                         data_inicio_previsto::text, date_create::text
+                     ) ILIKE ?
+                    """);
+            params.add("%" + filtro.search().trim() + "%");
         }
 
         return where + " ";

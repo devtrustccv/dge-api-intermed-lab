@@ -2,12 +2,12 @@ package cv.dge.dge_api_intermed_lab.web.perfilcandidato;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAssiduidadeDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAssiduidadeFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAssiduidadeListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAssiduidadeOpcoesResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAssiduidadeRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.PerfilCandidatoApiResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.assiduidade.MinhaAssiduidadeDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.assiduidade.MinhaAssiduidadeFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.assiduidade.MinhaAssiduidadeListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.assiduidade.MinhaAssiduidadeOpcoesResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.assiduidade.MinhaAssiduidadeRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.comum.PerfilCandidatoApiResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.service.MinhaAssiduidadeService;
 import cv.dge.dge_api_intermed_lab.web.ApiErrorMessageResolver;
 import java.time.LocalDate;
@@ -44,7 +44,8 @@ public class PerfilCandidatoAssiduidadeController {
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
+            @RequestParam(value = "search", required = false) String search
     ) {
         return PerfilCandidatoApiResponse.sucesso(
                 "Registos de assiduidade carregados com sucesso.",
@@ -53,7 +54,8 @@ public class PerfilCandidatoAssiduidadeController {
                         tipoAssiduidade,
                         estado,
                         dataInicio,
-                        dataFim
+                        dataFim,
+                        search
                 ))
         );
     }

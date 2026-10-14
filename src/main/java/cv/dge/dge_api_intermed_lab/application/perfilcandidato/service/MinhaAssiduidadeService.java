@@ -1,10 +1,10 @@
 package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAssiduidadeDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAssiduidadeFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAssiduidadeListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAssiduidadeOpcoesResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAssiduidadeRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.assiduidade.MinhaAssiduidadeDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.assiduidade.MinhaAssiduidadeFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.assiduidade.MinhaAssiduidadeListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.assiduidade.MinhaAssiduidadeOpcoesResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.assiduidade.MinhaAssiduidadeRequest;
 import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 

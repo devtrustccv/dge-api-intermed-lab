@@ -9,8 +9,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaColocacaoDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaColocacaoListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.colocacao.MinhaColocacaoDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.colocacao.MinhaColocacaoListaResponse;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaColocacaoRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaColocacaoRepository.ColocacaoRegisto;
 import java.time.LocalDate;

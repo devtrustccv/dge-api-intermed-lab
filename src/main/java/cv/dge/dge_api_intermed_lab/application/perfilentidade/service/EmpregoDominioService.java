@@ -1,6 +1,6 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EmpregoDominioResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.comum.EmpregoDominioResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.IgrpDominioRepository;
 import java.util.List;

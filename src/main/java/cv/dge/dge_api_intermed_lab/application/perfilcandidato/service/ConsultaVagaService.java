@@ -1,12 +1,12 @@
 package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaVagaFormularioResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaVagaRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaVagaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaOpcoesResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagasResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.CandidaturaVagaFormularioResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.CandidaturaVagaRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.CandidaturaVagaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagaDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagaFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagaOpcoesResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagasResponse;
 import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 

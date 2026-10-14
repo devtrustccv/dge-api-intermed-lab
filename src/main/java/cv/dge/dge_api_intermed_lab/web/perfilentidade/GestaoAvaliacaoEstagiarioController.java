@@ -1,6 +1,8 @@
 package cv.dge.dge_api_intermed_lab.web.perfilentidade;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.*;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.comum.EmpregoApiResponse;
+
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.avaliacao.*;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.GestaoAvaliacaoEstagiarioService;
 import java.time.LocalDate;
 import java.util.List;
@@ -23,12 +25,13 @@ public class GestaoAvaliacaoEstagiarioController {
             @RequestParam(required=false) String periodoReferencia,
             @RequestParam(required=false) LocalDate dataRegistro,
             @RequestParam(required=false) LocalDate dataInicio,
-            @RequestParam(required=false) LocalDate dataFim) {
+            @RequestParam(required=false) LocalDate dataFim,
+            @RequestParam(value = "search", required = false) String search) {
         String nome = estagiario == null || estagiario.isBlank() ? nomeEstagiario : estagiario;
         String periodo = periodoRef == null || periodoRef.isBlank() ? periodoReferencia : periodoRef;
         return EmpregoApiResponse.sucesso("Avaliacoes de estagiarios listadas com sucesso.",
                 service.listar(new AvaliacaoEstagiarioFiltro(entidadeId, nome, tipoAvaliacao,
-                        periodo, dataRegistro, dataInicio, dataFim)));
+                        periodo, dataRegistro, dataInicio, dataFim, search)));
     }
 
     @GetMapping("/{id}")

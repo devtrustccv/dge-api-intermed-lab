@@ -7,9 +7,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.GestaoVagaRepository;
 import cv.dge.dge_api_intermed_lab.support.EmpregoDominioTestFixture;

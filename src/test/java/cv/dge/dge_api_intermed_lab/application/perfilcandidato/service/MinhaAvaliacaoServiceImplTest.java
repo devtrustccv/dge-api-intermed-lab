@@ -8,8 +8,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAvaliacaoDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAvaliacaoListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.avaliacao.MinhaAvaliacaoDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.avaliacao.MinhaAvaliacaoListaResponse;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaAvaliacaoRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaAvaliacaoRepository.AvaliacaoDesempenhoRegisto;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaAvaliacaoRepository.AvaliacaoDetalheRegisto;

@@ -4,16 +4,16 @@ import cv.dge.dge_api_intermed_lab.application.document.dto.DocRelacaoDTO;
 import cv.dge.dge_api_intermed_lab.application.document.service.ComboboxService;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
 import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaDocumentoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaVagaFormularioResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaVagaRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaVagaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaMapaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaOpcoesResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagasResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.CandidaturaDocumentoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.CandidaturaVagaFormularioResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.CandidaturaVagaRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.CandidaturaVagaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagaDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagaFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagaMapaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagaOpcoesResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagasResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.EmpregoDominioService;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ConsultaVagaRepository;
@@ -278,7 +278,7 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
                 textoOpcional(filtro.codigoReferencia()),
                 filtro.dataInicio(),
                 filtro.dataFim(),
-                textoOpcional(filtro.pesquisa()),
+                textoOpcional(filtro.search()),
                 normalizarSituacao(filtro.situacao())
         );
     }
@@ -294,7 +294,7 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
                 filtro.codigoReferencia(),
                 filtro.dataInicio(),
                 filtro.dataFim(),
-                filtro.pesquisa(),
+                filtro.search(),
                 filtro.situacao()
         );
     }

@@ -1,10 +1,10 @@
 package cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CoordenadorOrientadorFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CoordenadorOrientadorListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CoordenadorOrientadorRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CoordenadorOrientadorResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.PessoaGlobalResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.CoordenadorOrientadorFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.CoordenadorOrientadorListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.CoordenadorOrientadorRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.CoordenadorOrientadorResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.PessoaGlobalResponse;
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -279,6 +279,15 @@ public class CoordenadorOrientadorRepository {
         if (filtro.dataFim() != null) {
             where.append(" AND c.date_create::date <= ?");
             params.add(filtro.dataFim());
+        }
+        if (temTexto(filtro.search())) {
+            where.append("""
+                     AND CONCAT_WS(' ',
+                         c.tipo, c.nome, c.cargo, c.email, c.telemovel,
+                         c.estado, c.date_create::text, c.user_create
+                     ) ILIKE ?
+                    """);
+            params.add("%" + filtro.search().trim() + "%");
         }
         return where + " ";
     }

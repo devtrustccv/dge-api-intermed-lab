@@ -14,13 +14,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
 import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.MinhaCandidaturaDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.MinhaCandidaturaFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.MinhaCandidaturaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaResponse;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaCandidaturaRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaCandidaturaRepository.CandidaturaRegisto;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -81,6 +83,27 @@ class MinhaCandidaturaServiceImplTest {
         when(globalGeografiaService.buscarNomePorCodigo("102")).thenReturn(Optional.of("Praia"));
         when(documentService.gerarLinkPublico("/candidaturas/15/cv.pdf"))
                 .thenReturn("https://documentos.test/cv");
+        when(candidaturaRepository.listarEntrevistasPorCandidaturas(List.of(15), 9001L))
+                .thenReturn(List.of(new EntrevistaResponse(
+                        9,
+                        15,
+                        9001L,
+                        "Candidato",
+                        LocalDate.of(2026, 8, 25),
+                        LocalTime.of(9, 30),
+                        "PRESENCIAL",
+                        "PRESENCIAL",
+                        "Sede da entidade",
+                        null,
+                        null,
+                        null,
+                        "PENDENTE",
+                        "PENDENTE",
+                        LocalDateTime.of(2026, 8, 21, 11, 0),
+                        "utilizador",
+                        null,
+                        null
+                )));
 
         List<MinhaCandidaturaListaResponse> resultado = service.listar(new MinhaCandidaturaFiltro(
                 9001L,
@@ -120,6 +143,12 @@ class MinhaCandidaturaServiceImplTest {
             assertThat(item.tipoDocumento()).isEqualTo("CURRICULO_VITAE");
             assertThat(item.preview()).isEqualTo("https://documentos.test/cv");
             assertThat(item.dataCandidatura()).isEqualTo(dataCandidatura);
+            assertThat(item.avaliacao().parecer()).isEqualTo("APROVADO");
+            assertThat(item.avaliacao().selecaoIefp()).isTrue();
+            assertThat(item.avaliacao().podeAvaliar()).isTrue();
+            assertThat(item.entrevistas())
+                    .extracting(EntrevistaResponse::id)
+                    .containsExactly(9);
 
             JsonNode json = new ObjectMapper()
                     .registerModule(new JavaTimeModule())
@@ -129,6 +158,8 @@ class MinhaCandidaturaServiceImplTest {
                     .isEqualTo("Perfil não corresponde aos requisitos.");
             assertThat(json.get("tipoDocumento").asText()).isEqualTo("CURRICULO_VITAE");
             assertThat(json.get("preview").asText()).isEqualTo("https://documentos.test/cv");
+            assertThat(json.get("avaliacao").get("parecer").asText()).isEqualTo("APROVADO");
+            assertThat(json.get("entrevistas").get(0).get("id").asInt()).isEqualTo(9);
             assertThat(json.has("Canal")).isFalse();
             assertThat(json.has("Motivo Recusa")).isFalse();
             assertThat(json.has("Tipo Documento")).isFalse();
@@ -198,6 +229,38 @@ class MinhaCandidaturaServiceImplTest {
     }
 
     @Test
+    void deveDevolverAnexoHistoricoComCamposAlternativosNoDetalhe() throws Exception {
+        JsonNode anexos = new ObjectMapper().readTree("""
+                {
+                  "tipoDocumento": "CURRICULO_VITAE",
+                  "file_name": "cv-antigo.pdf",
+                  "anexo": "candidaturas/88/cv-antigo.pdf"
+                }
+                """);
+        when(candidaturaRepository.buscarPorId(88, 9001L)).thenReturn(Optional.of(registo(
+                88,
+                "OFERTA_EMPREGO",
+                "TRIAGEM",
+                "PORTAL",
+                "101",
+                "102",
+                anexos,
+                LocalDateTime.of(2026, 10, 12, 9, 0)
+        )));
+        when(documentService.gerarLinkPublico("candidaturas/88/cv-antigo.pdf"))
+                .thenReturn("https://documentos.test/cv-antigo");
+
+        MinhaCandidaturaDetalheResponse resultado = service.buscarPorId(88, 9001L);
+
+        assertThat(resultado.anexos()).singleElement().satisfies(anexo -> {
+            assertThat(anexo.tipo()).isEqualTo("CURRICULO_VITAE");
+            assertThat(anexo.nome()).isEqualTo("cv-antigo.pdf");
+            assertThat(anexo.path()).isEqualTo("candidaturas/88/cv-antigo.pdf");
+            assertThat(anexo.url()).isEqualTo("https://documentos.test/cv-antigo");
+        });
+    }
+
+    @Test
     void deveRejeitarIntervaloDeDatasInvertidoAntesDeConsultarBase() {
         MinhaCandidaturaFiltro filtro = new MinhaCandidaturaFiltro(
                 9001L,
@@ -252,6 +315,7 @@ class MinhaCandidaturaServiceImplTest {
                 ilha,
                 concelho,
                 estado,
+                true,
                 "Perfil não corresponde aos requisitos.",
                 canal,
                 anexos,

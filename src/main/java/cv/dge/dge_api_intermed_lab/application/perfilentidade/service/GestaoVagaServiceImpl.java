@@ -1,14 +1,14 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaDuplicacaoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaDuplicacaoDadosResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaEstadoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaColaboradorSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaValidacaoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaDuplicacaoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaDuplicacaoDadosResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaEstadoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaColaboradorSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaValidacaoRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.GestaoVagaRepository;
@@ -220,7 +220,7 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
                 filtro.coordenadorId(),
                 filtro.dataInicio(),
                 filtro.dataFim(),
-                texto(filtro.pesquisa())
+                texto(filtro.search())
         );
     }
 
@@ -237,7 +237,7 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
                 filtro.coordenadorId(),
                 filtro.dataInicio(),
                 filtro.dataFim(),
-                filtro.pesquisa()
+                filtro.search()
         );
     }
 

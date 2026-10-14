@@ -11,7 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagasResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagasResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.service.ConsultaVagaService;
 import java.nio.charset.StandardCharsets;
 import java.util.List;

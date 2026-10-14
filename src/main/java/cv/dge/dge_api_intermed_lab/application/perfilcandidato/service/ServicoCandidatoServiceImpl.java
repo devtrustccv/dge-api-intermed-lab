@@ -2,12 +2,12 @@ package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
 import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaOpcaoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoCandidatoDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoCandidatoFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoCandidatoListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoCandidatoOpcoesResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteAnexoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.MinhaCandidaturaOpcaoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoCandidatoDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoCandidatoFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoCandidatoListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoCandidatoOpcoesResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoContratanteAnexoResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.EmpregoDominioService;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ServicoContratanteRepository;
@@ -134,7 +134,8 @@ public class ServicoCandidatoServiceImpl implements ServicoCandidatoService {
                         filtro.estado()
                 ),
                 filtro.dataInicio(),
-                filtro.dataFim()
+                filtro.dataFim(),
+                textoOpcional(filtro.search())
         );
     }
 

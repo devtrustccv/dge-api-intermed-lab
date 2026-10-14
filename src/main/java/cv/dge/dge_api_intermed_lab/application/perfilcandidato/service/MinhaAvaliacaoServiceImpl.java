@@ -1,8 +1,8 @@
 package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAvaliacaoDesempenhoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAvaliacaoDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAvaliacaoListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.avaliacao.MinhaAvaliacaoDesempenhoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.avaliacao.MinhaAvaliacaoDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.avaliacao.MinhaAvaliacaoListaResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.EmpregoDominioService;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaAvaliacaoRepository;
@@ -25,9 +25,12 @@ public class MinhaAvaliacaoServiceImpl implements MinhaAvaliacaoService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<MinhaAvaliacaoListaResponse> listar(Long pessoaId) {
+    public List<MinhaAvaliacaoListaResponse> listar(Long pessoaId, String search) {
         validarPessoa(pessoaId);
-        return avaliacaoRepository.listar(pessoaId).stream()
+        List<AvaliacaoListaRegisto> registos = search == null || search.isBlank()
+                ? avaliacaoRepository.listar(pessoaId)
+                : avaliacaoRepository.listar(pessoaId, search.trim());
+        return registos.stream()
                 .map(this::mapearLista)
                 .toList();
     }

@@ -1,6 +1,6 @@
 package cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AdesaoJovemResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.adesao.AdesaoJovemResponse;
 import java.util.Optional;
 import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Qualifier;

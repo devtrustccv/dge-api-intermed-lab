@@ -1,18 +1,20 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaDocumentoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaAvaliacaoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EntrevistaAgendamentoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EntrevistaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EntrevistaResultadoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.CandidaturaDocumentoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaAvaliacaoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaAvaliacaoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaAgendamentoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaResultadoRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.GestaoCandidaturaRepository;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -53,8 +55,26 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "A data final da pesquisa nao pode ser anterior a data inicial.");
         }
-        return candidaturaRepository.listar(normalizarFiltro(filtro)).stream()
-                .map(this::enriquecerLista)
+        List<CandidaturaListaResponse> candidaturas = candidaturaRepository.listar(normalizarFiltro(filtro));
+        List<Integer> candidaturaIds = candidaturas.stream()
+                .map(CandidaturaListaResponse::id)
+                .distinct()
+                .toList();
+        Map<Integer, List<EntrevistaResponse>> entrevistasPorCandidatura = new LinkedHashMap<>();
+        List<EntrevistaResponse> entrevistas = candidaturaRepository
+                .listarEntrevistasPorCandidaturas(candidaturaIds);
+        if (entrevistas != null) {
+            entrevistas.stream()
+                    .map(this::enriquecerEntrevista)
+                    .forEach(entrevista -> entrevistasPorCandidatura
+                            .computeIfAbsent(entrevista.candidaturaId(), id -> new ArrayList<>())
+                            .add(entrevista));
+        }
+        return candidaturas.stream()
+                .map(item -> enriquecerLista(
+                        item,
+                        List.copyOf(entrevistasPorCandidatura.getOrDefault(item.id(), List.of()))
+                ))
                 .toList();
     }
 
@@ -156,12 +176,16 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<EntrevistaResponse> listarEntrevistas(Integer candidaturaId, Integer entidadeId) {
+    public List<EntrevistaResponse> listarEntrevistas(
+            Integer candidaturaId,
+            Integer entidadeId,
+            String search
+    ) {
         validarId(candidaturaId,
                 "Não foi possível identificar a candidatura selecionada. Atualize a página e tente novamente.");
         validarEntidade(entidadeId);
         buscarPorId(candidaturaId, entidadeId);
-        return candidaturaRepository.listarEntrevistas(candidaturaId).stream()
+        return candidaturaRepository.listarEntrevistas(candidaturaId, texto(search)).stream()
                 .map(this::enriquecerEntrevista)
                 .toList();
     }
@@ -221,7 +245,8 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
                 texto(filtro.tituloOferta()),
                 normalizarDominioOpcional(EmpregoDominio.DOMINIO_CANAL_OFERTA, filtro.canal()),
                 filtro.dataInicio(),
-                filtro.dataFim()
+                filtro.dataFim(),
+                texto(filtro.search())
         );
     }
 
@@ -245,12 +270,31 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
         );
     }
 
-    private CandidaturaListaResponse enriquecerLista(CandidaturaListaResponse item) {
+    private CandidaturaListaResponse enriquecerLista(
+            CandidaturaListaResponse item,
+            List<EntrevistaResponse> entrevistas
+    ) {
         List<CandidaturaDocumentoResponse> anexos = resolverAnexos(item);
         CandidaturaDocumentoResponse primeiroAnexo = anexos.stream().findFirst().orElse(null);
         String tipoDocumento = temTexto(item.tipoDocumento())
                 ? item.tipoDocumento()
                 : primeiroAnexo == null ? null : primeiroAnexo.tipo();
+        String statusCandidatura = valorDominio(
+                EmpregoDominio.DOMINIO_STATUS_CANDIDATURA,
+                item.statusCandidatura()
+        );
+        String statusCandidaturaDesc = empregoDominioService.descricao(
+                EmpregoDominio.DOMINIO_STATUS_CANDIDATURA,
+                item.statusCandidatura()
+        );
+        boolean podeAvaliar = podeAvaliar(item.tipoOferta(), item.selecaoIefp());
+        CandidaturaAvaliacaoResponse avaliacao = new CandidaturaAvaliacaoResponse(
+                statusCandidatura,
+                statusCandidaturaDesc,
+                item.motivoRecusa(),
+                item.selecaoIefp(),
+                podeAvaliar
+        );
 
         return new CandidaturaListaResponse(
                 item.id(),
@@ -273,15 +317,17 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
                 tipoDocumento,
                 primeiroAnexo,
                 anexos,
-                valorDominio(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, item.statusCandidatura()),
-                empregoDominioService.descricao(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, item.statusCandidatura()),
+                statusCandidatura,
+                statusCandidaturaDesc,
                 item.motivoRecusa(),
                 item.selecaoIefp(),
-                podeAvaliar(item.tipoOferta(), item.selecaoIefp()),
+                podeAvaliar,
                 podeAgendarEntrevista(item.statusCandidatura()) && item.entrevistaId() == null,
                 item.entrevistaId(),
                 Boolean.TRUE.equals(item.podeRegistarResultadoEntrevista()),
-                item.dataCandidatura()
+                item.dataCandidatura(),
+                avaliacao,
+                entrevistas
         );
     }
 

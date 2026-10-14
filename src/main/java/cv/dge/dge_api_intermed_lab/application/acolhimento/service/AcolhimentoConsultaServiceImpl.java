@@ -138,6 +138,35 @@ public class AcolhimentoConsultaServiceImpl implements AcolhimentoConsultaServic
 
     @Override
     @Transactional(readOnly = true)
+    public List<PacCandidaturaResponse> listarCandidaturas(
+            Integer cefpId,
+            String denominacao,
+            String search
+    ) {
+        String termo = search == null ? null : search.trim().toLowerCase(Locale.ROOT);
+        List<PacCandidaturaResponse> candidaturas = listarCandidaturas(cefpId, denominacao);
+        if (termo == null || termo.isBlank()) {
+            return candidaturas;
+        }
+        return candidaturas.stream()
+                .filter(item -> String.join(" ",
+                                valor(item.id()), valor(item.pessoaId()), valor(item.nome()),
+                                valor(item.dataNascimento()), valor(item.tipoDocumento()),
+                                valor(item.numDocumento()), valor(item.sexo()), valor(item.nif()),
+                                valor(item.habilitacaoLiteraria()), valor(item.idCefp()),
+                                valor(item.denominacaoCefp()), valor(item.dateCreate()),
+                                valor(item.userCreate()), valor(item.dateUpdate()), valor(item.userUpdate()))
+                        .toLowerCase(Locale.ROOT)
+                        .contains(termo))
+                .toList();
+    }
+
+    private String valor(Object valor) {
+        return valor == null ? "" : valor.toString();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public AcolhimentoPessoaResponse buscarPorIdPessoa(Integer idPessoa) {
         if (idPessoa == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, MSG_ID_PESSOA_OBRIGATORIO);

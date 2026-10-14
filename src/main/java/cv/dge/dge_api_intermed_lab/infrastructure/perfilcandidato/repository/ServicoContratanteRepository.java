@@ -2,12 +2,12 @@ package cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaOpcaoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteCandidatoFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteCandidatoOpcaoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoCandidatoFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagaOpcaoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoContratanteCandidatoFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoContratanteCandidatoOpcaoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoContratanteFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoContratanteRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoCandidatoFiltro;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -103,6 +103,7 @@ public class ServicoContratanteRepository {
             where.append("AND servico.fim_candidatura <= ?\n");
             parametros.add(filtro.dataFim());
         }
+        adicionarPesquisaServico(where, parametros, filtro.search());
         return where.toString();
     }
 
@@ -139,6 +140,7 @@ public class ServicoContratanteRepository {
             where.append("AND servico.date_create < ?\n");
             parametros.add(filtro.dataFim().plusDays(1).atStartOfDay());
         }
+        adicionarPesquisaServico(where, parametros, filtro.search());
 
         String sql = """
                 SELECT
@@ -440,6 +442,20 @@ public class ServicoContratanteRepository {
             where.append("AND candidatura.data_candidatura <= ?\n");
             parametros.add(filtro.dataFim());
         }
+        if (temTexto(filtro.search())) {
+            where.append("""
+                    AND CONCAT_WS(' ',
+                        candidatura.nome,
+                        candidatura.telefone,
+                        candidatura.status_candidatura,
+                        candidatura.status_aceitacao_candidato,
+                        servico.tipo_servico,
+                        servico.titulo,
+                        CAST(candidatura.data_candidatura AS VARCHAR)
+                    ) ILIKE ?
+                    """);
+            parametros.add("%" + filtro.search().trim() + "%");
+        }
 
         String sql = """
                 SELECT candidatura.id,
@@ -461,6 +477,36 @@ public class ServicoContratanteRepository {
                          candidatura.id DESC
                 """;
         return empregoJdbcTemplate.query(sql, this::mapearCandidato, parametros.toArray());
+    }
+
+    private void adicionarPesquisaServico(
+            StringBuilder where,
+            List<Object> parametros,
+            String search
+    ) {
+        if (!temTexto(search)) {
+            return;
+        }
+        where.append("""
+                AND CONCAT_WS(' ',
+                    servico.nome,
+                    servico.tipo_servico,
+                    servico.titulo,
+                    servico.descricao,
+                    servico.competencias_exigidas,
+                    servico.ilha,
+                    servico.concelho,
+                    servico.zona,
+                    servico.telefone,
+                    servico.email,
+                    servico.estado,
+                    CAST(servico.data_pretendida AS VARCHAR),
+                    CAST(servico.inicio_candidatura AS VARCHAR),
+                    CAST(servico.fim_candidatura AS VARCHAR),
+                    CAST(servico.valor_previsto AS VARCHAR)
+                ) ILIKE ?
+                """);
+        parametros.add("%" + search.trim() + "%");
     }
 
     public Optional<CandidatoRegisto> buscarCandidato(

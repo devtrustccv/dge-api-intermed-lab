@@ -8,8 +8,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeEstagiarioFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AssiduidadeEstagiarioListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.assiduidade.AssiduidadeEstagiarioFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.assiduidade.AssiduidadeEstagiarioListaResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.GestaoAssiduidadeService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

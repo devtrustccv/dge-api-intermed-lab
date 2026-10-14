@@ -1,10 +1,10 @@
 package cv.dge.dge_api_intermed_lab.web.perfilcandidato;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaOpcoesResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.PerfilCandidatoApiResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.MinhaCandidaturaDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.MinhaCandidaturaFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.MinhaCandidaturaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.MinhaCandidaturaOpcoesResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.comum.PerfilCandidatoApiResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.service.MinhaCandidaturaService;
 import java.time.LocalDate;
 import java.util.List;
@@ -36,7 +36,8 @@ public class PerfilCandidatoCandidaturaController {
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
+            @RequestParam(value = "search", required = false) String search
     ) {
         return PerfilCandidatoApiResponse.sucesso(
                 "Candidaturas carregadas com sucesso.",
@@ -50,7 +51,8 @@ public class PerfilCandidatoCandidaturaController {
                         estado,
                         codigoReferencia,
                         dataInicio,
-                        dataFim
+                        dataFim,
+                        search
                 ))
         );
     }

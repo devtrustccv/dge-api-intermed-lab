@@ -1,8 +1,8 @@
 package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaColocacaoDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaColocacaoListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.colocacao.MinhaColocacaoDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.colocacao.MinhaColocacaoListaResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.EmpregoDominioService;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.MinhaColocacaoRepository;
@@ -24,9 +24,12 @@ public class MinhaColocacaoServiceImpl implements MinhaColocacaoService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<MinhaColocacaoListaResponse> listar(Long pessoaId) {
+    public List<MinhaColocacaoListaResponse> listar(Long pessoaId, String search) {
         validarPessoa(pessoaId);
-        return colocacaoRepository.listar(pessoaId).stream()
+        List<ColocacaoRegisto> registos = search == null || search.isBlank()
+                ? colocacaoRepository.listar(pessoaId)
+                : colocacaoRepository.listar(pessoaId, search.trim());
+        return registos.stream()
                 .map(this::mapearLista)
                 .toList();
     }

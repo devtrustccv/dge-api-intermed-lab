@@ -1,8 +1,8 @@
 package cv.dge.dge_api_intermed_lab.web.perfilcandidato;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAvaliacaoDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAvaliacaoListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.PerfilCandidatoApiResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.avaliacao.MinhaAvaliacaoDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.avaliacao.MinhaAvaliacaoListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.comum.PerfilCandidatoApiResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.service.MinhaAvaliacaoService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -21,11 +21,12 @@ public class PerfilCandidatoAvaliacaoController {
 
     @GetMapping
     public PerfilCandidatoApiResponse<List<MinhaAvaliacaoListaResponse>> listar(
-            @RequestParam(required = false) Long pessoaId
+            @RequestParam(required = false) Long pessoaId,
+            @RequestParam(value = "search", required = false) String search
     ) {
         return PerfilCandidatoApiResponse.sucesso(
                 "Avaliações carregadas com sucesso.",
-                avaliacaoService.listar(pessoaId)
+                avaliacaoService.listar(pessoaId, search)
         );
     }
 

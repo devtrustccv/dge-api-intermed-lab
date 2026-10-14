@@ -1,7 +1,7 @@
 package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AdesaoJovemRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AdesaoJovemResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.adesao.AdesaoJovemRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.adesao.AdesaoJovemResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.EmpregoDominioService;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.PerfilCandidatoAdesaoRepository;

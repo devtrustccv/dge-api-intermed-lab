@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagaFiltro;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;

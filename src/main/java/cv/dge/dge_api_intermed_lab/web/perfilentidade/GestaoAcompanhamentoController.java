@@ -1,10 +1,10 @@
 package cv.dge.dge_api_intermed_lab.web.perfilentidade;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AcompanhamentoEstagiarioFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AcompanhamentoEstagiarioListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AcompanhamentoEstagiarioSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.AcompanhamentoOfertaSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EmpregoApiResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.acompanhamento.AcompanhamentoEstagiarioFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.acompanhamento.AcompanhamentoEstagiarioListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.acompanhamento.AcompanhamentoEstagiarioSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.acompanhamento.AcompanhamentoOfertaSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.comum.EmpregoApiResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.GestaoAcompanhamentoService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -26,13 +26,14 @@ public class GestaoAcompanhamentoController {
             @RequestParam(value = "estagiarioId", required = false) Long estagiarioId,
             @RequestParam(value = "estagiario", required = false) String estagiario,
             @RequestParam(value = "ofertaId", required = false) Integer ofertaId,
-            @RequestParam(value = "oferta", required = false) String oferta
+            @RequestParam(value = "oferta", required = false) String oferta,
+            @RequestParam(value = "search", required = false) String search
     ) {
         return EmpregoApiResponse.sucesso(
                 "Estagiarios selecionados listados com sucesso.",
                 gestaoAcompanhamentoService.listarEstagiariosSelecionados(
                         new AcompanhamentoEstagiarioFiltro(
-                                entidadeId, estagiarioId, estagiario, ofertaId, oferta)
+                                entidadeId, estagiarioId, estagiario, ofertaId, oferta, search)
                 )
         );
     }

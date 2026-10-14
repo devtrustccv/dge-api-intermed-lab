@@ -1,7 +1,7 @@
 package cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AlertaOfertaRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaOpcaoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.alerta.AlertaOfertaRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagaOpcaoResponse;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -47,6 +47,11 @@ public class ConfiguracaoAlertaOfertaRepository {
     }
 
     public List<AlertaOfertaListaRegisto> listar(Long pessoaId) {
+        return listar(pessoaId, null);
+    }
+
+    public List<AlertaOfertaListaRegisto> listar(Long pessoaId, String search) {
+        boolean pesquisar = temTexto(search);
         String sql = """
                 SELECT alerta.id,
                        alerta.tipo_oferta,
@@ -56,10 +61,21 @@ public class ConfiguracaoAlertaOfertaRepository {
                        alerta.date_create
                 FROM emprego_t_alerta_config alerta
                 WHERE alerta.pessoa_id = ?
+                """ + (pesquisar ? """
+                  AND CONCAT_WS(' ',
+                      alerta.tipo_oferta,
+                      alerta.habilitacao_literaria,
+                      alerta.nivel_qualificacao,
+                      alerta.estado,
+                      CAST(alerta.date_create AS VARCHAR)
+                  ) ILIKE ?
+                """ : "") + """
                 ORDER BY alerta.date_create DESC NULLS LAST, alerta.id DESC
                 """;
 
-        return empregoJdbcTemplate.query(sql, this::mapearLista, pessoaId);
+        return pesquisar
+                ? empregoJdbcTemplate.query(sql, this::mapearLista, pessoaId, "%" + search.trim() + "%")
+                : empregoJdbcTemplate.query(sql, this::mapearLista, pessoaId);
     }
 
     public Optional<AlertaOfertaDetalheRegisto> buscarPorId(Integer alertaId, Long pessoaId) {

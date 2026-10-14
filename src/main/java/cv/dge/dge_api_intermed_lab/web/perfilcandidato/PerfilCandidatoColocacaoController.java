@@ -1,8 +1,8 @@
 package cv.dge.dge_api_intermed_lab.web.perfilcandidato;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaColocacaoDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaColocacaoListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.PerfilCandidatoApiResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.colocacao.MinhaColocacaoDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.colocacao.MinhaColocacaoListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.comum.PerfilCandidatoApiResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.service.MinhaColocacaoService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -21,11 +21,12 @@ public class PerfilCandidatoColocacaoController {
 
     @GetMapping
     public PerfilCandidatoApiResponse<List<MinhaColocacaoListaResponse>> listar(
-            @RequestParam(required = false) Long pessoaId
+            @RequestParam(required = false) Long pessoaId,
+            @RequestParam(value = "search", required = false) String search
     ) {
         return PerfilCandidatoApiResponse.sucesso(
                 "Colocações carregadas com sucesso.",
-                colocacaoService.listar(pessoaId)
+                colocacaoService.listar(pessoaId, search)
         );
     }
 

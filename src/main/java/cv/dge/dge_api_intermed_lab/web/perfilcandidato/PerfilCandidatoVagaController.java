@@ -2,14 +2,14 @@ package cv.dge.dge_api_intermed_lab.web.perfilcandidato;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaVagaFormularioResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaVagaRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.CandidaturaVagaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaOpcoesResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagasResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.PerfilCandidatoApiResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.CandidaturaVagaFormularioResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.CandidaturaVagaRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.CandidaturaVagaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagaDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagaFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagaOpcoesResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagasResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.comum.PerfilCandidatoApiResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.service.ConsultaVagaService;
 import cv.dge.dge_api_intermed_lab.web.ApiErrorMessageResolver;
 import java.time.LocalDate;
@@ -54,7 +54,7 @@ public class PerfilCandidatoVagaController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
-            @RequestParam(required = false) String pesquisa
+            @RequestParam(value = "search", required = false) String search
     ) {
         return PerfilCandidatoApiResponse.sucesso(
                 "Ofertas disponíveis carregadas com sucesso.",
@@ -68,7 +68,7 @@ public class PerfilCandidatoVagaController {
                         codigoReferencia != null ? codigoReferencia : referencia,
                         dataInicio,
                         dataFim,
-                        pesquisa,
+                        search,
                         situacao
                 ))
         );

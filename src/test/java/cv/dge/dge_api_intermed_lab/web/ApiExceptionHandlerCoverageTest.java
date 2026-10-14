@@ -16,6 +16,7 @@ import cv.dge.dge_api_intermed_lab.web.perfilcandidato.PerfilCandidatoCandidatur
 import cv.dge.dge_api_intermed_lab.web.perfilcandidato.PerfilCandidatoCertificadoController;
 import cv.dge.dge_api_intermed_lab.web.perfilcandidato.PerfilCandidatoColocacaoController;
 import cv.dge.dge_api_intermed_lab.web.perfilcandidato.PerfilCandidatoDashboardController;
+import cv.dge.dge_api_intermed_lab.web.perfilcandidato.PerfilCandidatoEntrevistaController;
 import cv.dge.dge_api_intermed_lab.web.perfilcandidato.PerfilCandidatoServicoCandidatoController;
 import cv.dge.dge_api_intermed_lab.web.perfilcandidato.PerfilCandidatoServicoContratanteController;
 import cv.dge.dge_api_intermed_lab.web.perfilcandidato.PerfilCandidatoVagaController;
@@ -62,6 +63,7 @@ class ApiExceptionHandlerCoverageTest {
                 PerfilCandidatoCertificadoController.class,
                 PerfilCandidatoColocacaoController.class,
                 PerfilCandidatoDashboardController.class,
+                PerfilCandidatoEntrevistaController.class,
                 PerfilCandidatoServicoCandidatoController.class,
                 PerfilCandidatoServicoContratanteController.class,
                 PerfilCandidatoVagaController.class,

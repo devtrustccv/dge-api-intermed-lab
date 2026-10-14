@@ -11,11 +11,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AlertaOfertaDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AlertaOfertaListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AlertaOfertaOpcoesResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AlertaOfertaRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ConsultaVagaOpcaoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.alerta.AlertaOfertaDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.alerta.AlertaOfertaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.alerta.AlertaOfertaOpcoesResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.alerta.AlertaOfertaRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.vaga.ConsultaVagaOpcaoResponse;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ConfiguracaoAlertaOfertaRepository;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ConfiguracaoAlertaOfertaRepository.AlertaOfertaDetalheRegisto;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ConfiguracaoAlertaOfertaRepository.AlertaOfertaListaRegisto;

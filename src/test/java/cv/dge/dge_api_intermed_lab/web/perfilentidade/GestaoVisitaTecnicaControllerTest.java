@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VisitaTecnicaRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita.VisitaTecnicaRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.GestaoVisitaTecnicaService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

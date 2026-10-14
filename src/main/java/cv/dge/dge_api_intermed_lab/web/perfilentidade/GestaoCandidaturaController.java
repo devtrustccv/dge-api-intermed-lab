@@ -1,13 +1,13 @@
 package cv.dge.dge_api_intermed_lab.web.perfilentidade;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaAvaliacaoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EmpregoApiResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EntrevistaAgendamentoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EntrevistaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EntrevistaResultadoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaAvaliacaoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.comum.EmpregoApiResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaAgendamentoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaResultadoRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.GestaoCandidaturaService;
 import java.time.LocalDate;
 import java.util.List;
@@ -44,7 +44,8 @@ public class GestaoCandidaturaController {
             @RequestParam(value = "dataInicio", required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
             @RequestParam(value = "dataFim", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
+            @RequestParam(value = "search", required = false) String search
     ) {
         return EmpregoApiResponse.sucesso(
                 "Candidaturas listadas com sucesso.",
@@ -58,7 +59,8 @@ public class GestaoCandidaturaController {
                         tituloOferta,
                         canal,
                         dataInicio,
-                        dataFim
+                        dataFim,
+                        search
                 ))
         );
     }
@@ -89,11 +91,12 @@ public class GestaoCandidaturaController {
     @GetMapping("{id}/entrevistas")
     public EmpregoApiResponse<List<EntrevistaResponse>> listarEntrevistas(
             @PathVariable Integer id,
-            @RequestParam("entidadeId") Integer entidadeId
+            @RequestParam("entidadeId") Integer entidadeId,
+            @RequestParam(value = "search", required = false) String search
     ) {
         return EmpregoApiResponse.sucesso(
                 "Entrevistas listadas com sucesso.",
-                gestaoCandidaturaService.listarEntrevistas(id, entidadeId)
+                gestaoCandidaturaService.listarEntrevistas(id, entidadeId, search)
         );
     }
 

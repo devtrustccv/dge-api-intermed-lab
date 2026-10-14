@@ -1,0 +1,31 @@
+package cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura;
+
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaAvaliacaoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaResponse;
+import java.time.LocalDateTime;
+import java.util.List;
+
+public record MinhaCandidaturaListaResponse(
+        Integer candidaturaId,
+        String tipoOferta,
+        String tipoOfertaDescricao,
+        Integer ofertaId,
+        String titulo,
+        String codigoReferencia,
+        Integer entidadeId,
+        String entidade,
+        String ilhaId,
+        String ilha,
+        String concelhoId,
+        String concelho,
+        String estado,
+        String estadoDescricao,
+        String canal,
+        String motivoRecusa,
+        String tipoDocumento,
+        String preview,
+        LocalDateTime dataCandidatura,
+        CandidaturaAvaliacaoResponse avaliacao,
+        List<EntrevistaResponse> entrevistas
+) {
+}

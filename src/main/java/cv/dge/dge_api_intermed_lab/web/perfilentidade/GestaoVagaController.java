@@ -1,14 +1,14 @@
 package cv.dge.dge_api_intermed_lab.web.perfilentidade;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EmpregoApiResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaColaboradorSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaDuplicacaoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaEstadoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaValidacaoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.comum.EmpregoApiResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaColaboradorSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaDuplicacaoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaEstadoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaValidacaoRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.GestaoVagaService;
 import java.time.LocalDate;
 import java.util.List;
@@ -80,7 +80,7 @@ public class GestaoVagaController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
             @RequestParam(value = "dataFim", required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
-            @RequestParam(value = "pesquisa", required = false) String pesquisa
+            @RequestParam(value = "search", required = false) String search
     ) {
         return EmpregoApiResponse.sucesso(
                 "Vagas listadas com sucesso.",
@@ -96,7 +96,7 @@ public class GestaoVagaController {
                         coordenadorId,
                         dataInicio,
                         dataFim,
-                        pesquisa
+                        search
                 ))
         );
     }

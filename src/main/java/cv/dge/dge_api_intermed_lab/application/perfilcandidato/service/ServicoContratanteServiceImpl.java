@@ -4,16 +4,16 @@ import cv.dge.dge_api_intermed_lab.application.document.dto.DocRelacaoDTO;
 import cv.dge.dge_api_intermed_lab.application.document.service.ComboboxService;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
 import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaCandidaturaOpcaoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteAnexoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteCandidatoFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteCandidatoListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteCandidatosOpcoesResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteOpcoesResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoContratanteRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.candidatura.MinhaCandidaturaOpcaoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoContratanteAnexoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoContratanteCandidatoFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoContratanteCandidatoListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoContratanteCandidatosOpcoesResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoContratanteDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoContratanteFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoContratanteListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoContratanteOpcoesResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoContratanteRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.EmpregoDominioService;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository.ServicoContratanteRepository;
@@ -279,7 +279,8 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
                         filtro.estado()
                 ),
                 filtro.dataInicio(),
-                filtro.dataFim()
+                filtro.dataFim(),
+                textoOpcional(filtro.search())
         );
     }
 
@@ -307,7 +308,8 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
                         filtro.estado()
                 ),
                 filtro.dataInicio(),
-                filtro.dataFim()
+                filtro.dataFim(),
+                textoOpcional(filtro.search())
         );
     }
 

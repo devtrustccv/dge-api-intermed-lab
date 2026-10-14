@@ -2,12 +2,12 @@ package cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidatoDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EntrevistaAgendamentoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EntrevistaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidatoDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaAgendamentoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaResponse;
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import javax.sql.DataSource;
@@ -136,7 +137,9 @@ public class GestaoCandidaturaRepository {
                     null,
                     entrevistaId,
                     entrevistaId != null,
-                    rs.getObject("date_create", LocalDateTime.class)
+                    rs.getObject("date_create", LocalDateTime.class),
+                    null,
+                    List.of()
             );
         }, params.toArray());
     }
@@ -255,7 +258,13 @@ public class GestaoCandidaturaRepository {
     }
 
     public List<EntrevistaResponse> listarEntrevistas(Integer candidaturaId) {
-        return empregoJdbcTemplate.query(
+        return listarEntrevistas(candidaturaId, null);
+    }
+
+    public List<EntrevistaResponse> listarEntrevistas(Integer candidaturaId, String search) {
+        List<Object> params = new ArrayList<>();
+        params.add(candidaturaId);
+        StringBuilder sql = new StringBuilder(
                 """
                         SELECT
                             id,
@@ -275,11 +284,52 @@ public class GestaoCandidaturaRepository {
                             user_update
                         FROM emprego_t_entrevista_oferta
                         WHERE id_candidatura = ?
-                        ORDER BY date_create DESC NULLS LAST, id DESC
-                        """,
+                        """);
+        if (temTexto(search)) {
+            sql.append("""
+                     AND CONCAT_WS(' ',
+                         nome, data_entrevista::text, horario::text, canal,
+                         local_entrevista, parecer_entrevista, resultado_entrevista,
+                         estado, date_create::text, user_create
+                     ) ILIKE ?
+                    """);
+            params.add("%" + search.trim() + "%");
+        }
+        sql.append(" ORDER BY date_create DESC NULLS LAST, id DESC");
+        return empregoJdbcTemplate.query(
+                sql.toString(),
                 this::mapEntrevista,
-                candidaturaId
+                params.toArray()
         );
+    }
+
+    public List<EntrevistaResponse> listarEntrevistasPorCandidaturas(List<Integer> candidaturaIds) {
+        if (candidaturaIds == null || candidaturaIds.isEmpty()) {
+            return List.of();
+        }
+        String placeholders = String.join(",", Collections.nCopies(candidaturaIds.size(), "?"));
+        String sql = """
+                SELECT
+                    id,
+                    id_candidatura,
+                    pessoa_id,
+                    nome,
+                    data_entrevista,
+                    horario,
+                    canal,
+                    local_entrevista,
+                    parecer_entrevista,
+                    resultado_entrevista,
+                    estado,
+                    date_create,
+                    user_create,
+                    date_update,
+                    user_update
+                FROM emprego_t_entrevista_oferta
+                WHERE id_candidatura IN (%s)
+                ORDER BY id_candidatura, date_create DESC NULLS LAST, id DESC
+                """.formatted(placeholders);
+        return empregoJdbcTemplate.query(sql, this::mapEntrevista, candidaturaIds.toArray());
     }
 
     public Optional<EntrevistaResponse> buscarEntrevista(Integer candidaturaId, Integer entrevistaId) {
@@ -478,6 +528,17 @@ public class GestaoCandidaturaRepository {
             where.append(" AND c.date_create::date <= ?");
             params.add(filtro.dataFim());
         }
+        if (temTexto(filtro.search())) {
+            where.append("""
+                     AND CONCAT_WS(' ',
+                         c.nome, c.tipo_oferta, o.codigo_referencia, o.titulo,
+                         c.canal, c.status_candidatura, c.selecao_iefp::text,
+                         c.habilitacao_academica, c.motivo_recusa,
+                         c.date_create::text, c.user_create
+                     ) ILIKE ?
+                    """);
+            params.add("%" + filtro.search().trim() + "%");
+        }
 
         return where + " ";
     }
@@ -495,11 +556,26 @@ public class GestaoCandidaturaRepository {
             return null;
         }
         try {
-            return objectMapper.readValue(value.toString(), new TypeReference<>() {
+            Object resultado = objectMapper.readValue(value.toString(), new TypeReference<>() {
             });
+            for (int nivel = 0; nivel < 2 && resultado instanceof String texto && pareceJson(texto); nivel++) {
+                resultado = objectMapper.readValue(texto, new TypeReference<>() {
+                });
+            }
+            return resultado;
         } catch (Exception ex) {
             return value.toString();
         }
+    }
+
+    private boolean pareceJson(String valor) {
+        if (!temTexto(valor)) {
+            return false;
+        }
+        String texto = valor.trim();
+        return (texto.startsWith("{") && texto.endsWith("}"))
+                || (texto.startsWith("[") && texto.endsWith("]"))
+                || (texto.startsWith("\"") && texto.endsWith("\""));
     }
 
     private String extrairTipoDocumento(Object anexos) {

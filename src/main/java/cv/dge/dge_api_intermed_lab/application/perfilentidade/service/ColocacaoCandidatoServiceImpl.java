@@ -1,34 +1,53 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 
+import cv.dge.dge_api_intermed_lab.application.document.dto.DocRelacaoDTO;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoRemoverRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoVinculo;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoOfertaSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoRemoverRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoVinculo;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoOfertaSelectResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.ColocacaoCandidatoRepository;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService {
 
     private final EmpregoDominioService empregoDominioService;
     private static final String ESTADO_ATIVO = "A";
     private static final String ESTADO_INATIVO = "I";
+    private static final DateTimeFormatter SUFIXO_DOCUMENTO = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 
     private final ColocacaoCandidatoRepository colocacaoRepository;
     private final DocumentService documentService;
+
+    @Value("${document.colocacao.app-code:interm_laboral}")
+    private String appCodeDocumento;
+
+    @Value("${document.colocacao.estado:A}")
+    private String estadoDocumento;
+
+    @Value("${document.colocacao.tipo-relacao:EMPREGO_T_COLOCACAO_CANDIDATO}")
+    private String tipoRelacaoDocumento;
 
     @Override
     @Transactional(readOnly = true)
@@ -94,6 +113,16 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
     @Override
     @Transactional
     public ColocacaoCandidatoResponse criar(Integer entidadeId, ColocacaoCandidatoRequest request) {
+        return criar(entidadeId, request, null);
+    }
+
+    @Override
+    @Transactional
+    public ColocacaoCandidatoResponse criar(
+            Integer entidadeId,
+            ColocacaoCandidatoRequest request,
+            MultipartFile contrato
+    ) {
         validarEntidade(entidadeId);
         ColocacaoCandidatoRequest dados = validarENormalizarRequest(request);
         String utilizador = utilizadorObrigatorio(dados.utilizador());
@@ -101,6 +130,14 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
         validarTipoOferta(dados.tipoOferta(), vinculo.tipoOferta());
 
         Integer id = colocacaoRepository.inserir(dados, vinculo, ESTADO_ATIVO, false, utilizador);
+        if (temFicheiro(contrato)) {
+            colocacaoRepository.atualizarContratoPath(
+                    id,
+                    entidadeId,
+                    guardarContrato(id, contrato),
+                    utilizador
+            );
+        }
         return buscarPorId(id, entidadeId);
     }
 
@@ -111,6 +148,17 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
             Integer entidadeId,
             ColocacaoCandidatoRequest request
     ) {
+        return atualizar(id, entidadeId, request, null);
+    }
+
+    @Override
+    @Transactional
+    public ColocacaoCandidatoResponse atualizar(
+            Integer id,
+            Integer entidadeId,
+            ColocacaoCandidatoRequest request,
+            MultipartFile contrato
+    ) {
         validarId(id);
         validarEntidade(entidadeId);
         ColocacaoCandidatoResponse atual = buscarPorId(id, entidadeId);
@@ -120,6 +168,11 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
         String utilizador = utilizadorObrigatorio(dados.utilizador());
         ColocacaoCandidatoVinculo vinculo = resolverVinculoObrigatorio(entidadeId, dados);
         validarTipoOferta(dados.tipoOferta(), vinculo.tipoOferta());
+
+        String contratoPath = temFicheiro(contrato)
+                ? guardarContrato(id, contrato)
+                : primeiroTexto(dados.contratoPath(), atual.contratoPath());
+        dados = comContrato(dados, contratoPath);
 
         colocacaoRepository.atualizar(id, entidadeId, dados, vinculo, utilizador);
         return buscarPorId(id, entidadeId);
@@ -159,7 +212,8 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
                 filtro.dataInicioPrevisto(),
                 filtro.dataRegistoInicio(),
                 filtro.dataRegistoFim(),
-                filtro.entidadeId()
+                filtro.entidadeId(),
+                texto(filtro.search())
         );
     }
 
@@ -290,7 +344,7 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
                 item.dataInicioPrevisto(),
                 item.dataFimPrevisto(),
                 item.descricao(),
-                normalizarReferenciaDocumento(item.contratoPath()),
+                linkDocumentoParaResposta(item.contratoPath()),
                 valorDominio(EmpregoDominio.DOMINIO_ESTADO, item.estado()),
                 empregoDominioService.descricao(EmpregoDominio.DOMINIO_ESTADO, item.estado()),
                 item.registadoCefp(),
@@ -319,8 +373,104 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
                     "O campo \"contratoPath\" não aceita ficheiros em Base64. Envie uma referência documental válida."
             );
         }
-        String link = documentService.gerarLinkPublico(valor);
-        return texto(link);
+        return valor;
+    }
+
+    private String linkDocumentoParaResposta(String referencia) {
+        String valor = normalizarReferenciaDocumento(referencia);
+        if (valor == null) {
+            return null;
+        }
+        return texto(documentService.gerarLinkPublico(valor));
+    }
+
+    private String guardarContrato(Integer colocacaoId, MultipartFile ficheiro) {
+        String nomeOriginal = StringUtils.cleanPath(
+                Optional.ofNullable(ficheiro.getOriginalFilename()).orElse("contrato")
+        );
+        String extensao = extensao(nomeOriginal);
+        String nomeArmazenamento = "CONTRATO-"
+                + LocalDateTime.now().format(SUFIXO_DOCUMENTO);
+        String path = appCodeDocumento
+                + "/" + LocalDateTime.now().getYear()
+                + "/modulos/" + sanitizarSegmentoPath(tipoRelacaoDocumento)
+                + "/" + colocacaoId
+                + "/" + nomeArmazenamento + extensao;
+        try {
+            String pathGuardado = documentService.save(DocRelacaoDTO.builder()
+                    .idRelacao(colocacaoId)
+                    .tipoRelacao(tipoRelacaoDocumento)
+                    .estado(estadoDocumento)
+                    .name(nomeOriginal)
+                    .fileName(nomeArmazenamento)
+                    .path(path)
+                    .appCode(appCodeDocumento)
+                    .file(ficheiro)
+                    .build());
+            String link = documentService.gerarLinkPublico(pathGuardado);
+            if (!temTexto(link)) {
+                throw new IllegalStateException("O serviço documental devolveu um link inválido.");
+            }
+            return link;
+        } catch (RuntimeException ex) {
+            log.error(
+                    "Falha ao guardar contrato da colocação: colocacaoId={}, ficheiro={}",
+                    colocacaoId,
+                    nomeOriginal,
+                    ex
+            );
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_GATEWAY,
+                    "Não foi possível guardar o contrato da colocação. Tente novamente mais tarde.",
+                    ex
+            );
+        }
+    }
+
+    private ColocacaoCandidatoRequest comContrato(ColocacaoCandidatoRequest request, String contratoPath) {
+        return new ColocacaoCandidatoRequest(
+                request.tipoOferta(),
+                request.ofertaId(),
+                request.codigoReferencia(),
+                request.pessoaId(),
+                request.tipoContrato(),
+                request.duracaoContrato(),
+                request.dataInicioPrevisto(),
+                request.dataFimPrevisto(),
+                request.descricao(),
+                contratoPath,
+                request.utilizador()
+        );
+    }
+
+    private String primeiroTexto(String... valores) {
+        for (String valor : valores) {
+            String texto = texto(valor);
+            if (texto != null) {
+                return texto;
+            }
+        }
+        return null;
+    }
+
+    private boolean temFicheiro(MultipartFile ficheiro) {
+        return ficheiro != null && !ficheiro.isEmpty();
+    }
+
+    private boolean temTexto(String valor) {
+        return valor != null && !valor.trim().isEmpty();
+    }
+
+    private String extensao(String nome) {
+        int indice = nome.lastIndexOf('.');
+        return indice < 0 || indice == nome.length() - 1 ? "" : nome.substring(indice);
+    }
+
+    private String sanitizarSegmentoPath(String valor) {
+        String limpo = texto(valor);
+        return limpo == null
+                ? "documento"
+                : limpo.replaceAll("[\\\\/:*?\"<>|]+", "_").replace(' ', '_');
     }
 
     private void validarEntidade(Integer entidadeId) {

@@ -1,13 +1,13 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CoordenadorOrientadorFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CoordenadorOrientadorListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CoordenadorOrientadorRemoverRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CoordenadorOrientadorRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CoordenadorOrientadorResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.PessoaGlobalResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.VagaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.CoordenadorOrientadorFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.CoordenadorOrientadorListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.CoordenadorOrientadorRemoverRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.CoordenadorOrientadorRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.CoordenadorOrientadorResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.PessoaGlobalResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaListaResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.constants.EmpregoDominio;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.CoordenadorOrientadorRepository;
 import java.util.List;
@@ -134,7 +134,7 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
 
     @Override
     @Transactional(readOnly = true)
-    public List<VagaListaResponse> listarOfertasAssociadas(Integer id, Integer entidadeId) {
+    public List<VagaListaResponse> listarOfertasAssociadas(Integer id, Integer entidadeId, String search) {
         CoordenadorOrientadorResponse colaborador = buscarPorId(id, entidadeId);
         Integer orientadorId = TIPO_ORIENTADOR.equalsIgnoreCase(String.valueOf(colaborador.tipo())) ? id : null;
         Integer coordenadorId = TIPO_COORDENADOR.equalsIgnoreCase(String.valueOf(colaborador.tipo())) ? id : null;
@@ -158,7 +158,7 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
                 coordenadorId,
                 null,
                 null,
-                null
+                texto(search)
         ));
     }
 
@@ -174,7 +174,8 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
                 normalizarTipoOpcional(filtro.tipo()),
                 normalizarEstadoOpcional(filtro.estado()),
                 filtro.dataInicio(),
-                filtro.dataFim()
+                filtro.dataFim(),
+                texto(filtro.search())
         );
     }
 

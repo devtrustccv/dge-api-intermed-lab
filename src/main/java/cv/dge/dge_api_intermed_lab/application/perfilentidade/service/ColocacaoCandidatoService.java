@@ -1,13 +1,14 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoRemoverRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoCandidatoSelectResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.ColocacaoOfertaSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoRemoverRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoSelectResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoOfertaSelectResponse;
 import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface ColocacaoCandidatoService {
 
@@ -21,7 +22,20 @@ public interface ColocacaoCandidatoService {
 
     ColocacaoCandidatoResponse criar(Integer entidadeId, ColocacaoCandidatoRequest request);
 
+    ColocacaoCandidatoResponse criar(
+            Integer entidadeId,
+            ColocacaoCandidatoRequest request,
+            MultipartFile contrato
+    );
+
     ColocacaoCandidatoResponse atualizar(Integer id, Integer entidadeId, ColocacaoCandidatoRequest request);
+
+    ColocacaoCandidatoResponse atualizar(
+            Integer id,
+            Integer entidadeId,
+            ColocacaoCandidatoRequest request,
+            MultipartFile contrato
+    );
 
     ColocacaoCandidatoResponse remover(Integer id, Integer entidadeId, ColocacaoCandidatoRemoverRequest request);
 }

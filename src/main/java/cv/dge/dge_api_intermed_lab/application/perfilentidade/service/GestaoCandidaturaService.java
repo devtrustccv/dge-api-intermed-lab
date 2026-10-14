@@ -1,12 +1,12 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.service;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaAvaliacaoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.CandidaturaListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EntrevistaAgendamentoRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EntrevistaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EntrevistaResultadoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaAvaliacaoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaAgendamentoRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaResultadoRequest;
 import java.util.List;
 
 public interface GestaoCandidaturaService {
@@ -23,7 +23,11 @@ public interface GestaoCandidaturaService {
             EntrevistaAgendamentoRequest request
     );
 
-    List<EntrevistaResponse> listarEntrevistas(Integer candidaturaId, Integer entidadeId);
+    List<EntrevistaResponse> listarEntrevistas(Integer candidaturaId, Integer entidadeId, String search);
+
+    default List<EntrevistaResponse> listarEntrevistas(Integer candidaturaId, Integer entidadeId) {
+        return listarEntrevistas(candidaturaId, entidadeId, null);
+    }
 
     EntrevistaResponse registarResultadoEntrevista(
             Integer candidaturaId,

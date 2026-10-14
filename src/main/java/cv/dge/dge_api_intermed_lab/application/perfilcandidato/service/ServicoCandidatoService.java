@@ -1,9 +1,9 @@
 package cv.dge.dge_api_intermed_lab.application.perfilcandidato.service;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoCandidatoDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoCandidatoFiltro;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoCandidatoListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.ServicoCandidatoOpcoesResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoCandidatoDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoCandidatoFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoCandidatoListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.servico.ServicoCandidatoOpcoesResponse;
 import java.util.List;
 
 public interface ServicoCandidatoService {

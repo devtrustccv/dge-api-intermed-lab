@@ -2,7 +2,7 @@ package cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.*;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.avaliacao.*;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.Types;
@@ -68,6 +68,16 @@ public class GestaoAvaliacaoEstagiarioRepository {
         if (filtro.dataRegistro() != null) { sql.append(" AND a.date_create::date = ?"); params.add(filtro.dataRegistro()); }
         if (filtro.dataInicio() != null) { sql.append(" AND a.date_create >= ?"); params.add(filtro.dataInicio().atStartOfDay()); }
         if (filtro.dataFim() != null) { sql.append(" AND a.date_create < ?"); params.add(filtro.dataFim().plusDays(1).atStartOfDay()); }
+        if (filtro.search() != null && !filtro.search().isBlank()) {
+            sql.append("""
+                     AND CONCAT_WS(' ',
+                         COALESCE(NULLIF(TRIM(a.nome), ''), colocacao.nome), colocacao.oferta,
+                         a.tipo_avaliacao, a.periodo_referencia, a.classificacao,
+                         a.date_create::text
+                     ) ILIKE ?
+                    """);
+            params.add("%" + filtro.search().trim() + "%");
+        }
         sql.append(" ORDER BY a.date_create DESC, a.id DESC");
         return jdbcTemplate.query(sql.toString(), (rs, n) -> new AvaliacaoEstagiarioListaResponse(
                 rs.getInt("id"), getLong(rs, "pessoa_id"), rs.getString("nome"), rs.getString("oferta"),

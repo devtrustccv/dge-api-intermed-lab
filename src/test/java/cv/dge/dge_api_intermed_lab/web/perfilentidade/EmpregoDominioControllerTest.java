@@ -6,7 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.EmpregoDominioResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.comum.EmpregoDominioResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.EmpregoDominioService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;

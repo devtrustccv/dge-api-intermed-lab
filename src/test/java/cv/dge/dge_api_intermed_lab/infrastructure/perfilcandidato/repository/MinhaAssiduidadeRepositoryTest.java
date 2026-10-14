@@ -3,7 +3,7 @@ package cv.dge.dge_api_intermed_lab.infrastructure.perfilcandidato.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.MinhaAssiduidadeFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.assiduidade.MinhaAssiduidadeFiltro;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;

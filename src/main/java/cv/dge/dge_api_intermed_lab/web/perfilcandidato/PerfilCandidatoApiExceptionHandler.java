@@ -1,6 +1,6 @@
 package cv.dge.dge_api_intermed_lab.web.perfilcandidato;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.PerfilCandidatoApiResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.comum.PerfilCandidatoApiResponse;
 import cv.dge.dge_api_intermed_lab.web.ApiErrorMessageResolver;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -22,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
         PerfilCandidatoCertificadoController.class,
         PerfilCandidatoVagaController.class,
         PerfilCandidatoCandidaturaController.class,
+        PerfilCandidatoEntrevistaController.class,
         PerfilCandidatoColocacaoController.class,
         PerfilCandidatoAvaliacaoController.class,
         PerfilCandidatoAlertaOfertaController.class,

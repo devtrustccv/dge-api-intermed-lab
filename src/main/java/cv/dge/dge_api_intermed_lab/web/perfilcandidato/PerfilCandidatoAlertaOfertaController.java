@@ -1,10 +1,10 @@
 package cv.dge.dge_api_intermed_lab.web.perfilcandidato;
 
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AlertaOfertaDetalheResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AlertaOfertaListaResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AlertaOfertaOpcoesResponse;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.AlertaOfertaRequest;
-import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.PerfilCandidatoApiResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.alerta.AlertaOfertaDetalheResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.alerta.AlertaOfertaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.alerta.AlertaOfertaOpcoesResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.alerta.AlertaOfertaRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilcandidato.dto.comum.PerfilCandidatoApiResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilcandidato.service.ConfiguracaoAlertaOfertaService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -26,11 +26,12 @@ public class PerfilCandidatoAlertaOfertaController {
 
     @GetMapping
     public PerfilCandidatoApiResponse<List<AlertaOfertaListaResponse>> listar(
-            @RequestParam(required = false) Long pessoaId
+            @RequestParam(required = false) Long pessoaId,
+            @RequestParam(value = "search", required = false) String search
     ) {
         return PerfilCandidatoApiResponse.sucesso(
                 "Configurações de alerta carregadas com sucesso.",
-                alertaService.listar(pessoaId)
+                alertaService.listar(pessoaId, search)
         );
     }
 
