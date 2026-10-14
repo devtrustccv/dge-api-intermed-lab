@@ -346,3 +346,4 @@ LIMIT 5;
 SELECT id, id_acolhimento, data_encaminhamento, data_agendamento, data_realizacao, estado_entrevista
 FROM public.vw_entrevista
 LIMIT 5;
+
