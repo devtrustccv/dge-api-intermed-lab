@@ -477,7 +477,8 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
 
     private String resolverIdTipoDocumento() {
         if (temTexto(tipoDocumentoIdConfigurado)) {
-            return validarIdTipoDocumento(tipoDocumentoIdConfigurado);
+            String idConfigurado = tipoDocumentoIdConfigurado.trim();
+            return idTipoDocumentoValido(idConfigurado) ? idConfigurado : null;
         }
         return comboboxService.listarDocumentosAtivos().stream()
                 .filter(this::correspondeDocumentoServico)
@@ -485,11 +486,7 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
                 .filter(this::idTipoDocumentoValido)
                 .map(String::valueOf)
                 .findFirst()
-                .orElseThrow(() -> erro(
-                        HttpStatus.INTERNAL_SERVER_ERROR,
-                        "Não foi encontrado um tipo documental ativo para a prestação de serviços. "
-                                + "Configure o respetivo ID antes de anexar documentos."
-                ));
+                .orElse(null);
     }
 
     private boolean correspondeDocumentoServico(Map<String, Object> item) {
@@ -499,17 +496,6 @@ public class ServicoContratanteServiceImpl implements ServicoContratanteService 
                 && (normalizado.contains("PRESTACAO")
                 || normalizado.contains("SERVICO")
                 || normalizado.contains("OUTRO DOCUMENT"));
-    }
-
-    private String validarIdTipoDocumento(String valor) {
-        String limpo = valor.trim();
-        if (idTipoDocumentoValido(limpo)) {
-            return limpo;
-        }
-        throw erro(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "O ID documental configurado para a prestação de serviços não é válido."
-        );
     }
 
     private boolean idTipoDocumentoValido(Object valor) {

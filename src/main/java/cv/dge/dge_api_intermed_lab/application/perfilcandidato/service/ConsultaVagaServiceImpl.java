@@ -539,7 +539,8 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
                 ? tipoCurriculoIdConfigurado
                 : tipoOutroIdConfigurado;
         if (temTexto(configurado)) {
-            return validarIdTipoDocumento(configurado, tipo);
+            String idConfigurado = configurado.trim();
+            return idTipoDocumentoValido(idConfigurado) ? idConfigurado : null;
         }
 
         return comboboxService.listarDocumentosAtivos().stream()
@@ -548,12 +549,7 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
                 .filter(this::idTipoDocumentoValido)
                 .map(String::valueOf)
                 .findFirst()
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.INTERNAL_SERVER_ERROR,
-                        "Não foi encontrado no catálogo um tipo documental ativo para "
-                                + descricaoTipoDocumento(tipo)
-                                + ". Configure o respetivo ID antes de submeter a candidatura."
-                ));
+                .orElse(null);
     }
 
     private boolean correspondeTipoDocumento(Map<String, Object> item, String tipo) {
@@ -570,17 +566,6 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
                 || normalizado.startsWith("ANEX");
     }
 
-    private String validarIdTipoDocumento(String valor, String tipo) {
-        String limpo = valor.trim();
-        if (idTipoDocumentoValido(limpo)) {
-            return limpo;
-        }
-        throw new ResponseStatusException(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "O ID documental configurado para " + descricaoTipoDocumento(tipo) + " não é válido."
-        );
-    }
-
     private boolean idTipoDocumentoValido(Object valor) {
         if (valor == null) {
             return false;
@@ -590,10 +575,6 @@ public class ConsultaVagaServiceImpl implements ConsultaVagaService {
         } catch (NumberFormatException ex) {
             return false;
         }
-    }
-
-    private String descricaoTipoDocumento(String tipo) {
-        return TIPO_DOCUMENTO_CURRICULO.equals(tipo) ? "o currículo" : "outro documento";
     }
 
     private String construirPathDocumento(

@@ -161,17 +161,13 @@ public class OrientacaoServicoServiceImpl implements OrientacaoServicoService {
         }
 
         List<Map<String, Object>> anexos = anexos(servico.getDetalhesServico());
-        if (anexos.isEmpty()) {
-            return;
-        }
-
-        for (int indice = 0; indice < ficheirosValidos.size() && indice < anexos.size(); indice++) {
+        for (int indice = 0; indice < ficheirosValidos.size(); indice++) {
+            while (anexos.size() <= indice) {
+                anexos.add(new LinkedHashMap<>());
+            }
             MultipartFile ficheiro = ficheirosValidos.get(indice);
             Map<String, Object> anexo = anexos.get(indice);
             String documento = texto(anexo.get("documento"));
-            if (documento == null) {
-                continue;
-            }
 
             String nomeBase = nomeBaseDocumento(anexo, ficheiro, indice);
             String path = construirPathDocumento(servico.getId(), nomeBase, ficheiro);

@@ -116,6 +116,47 @@ class ServicoContratanteServiceImplTest {
     }
 
     @Test
+    void deveGuardarAnexoSemTipoDocumentalConfiguradoOuEncontrado() {
+        MockMultipartFile anexo = new MockMultipartFile(
+                "anexos",
+                "comprovativo.pdf",
+                "application/pdf",
+                "pdf".getBytes()
+        );
+        AnexoArmazenado armazenado = new AnexoArmazenado("comprovativo.pdf", "docs/comprovativo.pdf");
+        when(servicoRepository.buscarNomePessoa(9001L)).thenReturn(Optional.of("Kevin Sousa"));
+        when(servicoRepository.inserir(eq(9001L), eq("Kevin Sousa"), argThat(dados -> true), eq("A")))
+                .thenReturn(41);
+        when(comboboxService.listarDocumentosAtivos()).thenReturn(List.of());
+        when(documentService.save(argThat(documento ->
+                documento.getIdRelacao().equals(41)
+                        && documento.getIdTpDoc() == null
+                        && documento.getFile() == anexo
+        ))).thenReturn("docs/comprovativo.pdf");
+        when(documentService.gerarLinkPublico("docs/comprovativo.pdf"))
+                .thenReturn("https://documentos/comprovativo");
+        when(servicoRepository.atualizarAnexos(eq(41), eq(9001L), argThat(documentos ->
+                documentos.size() == 1
+                        && "docs/comprovativo.pdf".equals(documentos.get(0).path())
+        ))).thenReturn(true);
+        when(servicoRepository.buscarPorId(41, 9001L))
+                .thenReturn(Optional.of(servico("A", List.of(armazenado))));
+
+        ServicoContratanteDetalheResponse resultado = service.criar(
+                9001L,
+                request(null),
+                List.of(anexo),
+                false
+        );
+
+        assertThat(resultado.anexos()).singleElement().satisfies(documento -> {
+            assertThat(documento.nome()).isEqualTo("comprovativo.pdf");
+            assertThat(documento.path()).isEqualTo("docs/comprovativo.pdf");
+            assertThat(documento.url()).isEqualTo("https://documentos/comprovativo");
+        });
+    }
+
+    @Test
     void detalheDeveUsarAnexosGuardadosNoRegistoDoServico() {
         String path = "interm_laboral/2026/modulos/EMPREGO_T_INTERMEDIACAO/41/contrato.pdf";
         when(servicoRepository.buscarPorId(41, 9001L)).thenReturn(Optional.of(servico(
