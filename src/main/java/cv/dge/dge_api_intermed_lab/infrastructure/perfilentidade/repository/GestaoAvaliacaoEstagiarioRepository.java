@@ -73,6 +73,7 @@ public class GestaoAvaliacaoEstagiarioRepository {
                      AND CONCAT_WS(' ',
                          COALESCE(NULLIF(TRIM(a.nome), ''), colocacao.nome), colocacao.oferta,
                          a.tipo_avaliacao, a.periodo_referencia, a.classificacao,
+                         a.sugestao, a.desenvolvimento_atividade,
                          a.date_create::text
                      ) ILIKE ?
                     """);
@@ -104,6 +105,7 @@ public class GestaoAvaliacaoEstagiarioRepository {
                         .toList(), rs.getString("grau_satisfacao"),
                 rs.getString("grau_satisfacao"), rs.getString("interesse_contratacao"),
                 decimal(rs.getString("classificacao")), rs.getString("observacao"),
+                readStringList(rs.getObject("sugestao")), rs.getString("desenvolvimento_atividade"),
                 timestamp(rs, "date_create"), rs.getString("user_create"), timestamp(rs, "date_update"),
                 rs.getString("user_update")), id, entidadeId).stream().findFirst();
     }
@@ -135,10 +137,11 @@ public class GestaoAvaliacaoEstagiarioRepository {
             PreparedStatement ps = con.prepareStatement("""
                     INSERT INTO emprego_t_avaliacao_estagiario
                     (nome, pessoa_id, candidatura_id, tipo_avaliacao, periodo_referencia, avaliacao_desempenho,
-                     grau_satisfacao, interesse_contratacao, classificacao, observacao, date_create, user_create)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
+                     grau_satisfacao, interesse_contratacao, classificacao, observacao, sugestao,
+                     desenvolvimento_atividade, date_create, user_create)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
                     """, new String[]{"id"});
-            preencher(ps, vinculo, request); ps.setString(11, utilizador); return ps;
+            preencher(ps, vinculo, request); ps.setString(13, utilizador); return ps;
         }, keys);
         return keys.getKey().intValue();
     }
@@ -148,9 +151,10 @@ public class GestaoAvaliacaoEstagiarioRepository {
             PreparedStatement ps = con.prepareStatement("""
                     UPDATE emprego_t_avaliacao_estagiario SET nome=?, pessoa_id=?, candidatura_id=?, tipo_avaliacao=?,
                     periodo_referencia=?, avaliacao_desempenho=?, grau_satisfacao=?, interesse_contratacao=?,
-                    classificacao=?, observacao=?, date_update=CURRENT_TIMESTAMP, user_update=? WHERE id=?
+                    classificacao=?, observacao=?, sugestao=?, desenvolvimento_atividade=?,
+                    date_update=CURRENT_TIMESTAMP, user_update=? WHERE id=?
                     """);
-            preencher(ps, vinculo, request); ps.setString(11, utilizador); ps.setInt(12, id); return ps;
+            preencher(ps, vinculo, request); ps.setString(13, utilizador); ps.setInt(14, id); return ps;
         });
     }
 
@@ -159,6 +163,7 @@ public class GestaoAvaliacaoEstagiarioRepository {
         ps.setString(4, r.tipoAvaliacao()); ps.setString(5, r.periodoReferencia()); setJsonb(ps, 6, r.avaliacaoDesempenho());
         ps.setString(7, r.grauSatisfacao()); ps.setString(8, r.interesseContratacao());
         ps.setString(9, r.classificacao().stripTrailingZeros().toPlainString()); ps.setString(10, r.observacao());
+        setJsonb(ps, 11, r.sugestao()); ps.setString(12, r.desenvolvimentoAtividade());
     }
 
     private void setJsonb(PreparedStatement ps, int i, Object value) throws java.sql.SQLException {
@@ -166,6 +171,11 @@ public class GestaoAvaliacaoEstagiarioRepository {
         catch (Exception ex) { throw new java.sql.SQLException("JSON invalido para avaliacaoDesempenho.", ex); }
     }
     private List<AvaliacaoDesempenhoRequest> readDesempenho(Object value) {
+        if (value == null) return List.of();
+        try { return objectMapper.readValue(value.toString(), new TypeReference<>() {}); }
+        catch (Exception ex) { return List.of(); }
+    }
+    private List<String> readStringList(Object value) {
         if (value == null) return List.of();
         try { return objectMapper.readValue(value.toString(), new TypeReference<>() {}); }
         catch (Exception ex) { return List.of(); }

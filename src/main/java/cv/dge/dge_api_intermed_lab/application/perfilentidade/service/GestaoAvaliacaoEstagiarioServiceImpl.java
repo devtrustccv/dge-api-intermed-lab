@@ -100,7 +100,8 @@ public class GestaoAvaliacaoEstagiarioServiceImpl implements GestaoAvaliacaoEsta
             ));
         }
         return new AvaliacaoEstagiarioRequest(request.pessoaId(), tipo, periodo, desempenho, grau,
-                texto(request.interesseContratacao()), request.classificacao(), texto(request.observacao()), utilizador);
+                texto(request.interesseContratacao()), request.classificacao(), texto(request.observacao()),
+                textos(request.sugestao()), texto(request.desenvolvimentoAtividade()), utilizador);
     }
 
     private AvaliacaoEstagiarioListaResponse enriquecerLista(AvaliacaoEstagiarioListaResponse i) {
@@ -119,8 +120,8 @@ public class GestaoAvaliacaoEstagiarioServiceImpl implements GestaoAvaliacaoEsta
                         empregoDominioService.descricao(EmpregoDominio.DOMINIO_AVALIACAO, item.avaliacao())
                 )).toList(), i.grauSatisfacao(),
                 empregoDominioService.descricao(EmpregoDominio.DOMINIO_GRAU_SATISFACAO, i.grauSatisfacao()),
-                i.interesseContratacao(), i.classificacao(), i.observacao(), i.dateCreate(), i.userCreate(),
-                i.dateUpdate(), i.userUpdate());
+                i.interesseContratacao(), i.classificacao(), i.observacao(), i.sugestao(),
+                i.desenvolvimentoAtividade(), i.dateCreate(), i.userCreate(), i.dateUpdate(), i.userUpdate());
     }
 
     private String dominioObrigatorio(String dominio, String valor) {
@@ -139,5 +140,9 @@ public class GestaoAvaliacaoEstagiarioServiceImpl implements GestaoAvaliacaoEsta
             "Não foi possível identificar a entidade selecionada. Selecione uma entidade e tente novamente."); }
     private String obrigatorio(String v, String m) { String t = texto(v); if (t == null) throw erro(m); return t; }
     private String texto(String v) { return v == null || v.trim().isEmpty() ? null : v.trim(); }
+    private List<String> textos(List<String> valores) {
+        if (valores == null) return List.of();
+        return valores.stream().map(this::texto).filter(java.util.Objects::nonNull).toList();
+    }
     private ResponseStatusException erro(String m) { return new ResponseStatusException(HttpStatus.BAD_REQUEST, m); }
 }

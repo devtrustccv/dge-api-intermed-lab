@@ -83,6 +83,11 @@ class MinhaAssiduidadeServiceImplTest {
 
         assertThat(resultado).singleElement().satisfies(item -> {
             assertThat(item.assiduidadeId()).isEqualTo(41);
+            assertThat(item.colocacaoId()).isEqualTo(12);
+            assertThat(item.ofertaId()).isEqualTo(501);
+            assertThat(item.oferta()).isEqualTo("Programador Java");
+            assertThat(item.entidadeId()).isEqualTo(5);
+            assertThat(item.entidadeDenominacao()).isEqualTo("Entidade X");
             assertThat(item.tipoAssiduidade()).isEqualTo("FALTA_JUSTIFICADA");
             assertThat(item.tipoAssiduidadeDescricao()).isEqualTo("Falta justificada");
             assertThat(item.horario()).isEqualTo("08:30 - 17:15");
@@ -214,6 +219,37 @@ class MinhaAssiduidadeServiceImplTest {
     }
 
     @Test
+    void deveGuardarComprovativoSemTipoDocumentalConfiguradoOuEncontrado() {
+        MockMultipartFile comprovativo = new MockMultipartFile(
+                "comprovativo",
+                "Declaração médica.pdf",
+                "application/pdf",
+                "pdf".getBytes()
+        );
+        ColocacaoAtiva colocacao = new ColocacaoAtiva(12, 5, "Entidade X", 9001L, "Kevin Sousa");
+        String path = "interm_laboral/2026/modulos/EMPREGO_T_ASSIDUIDADE/41/COMPROVATIVO-declaracao.pdf";
+        String linkCompleto = "https://documentos/41";
+        when(assiduidadeRepository.buscarColocacaoAtiva(9001L)).thenReturn(Optional.of(colocacao));
+        when(assiduidadeRepository.inserir(eq(colocacao), argThat(dados -> true), eq("PENDENTE")))
+                .thenReturn(41);
+        when(comboboxService.listarDocumentosAtivos()).thenReturn(List.of());
+        when(documentService.save(argThat(documento ->
+                documento.getIdRelacao().equals(41)
+                        && documento.getIdTpDoc() == null
+                        && documento.getFile() == comprovativo
+        ))).thenReturn(path);
+        when(documentService.gerarLinkPublico(path)).thenReturn(linkCompleto);
+        when(documentService.gerarLinkPublico(linkCompleto)).thenReturn(linkCompleto);
+        when(assiduidadeRepository.atualizarComprovativo(41, 9001L, linkCompleto)).thenReturn(true);
+        when(assiduidadeRepository.buscarPorId(41, 9001L)).thenReturn(Optional.of(registo(linkCompleto)));
+
+        MinhaAssiduidadeDetalheResponse resultado = service.criar(9001L, request(), comprovativo);
+
+        assertThat(resultado.comprovativoUrl()).isEqualTo(linkCompleto);
+        verify(assiduidadeRepository).atualizarComprovativo(41, 9001L, linkCompleto);
+    }
+
+    @Test
     void detalheDeveUsarComprovativoGuardadoNoRegistoDeAssiduidade() {
         String path = "interm_laboral/2026/modulos/EMPREGO_T_ASSIDUIDADE/41/comprovativo.pdf";
         when(assiduidadeRepository.buscarPorId(41, 9001L))
@@ -306,6 +342,8 @@ class MinhaAssiduidadeServiceImplTest {
         return new AssiduidadeRegisto(
                 41,
                 12,
+                501,
+                "Programador Java",
                 5,
                 "Entidade X",
                 9001L,

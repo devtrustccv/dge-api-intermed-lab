@@ -18,6 +18,8 @@ public record AvaliacaoEstagiarioDetalheResponse(
         String interesseContratacao,
         BigDecimal classificacao,
         String observacao,
+        List<String> sugestao,
+        String desenvolvimentoAtividade,
         LocalDateTime dateCreate,
         String userCreate,
         LocalDateTime dateUpdate,

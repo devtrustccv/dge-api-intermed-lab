@@ -5,6 +5,11 @@ import java.time.LocalTime;
 
 public record MinhaAssiduidadeListaResponse(
         Integer assiduidadeId,
+        Integer colocacaoId,
+        Integer ofertaId,
+        String oferta,
+        Integer entidadeId,
+        String entidadeDenominacao,
         String tipoAssiduidade,
         String tipoAssiduidadeDescricao,
         LocalDate data,
