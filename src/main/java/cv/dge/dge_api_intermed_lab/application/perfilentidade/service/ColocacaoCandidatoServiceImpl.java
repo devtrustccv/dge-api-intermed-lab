@@ -322,6 +322,7 @@ public class ColocacaoCandidatoServiceImpl implements ColocacaoCandidatoService 
                 valorDominio(EmpregoDominio.DOMINIO_REGIME_CONTRATO, item.tipoContrato()),
                 empregoDominioService.descricao(EmpregoDominio.DOMINIO_REGIME_CONTRATO, item.tipoContrato()),
                 item.dataInicioPrevisto(),
+                linkDocumentoParaResposta(item.contratoPath()),
                 item.dataRegisto()
         );
     }
