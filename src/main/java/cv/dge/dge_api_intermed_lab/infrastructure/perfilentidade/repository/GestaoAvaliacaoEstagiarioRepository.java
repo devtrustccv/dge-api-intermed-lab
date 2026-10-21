@@ -91,14 +91,20 @@ public class GestaoAvaliacaoEstagiarioRepository {
 
     public Optional<AvaliacaoEstagiarioDetalheResponse> buscarPorId(Integer id, Integer entidadeId) {
         String sql = """
-                SELECT a.* FROM emprego_t_avaliacao_estagiario a
+                SELECT a.*, o.titulo AS oferta
+                FROM emprego_t_avaliacao_estagiario a
+                LEFT JOIN emprego_t_candidatura_oferta candidatura
+                       ON candidatura.id = a.candidatura_id
+                LEFT JOIN emprego_t_oferta o
+                       ON o.id = candidatura.id_oferta
                 WHERE a.id = ? AND EXISTS (
                     SELECT 1 FROM emprego_t_colocacao_candidato c
                     WHERE c.pessoa_id = a.pessoa_id AND c.entidade_id = ? AND
                 """ + CONDICAO_OFERTA_ESTAGIO + ")";
         return jdbcTemplate.query(sql, (rs, n) -> new AvaliacaoEstagiarioDetalheResponse(
                 rs.getInt("id"), getLong(rs, "pessoa_id"), rs.getString("nome"), getInteger(rs, "candidatura_id"),
-                rs.getString("tipo_avaliacao"), rs.getString("tipo_avaliacao"), rs.getString("periodo_referencia"),
+                rs.getString("oferta"), rs.getString("tipo_avaliacao"), rs.getString("tipo_avaliacao"),
+                rs.getString("periodo_referencia"),
                 readDesempenho(rs.getObject("avaliacao_desempenho")).stream()
                         .map(item -> new AvaliacaoDesempenhoResponse(
                                 item.tipoCompetencia(), null, item.avaliacao(), null))

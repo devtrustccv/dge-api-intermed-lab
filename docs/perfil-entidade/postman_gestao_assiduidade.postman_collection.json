@@ -164,7 +164,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"decisao\": \"INDEFER\",\n  \"motivoIndeferimento\": \"Comprovativo insuficiente.\",\n  \"utilizador\": \"postman\"\n}",
+              "raw": "{\n  \"decisao\": \"INDEFERIR\",\n  \"motivoIndeferimento\": \"Comprovativo insuficiente.\",\n  \"utilizador\": \"postman\"\n}",
               "options": {
                 "raw": {
                   "language": "json"

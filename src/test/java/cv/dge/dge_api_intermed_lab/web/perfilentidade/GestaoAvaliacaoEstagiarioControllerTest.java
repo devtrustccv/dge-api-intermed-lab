@@ -14,11 +14,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.avaliacao.AvaliacaoEstagiarioFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.avaliacao.AvaliacaoEstagiarioDetalheResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.avaliacao.AvaliacaoEstagiarioListaResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.avaliacao.AvaliacaoEstagiarioRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.service.GestaoAvaliacaoEstagiarioService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -95,6 +97,39 @@ class GestaoAvaliacaoEstagiarioControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.dados[0].oferta").value("Estágio em Desenvolvimento de Software"))
                 .andExpect(jsonPath("$.dados[0].dataRegisto").value("2026-09-17"));
+    }
+
+    @Test
+    void deveDevolverOfertaNoDetalheDaAvaliacao() throws Exception {
+        when(service.buscarPorId(10, 23)).thenReturn(new AvaliacaoEstagiarioDetalheResponse(
+                10,
+                100L,
+                "Maria Silva",
+                55,
+                "Estágio em Desenvolvimento de Software",
+                "MENSAL",
+                "Mensal",
+                "Agosto 2026",
+                List.of(),
+                "SATISFEITO",
+                "Satisfeito",
+                "SIM",
+                BigDecimal.valueOf(16),
+                "Bom desempenho",
+                List.of("Reforçar a autonomia"),
+                "Desenvolvimento do módulo de relatórios",
+                LocalDateTime.of(2026, 9, 17, 10, 30),
+                "utilizador@dge.cv",
+                null,
+                null
+        ));
+
+        mockMvc.perform(get("/v1/avaliacoes-estagiarios/10")
+                        .param("entidadeId", "23"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.dados.candidaturaId").value(55))
+                .andExpect(jsonPath("$.dados.oferta")
+                        .value("Estágio em Desenvolvimento de Software"));
     }
 
     @Test

@@ -22,9 +22,9 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
 
     private final EmpregoDominioService empregoDominioService;
     private static final String DECISAO_APROVAR = "APROVAR";
-    private static final String DECISAO_INDEFER = "INDEFER";
+    private static final String DECISAO_INDEFERIR = "INDEFERIR";
     private static final String ESTADO_APROVADO = "APROVADO";
-    private static final String ESTADO_INDEFERIDO = "INDEFERIDO";
+    private static final String ESTADO_RECUSADO = "RECUSADO";
 
     private final GestaoAssiduidadeRepository assiduidadeRepository;
     private final DocumentService documentService;
@@ -74,7 +74,7 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
         String novoEstado = estadoPorDecisao(decisao);
         String observacao = texto(request.observacao());
 
-        if (DECISAO_INDEFER.equals(decisao)) {
+        if (DECISAO_INDEFERIR.equals(decisao)) {
             String motivo = textoOuPadrao(request.motivoIndeferimento(), observacao);
             if (motivo == null) {
                 throw new ResponseStatusException(
@@ -203,8 +203,13 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione uma decisão.");
         }
         String normalizado = EmpregoDominio.normalizar(texto);
-        if ("INDEFERIR".equals(normalizado) || "INDEFERIDO".equals(normalizado)) {
-            normalizado = DECISAO_INDEFER;
+        if ("INDEFER".equals(normalizado)
+                || "INDEFERIR".equals(normalizado)
+                || "INDEFERIDO".equals(normalizado)
+                || "INDEFERIDA".equals(normalizado)
+                || "RECUSADO".equals(normalizado)
+                || "RECUSADA".equals(normalizado)) {
+            normalizado = DECISAO_INDEFERIR;
         }
         if ("APROVADO".equals(normalizado) || "APROVAR".equals(normalizado)) {
             normalizado = DECISAO_APROVAR;
@@ -223,8 +228,8 @@ public class GestaoAssiduidadeServiceImpl implements GestaoAssiduidadeService {
         if (DECISAO_APROVAR.equals(decisao)) {
             return ESTADO_APROVADO;
         }
-        if (DECISAO_INDEFER.equals(decisao)) {
-            return ESTADO_INDEFERIDO;
+        if (DECISAO_INDEFERIR.equals(decisao)) {
+            return ESTADO_RECUSADO;
         }
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 empregoDominioService.mensagemValorInvalido(

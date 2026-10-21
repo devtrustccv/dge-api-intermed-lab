@@ -173,7 +173,7 @@ public final class EmpregoDominio {
             };
             case DOMINIO_DECISAO_ASSIDUIDADE -> switch (valor) {
                 case "APROVADO", "APROVADA" -> "APROVAR";
-                case "INDEFERIR", "INDEFERIDO", "INDEFERIDA" -> "INDEFER";
+                case "INDEFER", "INDEFERIDO", "INDEFERIDA", "RECUSADO", "RECUSADA" -> "INDEFERIR";
                 default -> valor;
             };
             case DOMINIO_AGENDADO_POR -> switch (valor) {

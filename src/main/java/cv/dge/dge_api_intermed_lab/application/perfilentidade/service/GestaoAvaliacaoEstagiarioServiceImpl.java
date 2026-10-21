@@ -112,7 +112,8 @@ public class GestaoAvaliacaoEstagiarioServiceImpl implements GestaoAvaliacaoEsta
 
     private AvaliacaoEstagiarioDetalheResponse enriquecerDetalhe(AvaliacaoEstagiarioDetalheResponse i) {
         return new AvaliacaoEstagiarioDetalheResponse(i.id(), i.pessoaId(), i.estagiario(), i.candidaturaId(),
-                i.tipoAvaliacao(), empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_AVALIACAO, i.tipoAvaliacao()),
+                i.oferta(), i.tipoAvaliacao(),
+                empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_AVALIACAO, i.tipoAvaliacao()),
                 i.periodoReferencia(), i.avaliacaoDesempenho().stream().map(item -> new AvaliacaoDesempenhoResponse(
                         item.tipoCompetencia(),
                         empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_COMPETENCIA, item.tipoCompetencia()),
