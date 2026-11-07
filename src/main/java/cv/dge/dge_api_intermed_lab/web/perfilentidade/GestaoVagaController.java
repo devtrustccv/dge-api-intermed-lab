@@ -118,9 +118,10 @@ public class GestaoVagaController {
             @RequestParam("entidadeId") Integer entidadeId,
             @RequestBody VagaRequest request
     ) {
+        VagaResponse vaga = gestaoVagaService.criar(entidadeId, request);
         return EmpregoApiResponse.sucesso(
-                "Vaga criada com sucesso.",
-                gestaoVagaService.criar(entidadeId, request)
+                mensagemComAvisoCefp("Vaga criada com sucesso.", vaga),
+                vaga
         );
     }
 
@@ -130,9 +131,10 @@ public class GestaoVagaController {
             @RequestParam("entidadeId") Integer entidadeId,
             @RequestBody VagaRequest request
     ) {
+        VagaResponse vaga = gestaoVagaService.criarRascunho(entidadeId, request);
         return EmpregoApiResponse.sucesso(
-                "Rascunho da vaga criado com sucesso.",
-                gestaoVagaService.criarRascunho(entidadeId, request)
+                mensagemComAvisoCefp("Rascunho da vaga criado com sucesso.", vaga),
+                vaga
         );
     }
 
@@ -142,9 +144,10 @@ public class GestaoVagaController {
             @RequestParam("entidadeId") Integer entidadeId,
             @RequestBody VagaRequest request
     ) {
+        VagaResponse vaga = gestaoVagaService.atualizar(id, entidadeId, request);
         return EmpregoApiResponse.sucesso(
-                "Vaga atualizada com sucesso.",
-                gestaoVagaService.atualizar(id, entidadeId, request)
+                mensagemComAvisoCefp("Vaga atualizada com sucesso.", vaga),
+                vaga
         );
     }
 
@@ -181,5 +184,18 @@ public class GestaoVagaController {
                 "Dados da vaga preparados para duplicacao com sucesso.",
                 gestaoVagaService.prepararDuplicacao(id, entidadeId)
         );
+    }
+
+    private String mensagemComAvisoCefp(String mensagemSucesso, VagaResponse vaga) {
+        if (vaga == null || vaga.idCefp() != null || !temTexto(vaga.ilha()) || !temTexto(vaga.concelho())) {
+            return mensagemSucesso;
+        }
+        return "Aviso: não foi encontrado um CEFP parametrizado para a ilha \"" + vaga.ilha()
+                + "\" e o concelho \"" + vaga.concelho()
+                + "\". A vaga foi gravada sem associação a CEFP.";
+    }
+
+    private boolean temTexto(String valor) {
+        return valor != null && !valor.trim().isEmpty();
     }
 }

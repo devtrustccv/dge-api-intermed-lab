@@ -16,7 +16,9 @@ import java.text.Normalizer;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class GestaoVagaServiceImpl implements GestaoVagaService {
 
     private final EmpregoDominioService empregoDominioService;
@@ -85,7 +88,7 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
     public VagaResponse criar(Integer entidadeId, VagaRequest request) {
         validarEntidade(entidadeId);
         validarRequest(request, false);
-        VagaRequest dados = normalizarRequest(request);
+        VagaRequest dados = normalizarRequest(request, false);
         validarColaboradores(entidadeId, dados);
         String utilizador = utilizadorObrigatorio(dados.utilizador());
         Integer id = vagaRepository.inserir(entidadeId, dados, ESTADO_ATIVA, utilizador);
@@ -97,7 +100,7 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
     public VagaResponse criarRascunho(Integer entidadeId, VagaRequest request) {
         validarEntidade(entidadeId);
         validarRequest(request, true);
-        VagaRequest dados = normalizarRequest(request);
+        VagaRequest dados = normalizarRequest(request, true);
         validarColaboradores(entidadeId, dados);
         String utilizador = utilizadorObrigatorio(dados.utilizador());
         Integer id = vagaRepository.inserir(entidadeId, dados, ESTADO_RASCUNHO, utilizador);
@@ -112,7 +115,7 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
         validarRequest(request, false);
         VagaResponse atual = buscarPorId(id, entidadeId);
         garantirEditavel(atual);
-        VagaRequest dados = normalizarRequest(request);
+        VagaRequest dados = normalizarRequest(request, false);
         validarColaboradores(entidadeId, dados);
         String utilizador = utilizadorObrigatorio(dados.utilizador());
         vagaRepository.atualizar(id, entidadeId, dados, utilizador);
@@ -263,11 +266,6 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
         if (request.duracaoContrato() != null && request.duracaoContrato() < 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "A duração do contrato deve ser igual ou superior a zero.");
-        }
-        if (request.idCefp() != null && request.idCefp() <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "O campo \"idCefp\" deve conter um identificador positivo. Valor recebido: \""
-                            + request.idCefp() + "\".");
         }
         validarIntervaloDatas(request.dataInicioCandidatura(), request.dataFimCandidatura());
     }
@@ -480,8 +478,8 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
         );
     }
 
-    private VagaRequest normalizarRequest(VagaRequest request) {
-        return new VagaRequest(
+    private VagaRequest normalizarRequest(VagaRequest request, boolean rascunho) {
+        VagaRequest dados = new VagaRequest(
                 texto(request.codigoReferencia()),
                 normalizarDominioOpcional(
                         EmpregoDominio.DOMINIO_TIPO_OFERTA,
@@ -501,7 +499,7 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
                 ),
                 texto(request.denominacaoEntidade()),
                 texto(request.entidadeNif()),
-                request.idCefp(),
+                null,
                 normalizarDominioOpcional(
                         EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA,
                         request.habilitacaoMinima(),
@@ -535,6 +533,88 @@ public class GestaoVagaServiceImpl implements GestaoVagaService {
                 texto(request.contacto()),
                 texto(request.observacao()),
                 texto(request.utilizador())
+        );
+        return associarCefpPelaLocalizacao(dados, rascunho);
+    }
+
+    private VagaRequest associarCefpPelaLocalizacao(VagaRequest request, boolean rascunho) {
+        String ilha = request.ilha();
+        String concelho = request.concelho();
+        if (ilha == null && concelho == null) {
+            return request;
+        }
+        if (ilha == null || concelho == null) {
+            if (rascunho) {
+                return request;
+            }
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Informe a ilha e o concelho da oferta para identificar o CEFP responsável."
+            );
+        }
+
+        Optional<Integer> idCefp = buscarCefpId(ilha, concelho);
+        if (idCefp.isEmpty()) {
+            log.warn(
+                    "Nenhum CEFP parametrizado para ilha '{}' e concelho '{}'. "
+                            + "A oferta será gravada sem associação a CEFP.",
+                    ilha,
+                    concelho
+            );
+            return request;
+        }
+        return copiarComIdCefp(request, idCefp.get());
+    }
+
+    private Optional<Integer> buscarCefpId(String ilha, String concelho) {
+        Optional<Integer> porCodigo = vagaRepository.buscarCefpIdPorIlhaEConcelho(ilha, concelho);
+        if (porCodigo.isPresent()) {
+            return porCodigo;
+        }
+
+        String ilhaDescricao = descricaoGeografia(ilha);
+        String concelhoDescricao = descricaoGeografia(concelho);
+        if (ilha.equalsIgnoreCase(ilhaDescricao) && concelho.equalsIgnoreCase(concelhoDescricao)) {
+            return Optional.empty();
+        }
+        return vagaRepository.buscarCefpIdPorIlhaEConcelho(ilhaDescricao, concelhoDescricao);
+    }
+
+    private VagaRequest copiarComIdCefp(VagaRequest request, Integer idCefp) {
+        return new VagaRequest(
+                request.codigoReferencia(),
+                request.tipoOferta(),
+                request.titulo(),
+                request.descricao(),
+                request.dataInicioCandidatura(),
+                request.dataFimCandidatura(),
+                request.dataInicioPrevisto(),
+                request.duracaoContrato(),
+                request.regimeContrato(),
+                request.denominacaoEntidade(),
+                request.entidadeNif(),
+                idCefp,
+                request.habilitacaoMinima(),
+                request.nivelQualificacao(),
+                request.numVagas(),
+                request.habilitacaoMaxima(),
+                request.conhecimentoLinguistico(),
+                request.competenciasValorizadas(),
+                request.horaInicio(),
+                request.horaFim(),
+                request.diasSemana(),
+                request.cursosAreaFormacao(),
+                request.experienciaProfissional(),
+                request.ilha(),
+                request.concelho(),
+                request.orientadorId(),
+                request.coordenadorId(),
+                request.orientadorDenominacao(),
+                request.coordenadorDenominacao(),
+                request.emailContacto(),
+                request.contacto(),
+                request.observacao(),
+                request.utilizador()
         );
     }
 

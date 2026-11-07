@@ -308,6 +308,27 @@ public class GestaoVagaRepository {
         return total != null && total > 0;
     }
 
+    public Optional<Integer> buscarCefpIdPorIlhaEConcelho(String ilha, String concelho) {
+        List<Integer> resultados = jdbcTemplate.query(
+                """
+                        SELECT c.id
+                        FROM emprego_t_cefp c
+                        WHERE LOWER(TRIM(COALESCE(c.ilha, ''))) = LOWER(TRIM(?))
+                          AND LOWER(TRIM(COALESCE(c.concelho, ''))) = LOWER(TRIM(?))
+                          AND (
+                              c.dm_estado IS NULL
+                              OR UPPER(TRIM(c.dm_estado)) NOT IN ('INATIVO', 'INACTIVO', 'I')
+                          )
+                        ORDER BY c.id
+                        LIMIT 1
+                        """,
+                (rs, rowNum) -> rs.getInt("id"),
+                ilha,
+                concelho
+        );
+        return resultados.stream().findFirst();
+    }
+
     private String construirWhere(VagaFiltro filtro, List<Object> params) {
         StringBuilder where = new StringBuilder(" WHERE 1 = 1");
 
