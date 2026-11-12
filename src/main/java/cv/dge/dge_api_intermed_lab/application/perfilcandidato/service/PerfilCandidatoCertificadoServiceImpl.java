@@ -140,12 +140,14 @@ public class PerfilCandidatoCertificadoServiceImpl implements PerfilCandidatoCer
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Não foi encontrado um estágio associado ao seu perfil. Atualize a página ou contacte o serviço de atendimento."
+                                + " [DEBUG colocacaoId=" + colocacaoId + ", pessoaId=" + pessoaId
+                                + ", filtro: colocacao.id + tipo_oferta=OFERTA_ESTAGIO]"
                 ));
+        // Nem todo candidato colocado tem registo em emprego_t_utente (só quem passou pelo acolhimento).
+        // Na pré-visualização seguimos com os dados da colocação; a emissão continua a exigir
+        // naturalidade, data de nascimento e documento em validarDadosParaEmissao.
         FontePessoa pessoa = certificadoRepository.buscarFontePessoa(emprego.pessoaId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Não foi possível encontrar os seus dados pessoais. Atualize a página ou contacte o serviço de atendimento."
-                ));
+                .orElseGet(() -> new FontePessoa(null, null, null));
 
         return criarResponse(
                 null,
