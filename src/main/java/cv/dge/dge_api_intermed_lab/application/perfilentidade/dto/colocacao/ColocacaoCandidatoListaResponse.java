@@ -13,6 +13,7 @@ public record ColocacaoCandidatoListaResponse(
         String tipoContrato,
         String tipoContratoDesc,
         LocalDate dataInicioPrevisto,
+        String contratoPath,
         LocalDateTime dataRegisto
 ) {
 }

@@ -8,6 +8,8 @@ import static org.mockito.Mockito.when;
 
 import cv.dge.dge_api_intermed_lab.application.document.dto.DocRelacaoDTO;
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoFiltro;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoListaResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoVinculo;
@@ -15,6 +17,7 @@ import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.Colo
 import cv.dge.dge_api_intermed_lab.support.EmpregoDominioTestFixture;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -122,6 +125,35 @@ class ColocacaoCandidatoServiceImplTest {
         assertThat(documento.getValue().getFile()).isSameAs(contrato);
         verify(repository).atualizarContratoPath(60, ENTIDADE_ID, link, "utilizador");
         assertThat(resposta.contratoPath()).isEqualTo(link);
+    }
+
+    @Test
+    void deveDevolverLinkPublicoDoContratoNaLista() {
+        String path = "interm_laboral/2026/modulos/EMPREGO_T_COLOCACAO_CANDIDATO/60/CONTRATO.pdf";
+        String link = "https://documentos/document-viewer?path_url=" + path + "&type=application/pdf";
+        ColocacaoCandidatoFiltro filtro = new ColocacaoCandidatoFiltro(
+                null, null, null, null, null, null, null, null, ENTIDADE_ID, null
+        );
+        when(repository.listar(any())).thenReturn(List.of(new ColocacaoCandidatoListaResponse(
+                60,
+                "OFERTA_EMPREGO",
+                null,
+                "19/2026",
+                126L,
+                "Candidato",
+                "CONTRATO_TERMO",
+                null,
+                LocalDate.of(2026, 10, 1),
+                path,
+                LocalDateTime.of(2026, 10, 19, 16, 49)
+        )));
+        when(documentService.gerarLinkPublico(path)).thenReturn(link);
+
+        List<ColocacaoCandidatoListaResponse> resposta = service.listar(filtro);
+
+        assertThat(resposta).singleElement().satisfies(item ->
+                assertThat(item.contratoPath()).isEqualTo(link)
+        );
     }
 
     private ColocacaoCandidatoRequest request(String contratoPath) {

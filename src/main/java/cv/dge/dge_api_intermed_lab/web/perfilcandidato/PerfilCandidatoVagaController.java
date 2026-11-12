@@ -125,18 +125,20 @@ public class PerfilCandidatoVagaController {
             @RequestParam(required = false) Long pessoaId,
             @RequestPart(value = "dados", required = false) String dadosJson,
             @RequestPart(value = "novaVersaoCv", required = false) MultipartFile novaVersaoCv,
+            @RequestPart(value = "novaVersaoCV", required = false) MultipartFile novaVersaoCV,
             @RequestPart(value = "curriculo", required = false) MultipartFile curriculo,
             @RequestPart(value = "cv", required = false) MultipartFile cv,
             @RequestPart(value = "outrosDocumentos", required = false) List<MultipartFile> outrosDocumentos,
+            @RequestPart(value = "outroDocumentos", required = false) List<MultipartFile> outroDocumentos,
             @RequestPart(value = "documentos", required = false) List<MultipartFile> documentos
     ) {
-        MultipartFile ficheiroCurriculo = primeiroComConteudo(novaVersaoCv, curriculo, cv);
+        MultipartFile ficheiroCurriculo = primeiroComConteudo(novaVersaoCv, novaVersaoCV, curriculo, cv);
         return respostaCandidatura(consultaVagaService.candidatar(
                 ofertaId,
                 pessoaId,
                 converterDados(dadosJson),
                 ficheiroCurriculo,
-                juntarDocumentos(outrosDocumentos, documentos)
+                juntarDocumentos(outrosDocumentos, outroDocumentos, documentos)
         ));
     }
 
@@ -180,13 +182,12 @@ public class PerfilCandidatoVagaController {
         return null;
     }
 
-    private List<MultipartFile> juntarDocumentos(
-            List<MultipartFile> outrosDocumentos,
-            List<MultipartFile> documentos
-    ) {
+    @SafeVarargs
+    private final List<MultipartFile> juntarDocumentos(List<MultipartFile>... gruposDocumentos) {
         List<MultipartFile> resultado = new ArrayList<>();
-        adicionarComConteudo(resultado, outrosDocumentos);
-        adicionarComConteudo(resultado, documentos);
+        for (List<MultipartFile> grupo : gruposDocumentos) {
+            adicionarComConteudo(resultado, grupo);
+        }
         return List.copyOf(resultado);
     }
 

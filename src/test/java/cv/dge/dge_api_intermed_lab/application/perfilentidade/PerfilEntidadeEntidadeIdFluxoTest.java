@@ -3,12 +3,14 @@ package cv.dge.dge_api_intermed_lab.application.perfilentidade;
 import cv.dge.dge_api_intermed_lab.support.EmpregoDominioTestFixture;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
 
 import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
 import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
@@ -16,6 +18,7 @@ import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.Colo
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.CoordenadorOrientadorRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaDuplicacaoDadosResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita.VisitaTecnicaAvaliacaoItemRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita.VisitaTecnicaCandidatoRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita.VisitaTecnicaCandidatoSelectResponse;
@@ -86,9 +89,11 @@ class PerfilEntidadeEntidadeIdFluxoTest {
     }
 
     @Test
-    void criacaoDeVagaDeveGravarEntidadeDaUrl() {
+    void criacaoDeVagaDeveGravarEntidadeDaUrlECefpDaLocalizacao() {
         GestaoVagaServiceImpl service = new GestaoVagaServiceImpl(EmpregoDominioTestFixture.criar(), vagaRepository, geografiaService);
-        VagaRequest request = novaVaga();
+        VagaRequest request = novaVagaComLocalizacao();
+        when(vagaRepository.buscarCefpIdPorIlhaEConcelho("1", "11"))
+                .thenReturn(Optional.of(7));
         when(vagaRepository.inserir(eq(ENTIDADE_ID), argThat(vaga ->
                         "012345678".equals(vaga.entidadeNif())
                                 && Integer.valueOf(7).equals(vaga.idCefp())), eq("ATIVA"), eq("utilizador")))
@@ -101,7 +106,31 @@ class PerfilEntidadeEntidadeIdFluxoTest {
         verify(vagaRepository).inserir(eq(ENTIDADE_ID), argThat(vaga ->
                 "012345678".equals(vaga.entidadeNif())
                         && Integer.valueOf(7).equals(vaga.idCefp())), eq("ATIVA"), eq("utilizador"));
+        verify(vagaRepository).buscarCefpIdPorIlhaEConcelho("1", "11");
         verify(vagaRepository).buscarPorId(29, ENTIDADE_ID);
+    }
+
+    @Test
+    void criacaoDeVagaSemCefpCorrespondenteDeveGravarComAvisoSemBloquear() {
+        GestaoVagaServiceImpl service = new GestaoVagaServiceImpl(
+                EmpregoDominioTestFixture.criar(),
+                vagaRepository,
+                geografiaService
+        );
+        VagaRequest request = novaVagaComLocalizacao();
+        VagaResponse gravada = mock(VagaResponse.class);
+        when(vagaRepository.buscarCefpIdPorIlhaEConcelho("1", "11"))
+                .thenReturn(Optional.empty());
+        when(vagaRepository.inserir(eq(ENTIDADE_ID), argThat(vaga -> vaga.idCefp() == null),
+                eq("ATIVA"), eq("utilizador")))
+                .thenReturn(30);
+        when(vagaRepository.buscarPorId(30, ENTIDADE_ID)).thenReturn(Optional.of(gravada));
+
+        assertThatCode(() -> service.criar(ENTIDADE_ID, request))
+                .doesNotThrowAnyException();
+
+        verify(vagaRepository).inserir(eq(ENTIDADE_ID), argThat(vaga -> vaga.idCefp() == null),
+                eq("ATIVA"), eq("utilizador"));
     }
 
     @Test
@@ -254,6 +283,45 @@ class PerfilEntidadeEntidadeIdFluxoTest {
                 null,
                 null,
                 "utilizador"
+        );
+    }
+
+    private VagaRequest novaVagaComLocalizacao() {
+        VagaRequest original = novaVaga();
+        return new VagaRequest(
+                original.codigoReferencia(),
+                original.tipoOferta(),
+                original.titulo(),
+                original.descricao(),
+                original.dataInicioCandidatura(),
+                original.dataFimCandidatura(),
+                original.dataInicioPrevisto(),
+                original.duracaoContrato(),
+                original.regimeContrato(),
+                original.denominacaoEntidade(),
+                original.entidadeNif(),
+                999,
+                original.habilitacaoMinima(),
+                original.nivelQualificacao(),
+                original.numVagas(),
+                original.habilitacaoMaxima(),
+                original.conhecimentoLinguistico(),
+                original.competenciasValorizadas(),
+                original.horaInicio(),
+                original.horaFim(),
+                original.diasSemana(),
+                original.cursosAreaFormacao(),
+                original.experienciaProfissional(),
+                "1",
+                "11",
+                original.orientadorId(),
+                original.coordenadorId(),
+                original.orientadorDenominacao(),
+                original.coordenadorDenominacao(),
+                original.emailContacto(),
+                original.contacto(),
+                original.observacao(),
+                original.utilizador()
         );
     }
 }

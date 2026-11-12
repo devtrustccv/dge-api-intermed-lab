@@ -67,6 +67,7 @@ public class ColocacaoCandidatoRepository {
                     nome,
                     tipo_contrato,
                     data_inicio_previsto,
+                    contrato_path,
                     date_create
                 FROM emprego_t_colocacao_candidato
                 """ + where + """
@@ -83,6 +84,7 @@ public class ColocacaoCandidatoRepository {
                 rs.getString("tipo_contrato"),
                 rs.getString("tipo_contrato"),
                 rs.getObject("data_inicio_previsto", java.time.LocalDate.class),
+                rs.getString("contrato_path"),
                 rs.getObject("date_create", LocalDateTime.class)
         ), params.toArray());
     }

@@ -25,8 +25,14 @@ public class MinhaAssiduidadeRepository {
     private static final String CAMPOS_ASSIDUIDADE = """
             assiduidade.id,
             assiduidade.id_colocacao,
-            assiduidade.entidade_id,
-            assiduidade.denominacao_entidade,
+            colocacao.id_oferta AS oferta_id,
+            oferta.titulo AS oferta,
+            COALESCE(assiduidade.entidade_id, colocacao.entidade_id, oferta.entidade_id) AS entidade_id,
+            COALESCE(
+                NULLIF(TRIM(assiduidade.denominacao_entidade), ''),
+                NULLIF(TRIM(colocacao.denominacao_entidade), ''),
+                NULLIF(TRIM(oferta.denominacao_entidade), '')
+            ) AS entidade_denominacao,
             assiduidade.pessoa_id,
             assiduidade.nome,
             assiduidade.data,
@@ -43,6 +49,14 @@ public class MinhaAssiduidadeRepository {
             assiduidade.user_update
             """;
 
+    private static final String FROM_ASSIDUIDADE = """
+            FROM emprego_t_assiduidade assiduidade
+            LEFT JOIN emprego_t_colocacao_candidato colocacao
+                ON colocacao.id = assiduidade.id_colocacao
+            LEFT JOIN emprego_t_oferta oferta
+                ON oferta.id = colocacao.id_oferta
+            """;
+
     private final JdbcTemplate empregoJdbcTemplate;
 
     public MinhaAssiduidadeRepository(@Qualifier("primaryDataSource") DataSource primaryDataSource) {
@@ -55,8 +69,7 @@ public class MinhaAssiduidadeRepository {
         String sql = """
                 SELECT
                 """ + CAMPOS_ASSIDUIDADE + """
-                FROM emprego_t_assiduidade assiduidade
-                """ + where + """
+                """ + FROM_ASSIDUIDADE + where + """
                 ORDER BY assiduidade.data DESC NULLS LAST,
                          assiduidade.date_create DESC NULLS LAST,
                          assiduidade.id DESC
@@ -68,7 +81,7 @@ public class MinhaAssiduidadeRepository {
         String sql = """
                 SELECT
                 """ + CAMPOS_ASSIDUIDADE + """
-                FROM emprego_t_assiduidade assiduidade
+                """ + FROM_ASSIDUIDADE + """
                 WHERE assiduidade.id = ?
                   AND assiduidade.pessoa_id = ?
                 """;
@@ -208,7 +221,13 @@ public class MinhaAssiduidadeRepository {
         if (temTexto(filtro.search())) {
             where.append("""
                     AND CONCAT_WS(' ',
-                        assiduidade.denominacao_entidade,
+                        COALESCE(
+                            NULLIF(TRIM(assiduidade.denominacao_entidade), ''),
+                            NULLIF(TRIM(colocacao.denominacao_entidade), ''),
+                            NULLIF(TRIM(oferta.denominacao_entidade), '')
+                        ),
+                        oferta.titulo,
+                        colocacao.codigo_referencia,
                         assiduidade.nome,
                         CAST(assiduidade.data AS VARCHAR),
                         CAST(assiduidade.hora_entrada AS VARCHAR),
@@ -228,8 +247,10 @@ public class MinhaAssiduidadeRepository {
         return new AssiduidadeRegisto(
                 rs.getInt("id"),
                 rs.getObject("id_colocacao", Integer.class),
+                rs.getObject("oferta_id", Integer.class),
+                rs.getString("oferta"),
                 rs.getObject("entidade_id", Integer.class),
-                rs.getString("denominacao_entidade"),
+                rs.getString("entidade_denominacao"),
                 getLong(rs, "pessoa_id"),
                 rs.getString("nome"),
                 rs.getObject("data", LocalDate.class),
@@ -283,8 +304,10 @@ public class MinhaAssiduidadeRepository {
     public record AssiduidadeRegisto(
             Integer assiduidadeId,
             Integer colocacaoId,
+            Integer ofertaId,
+            String oferta,
             Integer entidadeId,
-            String denominacaoEntidade,
+            String entidadeDenominacao,
             Long pessoaId,
             String nome,
             LocalDate data,

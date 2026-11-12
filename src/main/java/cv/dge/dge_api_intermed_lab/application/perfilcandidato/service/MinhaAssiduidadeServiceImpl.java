@@ -230,6 +230,11 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
         String estado = normalizarValor(EmpregoDominio.DOMINIO_ESTADO_ASSIDUIDADE, registo.estado());
         return new MinhaAssiduidadeListaResponse(
                 registo.assiduidadeId(),
+                registo.colocacaoId(),
+                registo.ofertaId(),
+                registo.oferta(),
+                registo.entidadeId(),
+                registo.entidadeDenominacao(),
                 tipo,
                 empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_ASSIDUIDADE, tipo),
                 registo.data(),
@@ -343,7 +348,8 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
 
     private String resolverIdTipoDocumento() {
         if (temTexto(tipoComprovativoIdConfigurado)) {
-            return validarIdTipoDocumento(tipoComprovativoIdConfigurado);
+            String idConfigurado = tipoComprovativoIdConfigurado.trim();
+            return idTipoDocumentoValido(idConfigurado) ? idConfigurado : null;
         }
         return comboboxService.listarDocumentosAtivos().stream()
                 .filter(this::correspondeComprovativo)
@@ -351,11 +357,7 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
                 .filter(this::idTipoDocumentoValido)
                 .map(String::valueOf)
                 .findFirst()
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.INTERNAL_SERVER_ERROR,
-                        "Não foi encontrado no catálogo um tipo documental ativo para o comprovativo de assiduidade. "
-                                + "Configure o respetivo ID antes de anexar o ficheiro."
-                ));
+                .orElse(null);
     }
 
     private boolean correspondeComprovativo(Map<String, Object> item) {
@@ -365,17 +367,6 @@ public class MinhaAssiduidadeServiceImpl implements MinhaAssiduidadeService {
                 && (normalizado.contains("COMPROVAT")
                 || normalizado.contains("JUSTIFICAT")
                 || normalizado.contains("ASSIDUID"));
-    }
-
-    private String validarIdTipoDocumento(String valor) {
-        String limpo = valor.trim();
-        if (idTipoDocumentoValido(limpo)) {
-            return limpo;
-        }
-        throw new ResponseStatusException(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "O ID documental configurado para o comprovativo de assiduidade não é válido."
-        );
     }
 
     private boolean idTipoDocumentoValido(Object valor) {

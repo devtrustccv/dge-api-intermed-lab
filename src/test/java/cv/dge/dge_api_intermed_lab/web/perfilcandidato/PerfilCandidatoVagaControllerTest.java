@@ -155,6 +155,55 @@ class PerfilCandidatoVagaControllerTest {
     }
 
     @Test
+    void deveAceitarNovaVersaoCVEOutroDocumentosEnviadosPeloFrontend() throws Exception {
+        MockMultipartFile dados = new MockMultipartFile(
+                "dados",
+                "",
+                MediaType.TEXT_PLAIN_VALUE + ";charset=UTF-8",
+                """
+                        {
+                          "habilitacaoAcademica": "LICENCIATURA",
+                          "areaFormacao": "Programação",
+                          "utilizador": "kevin@dge.cv"
+                        }
+                        """.getBytes(StandardCharsets.UTF_8)
+        );
+        MockMultipartFile curriculo = new MockMultipartFile(
+                "novaVersaoCV",
+                "Kevin Sousa.pdf",
+                MediaType.APPLICATION_PDF_VALUE,
+                "curriculo".getBytes(StandardCharsets.UTF_8)
+        );
+        MockMultipartFile outroDocumento = new MockMultipartFile(
+                "outroDocumentos",
+                "Kevin Sousa.pdf",
+                MediaType.APPLICATION_PDF_VALUE,
+                "outro documento".getBytes(StandardCharsets.UTF_8)
+        );
+
+        mockMvc.perform(multipart("/v1/perfil-candidato/vagas/{ofertaId}/candidaturas", 24)
+                        .file(dados)
+                        .file(curriculo)
+                        .file(outroDocumento)
+                        .characterEncoding(StandardCharsets.UTF_8.name())
+                        .param("pessoaId", "9001"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.sucesso").value(true));
+
+        verify(consultaVagaService).candidatar(
+                eq(24),
+                eq(9001L),
+                argThat(request -> request != null
+                        && "LICENCIATURA".equals(request.habilitacaoAcademica())),
+                argThat(ficheiro -> ficheiro != null
+                        && "Kevin Sousa.pdf".equals(ficheiro.getOriginalFilename())),
+                argThat(ficheiros -> ficheiros != null
+                        && ficheiros.size() == 1
+                        && "Kevin Sousa.pdf".equals(ficheiros.get(0).getOriginalFilename()))
+        );
+    }
+
+    @Test
     void deveAceitarCandidaturaMultipartSemAnexos() throws Exception {
         MockMultipartFile dados = new MockMultipartFile(
                 "dados",

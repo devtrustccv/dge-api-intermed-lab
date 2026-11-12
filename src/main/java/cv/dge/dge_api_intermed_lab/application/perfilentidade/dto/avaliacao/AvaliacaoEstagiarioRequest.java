@@ -12,6 +12,8 @@ public record AvaliacaoEstagiarioRequest(
         String interesseContratacao,
         BigDecimal classificacao,
         String observacao,
+        List<String> sugestao,
+        String desenvolvimentoAtividade,
         String utilizador
 ) {
 }
