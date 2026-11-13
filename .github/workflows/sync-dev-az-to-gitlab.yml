@@ -1,0 +1,67 @@
+
+name: Sync branch dev-az → GitLab → main
+
+on:
+  # Dispara quando um PR para dev-az é fechado (e o job checa se foi merged)
+  pull_request:
+    branches: [ dev-az ]
+    types: [ closed ]
+  # Dispara em qualquer push para dev-az (ex.: merge)
+  push:
+    branches: [ dev-az ]
+
+env:
+  # Branch de origem no GitHub
+  SOURCE_BRANCH: dev-az
+  # Branch de destino no GitLab (ajuste se quiser outro nome)
+  TARGET_BRANCH: main
+
+jobs:
+  mirror:
+    # Só roda no evento de PR se ele foi realmente merged; em push roda sempre
+    if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true) }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout (histórico completo)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ env.SOURCE_BRANCH }}
+
+      - name: Configurar Git
+        run: |
+          git config --global user.name  "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Definir variáveis do GitLab (host/namespace/repo)
+        run: |
+          echo "GL_HOST=${GITLAB_HOST:-git.nosi.cv}"            >> $GITHUB_ENV
+          echo "GL_NAMESPACE=${GITLAB_NAMESPACE:-dge}" >> $GITHUB_ENV
+          echo "GL_REPO=${GITLAB_REPO:-dge-emprego}"       >> $GITHUB_ENV
+
+      - name: Adicionar remoto GitLab
+        env:
+          GITLAB_USER: ${{ secrets.GITLAB_USER }}
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+        run: |
+          set -e
+          GL_URL="https://${GITLAB_USER}:${GITLAB_TOKEN}@${GL_HOST}/${GL_NAMESPACE}/${GL_REPO}.git"
+          git remote add gitlab "${GL_URL}"
+          # Tenta buscar a branch de destino do GitLab (se não existir, ignora)
+          git fetch gitlab ${{ env.TARGET_BRANCH }} || true
+
+      - name: Conciliar históricos (pull com allow-unrelated-histories)
+        # Mescla o histórico da branch de destino do GitLab na branch de origem local
+        # para evitar erros de push por históricos divergentes.
+        # git pull gitlab main --allow-unrelated-histories --no-rebase
+        run: |
+          # Certifica-se de estar na branch de origem
+          git checkout "${{ env.SOURCE_BRANCH }}"
+          # Faz o pull da branch de destino do GitLab para mesclar histórico
+          git pull gitlab "${{ env.TARGET_BRANCH }}" --allow-unrelated-histories --no-rebase || true
+
+      - name: Push para o GitLab
+        # Envia a branch de origem (dev-az) para a branch de destino (main) no GitLab
+        run: |
+          git push gitlab "${{ env.SOURCE_BRANCH }}:${{ env.TARGET_BRANCH }}"
