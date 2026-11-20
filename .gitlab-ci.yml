@@ -1,0 +1,36 @@
+services:
+  - name: docker:28.1.1-dind
+    command: [ "--tls=false", "--mtu=1240" ]
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_HOST: tcp://docker:2375
+
+stages:
+  - build
+  - deploy
+  ###### PROD PIPELINE #####
+build_docker_image_prod:
+  image: docker:28.1.1
+  stage: build
+  only:
+    - main
+  script:
+    - docker login -u "$REGISTRY_USERNAME" -p "$REGISTRY_PASSWORD"
+    - docker build --platform linux/amd64 -t devtrustcv/dge-emprego-api-prod:$CI_PIPELINE_ID .
+    - docker tag devtrustcv/dge-emprego-api-prod:$CI_PIPELINE_ID devtrustcv/dge-emprego-api-prod:latest
+    - docker push devtrustcv/dge-emprego-api-prod:$CI_PIPELINE_ID
+    - docker push devtrustcv/dge-emprego-api-prod:latest
+
+deploy_prod:
+  image: gcc:latest
+  stage: deploy
+  only:
+    - main
+  script:
+    - |
+      curl -u "$DEPLOY_USER_PROD:$DEPLOY_PASSWORD_PROD" \
+        -X POST \
+        -H 'Accept: application/json' \
+        -H 'Content-Type: application/json' \
+        'https://kremais-admin.gov.cv/v3/project/c-m-xtv59r88:p-bzlxc/workloads/deployment:dge-prod:dge-emprego-api-prod?action=redeploy'

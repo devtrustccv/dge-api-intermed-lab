@@ -17,11 +17,14 @@ import org.springframework.stereotype.Repository;
 public class PerfilCandidatoCertificadoRepository {
 
     private final JdbcTemplate empregoJdbcTemplate;
+    private final JdbcTemplate globalJdbcTemplate;
 
     public PerfilCandidatoCertificadoRepository(
-            @Qualifier("primaryDataSource") DataSource primaryDataSource
+            @Qualifier("primaryDataSource") DataSource primaryDataSource,
+            @Qualifier("tertiaryDataSource") DataSource tertiaryDataSource
     ) {
         this.empregoJdbcTemplate = new JdbcTemplate(primaryDataSource);
+        this.globalJdbcTemplate = new JdbcTemplate(tertiaryDataSource);
     }
 
     public Optional<FonteEmprego> buscarFonteEmprego(Integer colocacaoId) {
@@ -56,7 +59,50 @@ public class PerfilCandidatoCertificadoRepository {
         );
     }
 
+    /**
+     * Dados pessoais do candidato. O utente (acolhimento) só existe para parte dos candidatos,
+     * por isso a pessoa global (ci_t_pessoa) é a fonte base e o utente complementa/prevalece
+     * quando existir (naturalidade só vem do acolhimento).
+     */
     public Optional<FontePessoa> buscarFontePessoa(Long pessoaId) {
+        Optional<FontePessoa> utente = buscarFonteUtente(pessoaId);
+        Optional<FontePessoa> global = buscarFontePessoaGlobal(pessoaId);
+        if (utente.isEmpty()) {
+            return global;
+        }
+        if (global.isEmpty()) {
+            return utente;
+        }
+        FontePessoa u = utente.get();
+        FontePessoa g = global.get();
+        return Optional.of(new FontePessoa(
+                u.naturalidade() != null && !u.naturalidade().isBlank()
+                        ? u.naturalidade()
+                        : g.naturalidade(),
+                u.dataNascimento() != null ? u.dataNascimento() : g.dataNascimento(),
+                u.numeroDocumento() != null && !u.numeroDocumento().isBlank()
+                        ? u.numeroDocumento()
+                        : g.numeroDocumento()
+        ));
+    }
+
+    private Optional<FontePessoa> buscarFontePessoaGlobal(Long pessoaId) {
+        return globalJdbcTemplate.query(
+                """
+                        SELECT naturalidade, data_nasc, num_documento
+                        FROM ci_t_pessoa
+                        WHERE id = ?
+                        """,
+                (rs, rowNum) -> new FontePessoa(
+                        rs.getString("naturalidade"),
+                        rs.getObject("data_nasc", LocalDate.class),
+                        rs.getString("num_documento")
+                ),
+                pessoaId
+        ).stream().findFirst();
+    }
+
+    private Optional<FontePessoa> buscarFonteUtente(Long pessoaId) {
         return empregoJdbcTemplate.query(
                 """
                         SELECT

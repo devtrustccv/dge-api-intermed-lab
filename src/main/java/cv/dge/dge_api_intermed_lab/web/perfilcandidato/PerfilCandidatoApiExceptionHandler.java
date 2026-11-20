@@ -103,6 +103,9 @@ public class PerfilCandidatoApiExceptionHandler {
         log.error("Erro de base de dados no Perfil Candidato. Referência: {}. Operação: {}",
                 referencia, ApiErrorMessageResolver.operacao(request), ex);
         String mensagem = ApiErrorMessageResolver.falhaBaseDados(request, referencia);
+        if (certificado(request)) {
+            mensagem = mensagem + " [DEBUG " + ex.getClass().getName() + ": " + ex.getMostSpecificCause().getMessage() + "]";
+        }
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(PerfilCandidatoApiResponse.erro(mensagem, List.of(mensagem)));
@@ -117,8 +120,16 @@ public class PerfilCandidatoApiExceptionHandler {
         log.error("Erro inesperado no Perfil Candidato. Referência: {}. Operação: {}",
                 referencia, ApiErrorMessageResolver.operacao(request), ex);
         String mensagem = ApiErrorMessageResolver.falhaInterna(request, referencia);
+        if (certificado(request)) {
+            mensagem = mensagem + " [DEBUG " + ex.getClass().getName() + ": " + ex.getMessage() + "]";
+        }
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(PerfilCandidatoApiResponse.erro(mensagem, List.of(mensagem)));
+    }
+
+    // TEMPORÁRIO: expõe o erro cru só no endpoint do certificado. Remover depois do diagnóstico.
+    private static boolean certificado(HttpServletRequest request) {
+        return request.getRequestURI().contains("/certificados/estagio");
     }
 }
