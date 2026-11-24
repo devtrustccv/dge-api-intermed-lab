@@ -140,6 +140,7 @@ class PerfilEntidadeEntidadeIdFluxoTest {
                 vagaService
         );
         CoordenadorOrientadorRequest request = new CoordenadorOrientadorRequest(
+                "CNI",
                 "19990415M001H",
                 126L,
                 "João Monteiro",
@@ -149,14 +150,28 @@ class PerfilEntidadeEntidadeIdFluxoTest {
                 "9785881",
                 "utilizador"
         );
-        when(colaboradorRepository.inserir(eq(ENTIDADE_ID), any(), eq(126L), eq("A"), eq("utilizador")))
+        when(colaboradorRepository.inserir(
+                eq(ENTIDADE_ID),
+                argThat(dados -> "CNI".equals(dados.tipoDocumento())
+                        && "19990415M001H".equals(dados.numeroDocumento())),
+                eq(126L),
+                eq("A"),
+                eq("utilizador")
+        ))
                 .thenReturn(22);
         when(colaboradorRepository.buscarPorId(22, ENTIDADE_ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.criar(ENTIDADE_ID, request))
                 .isInstanceOf(ResponseStatusException.class);
 
-        verify(colaboradorRepository).inserir(eq(ENTIDADE_ID), any(), eq(126L), eq("A"), eq("utilizador"));
+        verify(colaboradorRepository).inserir(
+                eq(ENTIDADE_ID),
+                argThat(dados -> "CNI".equals(dados.tipoDocumento())
+                        && "19990415M001H".equals(dados.numeroDocumento())),
+                eq(126L),
+                eq("A"),
+                eq("utilizador")
+        );
         verify(colaboradorRepository).buscarPorId(22, ENTIDADE_ID);
     }
 

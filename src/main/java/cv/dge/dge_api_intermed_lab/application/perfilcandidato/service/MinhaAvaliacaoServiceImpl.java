@@ -55,6 +55,8 @@ public class MinhaAvaliacaoServiceImpl implements MinhaAvaliacaoService {
         );
         return new MinhaAvaliacaoListaResponse(
                 avaliacao.avaliacaoId(),
+                avaliacao.codigoOferta(),
+                avaliacao.tituloOferta(),
                 tipoAvaliacao,
                 empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_AVALIACAO, tipoAvaliacao),
                 avaliacao.periodoReferencia(),

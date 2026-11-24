@@ -7,6 +7,7 @@ import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.Ca
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaDetalheResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaFiltro;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidatoDetalheResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaAgendamentoRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaResultadoRequest;
@@ -460,6 +461,7 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
 
     private CandidaturaDetalheResponse enriquecerDetalhe(CandidaturaDetalheResponse item) {
         List<CandidaturaDocumentoResponse> anexos = resolverAnexosDetalhe(item.anexos());
+        CandidatoDetalheResponse candidato = enriquecerCandidatoDetalhe(item.candidato());
         return new CandidaturaDetalheResponse(
                 item.id(),
                 valorDominio(EmpregoDominio.DOMINIO_TIPO_OFERTA, item.tipoOferta()),
@@ -470,7 +472,7 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
                 item.entidadeId(),
                 item.denominacaoEntidade(),
                 item.dataCandidatura(),
-                item.candidato(),
+                candidato,
                 anexos,
                 valorDominio(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, item.statusCandidatura()),
                 empregoDominioService.descricao(EmpregoDominio.DOMINIO_STATUS_CANDIDATURA, item.statusCandidatura()),
@@ -482,6 +484,32 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
                 item.userCreate(),
                 item.dateUpdate(),
                 item.userUpdate()
+        );
+    }
+
+    private CandidatoDetalheResponse enriquecerCandidatoDetalhe(CandidatoDetalheResponse candidato) {
+        if (candidato == null) {
+            return null;
+        }
+        return new CandidatoDetalheResponse(
+                candidato.pessoaId(),
+                candidato.nome(),
+                candidato.dataNascimento(),
+                candidato.sexo(),
+                candidato.email(),
+                candidato.telemovel(),
+                candidato.ilhaId(),
+                candidato.ilhaDesc(),
+                candidato.concelhoId(),
+                candidato.concelhoDesc(),
+                candidato.localidadeId(),
+                candidato.localidadeDesc(),
+                candidato.localizacao(),
+                candidato.morada(),
+                empregoDominioService.descricao(
+                        EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA,
+                        candidato.habilitacaoAcademica()
+                )
         );
     }
 

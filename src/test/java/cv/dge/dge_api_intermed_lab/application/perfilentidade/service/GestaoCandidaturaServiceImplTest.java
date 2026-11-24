@@ -14,6 +14,7 @@ import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.Ca
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaDetalheResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaFiltro;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidaturaListaResponse;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.candidatura.CandidatoDetalheResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.entrevista.EntrevistaResponse;
 import cv.dge.dge_api_intermed_lab.infrastructure.perfilentidade.repository.GestaoCandidaturaRepository;
 import java.time.LocalDate;
@@ -158,6 +159,33 @@ class GestaoCandidaturaServiceImplTest {
     }
 
     @Test
+    void deveDevolverDescricaoDaHabilitacaoLiterariaNosDetalhes() {
+        CandidatoDetalheResponse candidato = new CandidatoDetalheResponse(
+                143L,
+                "Candidato",
+                LocalDate.of(1995, 4, 12),
+                "F",
+                "candidato@example.cv",
+                "9912345",
+                "1",
+                "Santiago",
+                "11",
+                "Praia",
+                null,
+                null,
+                "Santiago / Praia",
+                "Praia",
+                "LICENCIATURA"
+        );
+        when(candidaturaRepository.buscarPorId(1, 23))
+                .thenReturn(Optional.of(candidaturaDetalhe("OFERTA_EMPREGO", false, candidato)));
+
+        CandidaturaDetalheResponse resultado = service.buscarPorId(1, 23);
+
+        assertThat(resultado.candidato().habilitacaoAcademica()).isEqualTo("Licenciatura");
+    }
+
+    @Test
     void deveImpedirAvaliacaoDeEstagioNaoSelecionadoPeloIefp() {
         when(candidaturaRepository.buscarPorId(1, 23))
                 .thenReturn(Optional.of(candidaturaDetalhe("OFERTA_ESTAGIO", false)));
@@ -231,6 +259,14 @@ class GestaoCandidaturaServiceImplTest {
     }
 
     private CandidaturaDetalheResponse candidaturaDetalhe(String tipoOferta, Boolean selecaoIefp) {
+        return candidaturaDetalhe(tipoOferta, selecaoIefp, null);
+    }
+
+    private CandidaturaDetalheResponse candidaturaDetalhe(
+            String tipoOferta,
+            Boolean selecaoIefp,
+            CandidatoDetalheResponse candidato
+    ) {
         return new CandidaturaDetalheResponse(
                 1,
                 tipoOferta,
@@ -241,7 +277,7 @@ class GestaoCandidaturaServiceImplTest {
                 23,
                 "Entidade",
                 LocalDateTime.of(2026, 8, 31, 15, 14, 50),
-                null,
+                candidato,
                 null,
                 "TRIAGEM",
                 "TRIAGEM",

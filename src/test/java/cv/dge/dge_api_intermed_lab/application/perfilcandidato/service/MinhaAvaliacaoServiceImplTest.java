@@ -44,6 +44,8 @@ class MinhaAvaliacaoServiceImplTest {
         LocalDateTime dataRegisto = LocalDateTime.of(2026, 8, 28, 14, 30);
         when(avaliacaoRepository.listar(9001L)).thenReturn(List.of(new AvaliacaoListaRegisto(
                 41,
+                "OF-2026-0041",
+                "Técnico de suporte informático",
                 "mensal",
                 "Agosto de 2026",
                 new BigDecimal("4.50"),
@@ -55,6 +57,8 @@ class MinhaAvaliacaoServiceImplTest {
         verify(avaliacaoRepository).listar(9001L);
         assertThat(resultado).singleElement().satisfies(item -> {
             assertThat(item.avaliacaoId()).isEqualTo(41);
+            assertThat(item.codigoOferta()).isEqualTo("OF-2026-0041");
+            assertThat(item.tituloOferta()).isEqualTo("Técnico de suporte informático");
             assertThat(item.tipoAvaliacao()).isEqualTo("MENSAL");
             assertThat(item.tipoAvaliacaoDescricao()).isEqualTo("Mensal");
             assertThat(item.periodoReferencia()).isEqualTo("Agosto de 2026");

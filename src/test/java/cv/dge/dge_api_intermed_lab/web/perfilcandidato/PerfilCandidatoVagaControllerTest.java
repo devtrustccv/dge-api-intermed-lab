@@ -105,6 +105,24 @@ class PerfilCandidatoVagaControllerTest {
     }
 
     @Test
+    void deveAceitarNomesDasDatasEnviadosPeloFrontend() throws Exception {
+        when(consultaVagaService.listar(argThat(filtro ->
+                java.time.LocalDate.of(2026, 9, 13).equals(filtro.dataInicio())
+                        && java.time.LocalDate.of(2026, 11, 22).equals(filtro.dataFim())
+        ))).thenReturn(new ConsultaVagasResponse(0L, 0L, 0L, List.of(), List.of()));
+
+        mockMvc.perform(get("/v1/perfil-candidato/vagas")
+                        .param("dataInicioCandidatura", "2026-09-13")
+                        .param("dataFimCandidatura", "2026-11-22"))
+                .andExpect(status().isOk());
+
+        verify(consultaVagaService).listar(argThat(filtro ->
+                java.time.LocalDate.of(2026, 9, 13).equals(filtro.dataInicio())
+                        && java.time.LocalDate.of(2026, 11, 22).equals(filtro.dataFim())
+        ));
+    }
+
+    @Test
     void deveAceitarNomesMultipartEnviadosPeloFrontend() throws Exception {
         MockMultipartFile dados = new MockMultipartFile(
                 "dados",

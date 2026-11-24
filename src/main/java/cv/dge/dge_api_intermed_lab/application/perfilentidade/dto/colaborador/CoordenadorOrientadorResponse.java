@@ -9,6 +9,8 @@ public record CoordenadorOrientadorResponse(
         String tipoDesc,
         String nome,
         Long pessoaId,
+        String tipoDocumento,
+        String numeroDocumento,
         String cargo,
         String email,
         String telemovel,

@@ -28,6 +28,8 @@ public class CoordenadorOrientadorRepository {
             tipo,
             nome,
             pessoa_id,
+            tipo_documento,
+            num_documento,
             cargo,
             email,
             telemovel,
@@ -44,13 +46,15 @@ public class CoordenadorOrientadorRepository {
                 tipo,
                 nome,
                 pessoa_id,
+                tipo_documento,
+                num_documento,
                 cargo,
                 email,
                 telemovel,
                 estado,
                 date_create,
                 user_create
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """;
 
     private static final String SQL_UPDATE = """
@@ -58,6 +62,8 @@ public class CoordenadorOrientadorRepository {
             SET tipo = ?,
                 nome = ?,
                 pessoa_id = ?,
+                tipo_documento = ?,
+                num_documento = ?,
                 cargo = ?,
                 email = ?,
                 telemovel = ?,
@@ -126,6 +132,8 @@ public class CoordenadorOrientadorRepository {
                     rs.getString("tipo"),
                     rs.getString("nome"),
                     getLong(rs, "pessoa_id"),
+                    rs.getString("tipo_documento"),
+                    rs.getString("num_documento"),
                     rs.getString("cargo"),
                     rs.getString("email"),
                     rs.getString("telemovel"),
@@ -203,12 +211,14 @@ public class CoordenadorOrientadorRepository {
             ps.setString(2, request.tipo());
             ps.setString(3, request.nome());
             setLong(ps, 4, pessoaId);
-            ps.setString(5, request.cargo());
-            ps.setString(6, request.email());
-            ps.setString(7, request.telemovel());
-            ps.setString(8, estado);
-            ps.setTimestamp(9, Timestamp.valueOf(agora));
-            ps.setString(10, utilizador);
+            ps.setString(5, request.tipoDocumento());
+            ps.setString(6, request.numeroDocumento());
+            ps.setString(7, request.cargo());
+            ps.setString(8, request.email());
+            ps.setString(9, request.telemovel());
+            ps.setString(10, estado);
+            ps.setTimestamp(11, Timestamp.valueOf(agora));
+            ps.setString(12, utilizador);
             return ps;
         }, keyHolder);
 
@@ -228,6 +238,8 @@ public class CoordenadorOrientadorRepository {
                 request.tipo(),
                 request.nome(),
                 pessoaId,
+                request.tipoDocumento(),
+                request.numeroDocumento(),
                 request.cargo(),
                 request.email(),
                 request.telemovel(),

@@ -35,16 +35,24 @@ public class MinhaAvaliacaoRepository {
         boolean pesquisar = search != null && !search.isBlank();
         String sql = """
                 SELECT avaliacao.id AS avaliacao_id,
+                       oferta.codigo_referencia AS codigo_oferta,
+                       oferta.titulo AS titulo_oferta,
                        avaliacao.tipo_avaliacao,
                        avaliacao.periodo_referencia,
                        avaliacao.classificacao,
                        avaliacao.date_create AS data_registo
                 FROM emprego_t_avaliacao_estagiario avaliacao
+                LEFT JOIN emprego_t_candidatura_oferta candidatura
+                       ON candidatura.id = avaliacao.candidatura_id
+                LEFT JOIN emprego_t_oferta oferta
+                       ON oferta.id = candidatura.id_oferta
                 WHERE avaliacao.pessoa_id = ?
                 """ + (pesquisar ? """
                   AND CONCAT_WS(' ',
                       avaliacao.tipo_avaliacao,
                       avaliacao.periodo_referencia,
+                      oferta.codigo_referencia,
+                      oferta.titulo,
                       CAST(avaliacao.classificacao AS VARCHAR),
                       CAST(avaliacao.date_create AS VARCHAR)
                   ) ILIKE ?
@@ -81,6 +89,8 @@ public class MinhaAvaliacaoRepository {
     private AvaliacaoListaRegisto mapearLista(ResultSet rs, int rowNum) throws SQLException {
         return new AvaliacaoListaRegisto(
                 rs.getInt("avaliacao_id"),
+                rs.getString("codigo_oferta"),
+                rs.getString("titulo_oferta"),
                 rs.getString("tipo_avaliacao"),
                 rs.getString("periodo_referencia"),
                 lerDecimal(rs, "classificacao"),
@@ -127,6 +137,8 @@ public class MinhaAvaliacaoRepository {
 
     public record AvaliacaoListaRegisto(
             Integer avaliacaoId,
+            String codigoOferta,
+            String tituloOferta,
             String tipoAvaliacao,
             String periodoReferencia,
             BigDecimal classificacao,

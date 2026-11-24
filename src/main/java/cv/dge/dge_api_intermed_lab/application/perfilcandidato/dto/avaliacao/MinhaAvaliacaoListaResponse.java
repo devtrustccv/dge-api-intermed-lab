@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 
 public record MinhaAvaliacaoListaResponse(
         Integer avaliacaoId,
+        String codigoOferta,
+        String tituloOferta,
         String tipoAvaliacao,
         String tipoAvaliacaoDescricao,
         String periodoReferencia,

@@ -1,5 +1,6 @@
 package cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.visita;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -36,4 +37,13 @@ public record VisitaTecnicaDetalheResponse(
         LocalDateTime dateUpdate,
         String userUpdate
 ) {
+    @JsonProperty("dataRegisto")
+    public LocalDateTime dataRegisto() {
+        return dateCreate;
+    }
+
+    @JsonProperty("utilizador")
+    public String utilizador() {
+        return userCreate;
+    }
 }

@@ -54,6 +54,10 @@ public class PerfilCandidatoVagaController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicioCandidatura,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFimCandidatura,
             @RequestParam(value = "search", required = false) String search
     ) {
         return PerfilCandidatoApiResponse.sucesso(
@@ -66,8 +70,8 @@ public class PerfilCandidatoVagaController {
                         concelho,
                         estado,
                         codigoReferencia != null ? codigoReferencia : referencia,
-                        dataInicio,
-                        dataFim,
+                        dataInicioCandidatura != null ? dataInicioCandidatura : dataInicio,
+                        dataFimCandidatura != null ? dataFimCandidatura : dataFim,
                         search,
                         situacao
                 ))
