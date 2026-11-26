@@ -17,6 +17,7 @@ import cv.dge.dge_api_intermed_lab.application.document.service.DocumentService;
 import cv.dge.dge_api_intermed_lab.application.geografia.service.GlobalGeografiaService;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colocacao.ColocacaoCandidatoRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.CoordenadorOrientadorRequest;
+import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.colaborador.CoordenadorOrientadorResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaRequest;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaDuplicacaoDadosResponse;
 import cv.dge.dge_api_intermed_lab.application.perfilentidade.dto.vaga.VagaResponse;
@@ -212,6 +213,57 @@ class PerfilEntidadeEntidadeIdFluxoTest {
                 eq(126L),
                 eq("A"),
                 isNull()
+        );
+    }
+
+    @Test
+    void atualizacaoDeColaboradorDevePreservarPessoaIdQuandoNaoForEnviado() {
+        CoordenadorOrientadorServiceImpl service = new CoordenadorOrientadorServiceImpl(
+                EmpregoDominioTestFixture.criar(),
+                colaboradorRepository,
+                vagaService
+        );
+        CoordenadorOrientadorResponse atual = new CoordenadorOrientadorResponse(
+                20,
+                ENTIDADE_ID,
+                "ORIENTADOR",
+                "Orientador",
+                "João Monteiro",
+                151L,
+                "CNI",
+                "19990415M001H",
+                "Desenvolvedor",
+                "joao@example.cv",
+                "9785881",
+                "A",
+                "Ativo",
+                null,
+                "utilizador",
+                null,
+                null
+        );
+        CoordenadorOrientadorRequest request = new CoordenadorOrientadorRequest(
+                "CNI",
+                "19990415M001H",
+                null,
+                "João Monteiro",
+                "ORIENTADOR",
+                "Desenvolvedor",
+                "joao@example.cv",
+                "9785881",
+                "utilizador"
+        );
+        when(colaboradorRepository.buscarPorId(20, ENTIDADE_ID))
+                .thenReturn(Optional.of(atual), Optional.of(atual));
+
+        service.atualizar(20, ENTIDADE_ID, request);
+
+        verify(colaboradorRepository).atualizar(
+                eq(20),
+                eq(ENTIDADE_ID),
+                any(),
+                eq(151L),
+                eq("utilizador")
         );
     }
 

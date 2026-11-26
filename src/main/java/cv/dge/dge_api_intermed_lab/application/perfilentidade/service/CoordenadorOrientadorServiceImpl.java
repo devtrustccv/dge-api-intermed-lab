@@ -101,13 +101,14 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
         validarRequestPresente(request);
         String utilizador = texto(request.utilizador());
         String tipo = normalizarTipoOpcional(request.tipo());
-        buscarPorId(id, entidadeId);
+        CoordenadorOrientadorResponse atual = buscarPorId(id, entidadeId);
+        Long pessoaId = request.pessoaId() != null ? request.pessoaId() : atual.pessoaId();
 
         coordenadorOrientadorRepository.atualizar(
                 id,
                 entidadeId,
                 normalizarRequest(request, tipo),
-                request.pessoaId(),
+                pessoaId,
                 utilizador
         );
         return buscarPorId(id, entidadeId);
