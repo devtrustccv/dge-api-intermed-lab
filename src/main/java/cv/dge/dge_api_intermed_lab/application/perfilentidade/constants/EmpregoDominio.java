@@ -36,8 +36,8 @@ public final class EmpregoDominio {
     public static final String DOMINIO_ESTADO_SERVICO = "ESTADO_SERVICO";
     public static final String DOMINIO_STATUS_ACEITACAO_CANDIDATO = "STATUS_ACEITACAO_CANDIDATO";
     public static final String DOMINIO_DECISAO_ASSIDUIDADE = "DECISAO_ASSIDUIDADE";
-    public static final String DOMINIO_AGENDADO_POR = "AGENDADO_POR";
-    public static final String DOMINIO_AGENDAMENTO_POR = DOMINIO_AGENDADO_POR;
+    public static final String DOMINIO_AGENDAMENTO_POR = "AGENDAMENTO_POR";
+    public static final String DOMINIO_AGENDADO_POR = DOMINIO_AGENDAMENTO_POR;
     public static final String DOMINIO_ESTADO_VISITA_TECNICA = "ESTADO_VISITA_TECNICA";
     public static final String DOMINIO_PARECER_VISITA = "PARECER_VISITA";
     public static final String DOMINIO_CRITERIO_AVALIACAO = "CRITERIO_AVALIACAO";

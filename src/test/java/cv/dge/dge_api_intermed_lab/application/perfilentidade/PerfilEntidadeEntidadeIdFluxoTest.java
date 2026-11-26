@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
@@ -173,6 +174,45 @@ class PerfilEntidadeEntidadeIdFluxoTest {
                 eq("utilizador")
         );
         verify(colaboradorRepository).buscarPorId(22, ENTIDADE_ID);
+    }
+
+    @Test
+    void criacaoDeColaboradorNaoDeveExigirCamposValidadosNoFrontEnd() {
+        CoordenadorOrientadorServiceImpl service = new CoordenadorOrientadorServiceImpl(
+                EmpregoDominioTestFixture.criar(),
+                colaboradorRepository,
+                vagaService
+        );
+        CoordenadorOrientadorRequest request = new CoordenadorOrientadorRequest(
+                "CNI",
+                "19990415M001H",
+                126L,
+                null,
+                null,
+                "Analista",
+                "joao@example.cv",
+                "9785881",
+                null
+        );
+        when(colaboradorRepository.inserir(
+                eq(ENTIDADE_ID),
+                argThat(dados -> dados.nome() == null && dados.tipo() == null),
+                eq(126L),
+                eq("A"),
+                isNull()
+        )).thenReturn(23);
+        when(colaboradorRepository.buscarPorId(23, ENTIDADE_ID)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.criar(ENTIDADE_ID, request))
+                .isInstanceOf(ResponseStatusException.class);
+
+        verify(colaboradorRepository).inserir(
+                eq(ENTIDADE_ID),
+                argThat(dados -> dados.nome() == null && dados.tipo() == null),
+                eq(126L),
+                eq("A"),
+                isNull()
+        );
     }
 
     @Test

@@ -69,6 +69,7 @@ class GestaoCandidaturaServiceImplTest {
         CandidaturaListaResponse resultado = service.listar(filtroVazio()).get(0);
 
         assertThat(resultado.sexoCandidato()).isEqualTo("Feminino");
+        assertThat(resultado.habilitacaoLiterariaCandidato()).isEqualTo("Licenciatura");
         assertThat(resultado.tipoDocumento()).isEqualTo("CURRICULO_VITAE");
         assertThat(resultado.anexo()).isEqualTo(resultado.anexos().get(0));
         assertThat(resultado.anexos())

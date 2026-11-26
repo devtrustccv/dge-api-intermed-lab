@@ -307,7 +307,10 @@ public class GestaoCandidaturaServiceImpl implements GestaoCandidaturaService {
                 item.telefoneCandidato(),
                 item.ilhaConcelhoCandidato(),
                 item.moradaCandidato(),
-                item.habilitacaoLiterariaCandidato(),
+                empregoDominioService.descricao(
+                        EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA,
+                        item.habilitacaoLiterariaCandidato()
+                ),
                 valorDominio(EmpregoDominio.DOMINIO_TIPO_OFERTA, item.tipoOferta()),
                 empregoDominioService.descricao(EmpregoDominio.DOMINIO_TIPO_OFERTA, item.tipoOferta()),
                 item.ofertaId(),

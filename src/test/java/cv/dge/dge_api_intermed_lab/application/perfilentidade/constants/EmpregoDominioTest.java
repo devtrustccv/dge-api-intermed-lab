@@ -24,6 +24,9 @@ class EmpregoDominioTest {
 
     @Test
     void deveManterAliasesDeCompatibilidadeDaApi() {
+        assertThat(EmpregoDominio.DOMINIO_AGENDAMENTO_POR).isEqualTo("AGENDAMENTO_POR");
+        assertThat(EmpregoDominio.DOMINIO_AGENDADO_POR)
+                .isEqualTo(EmpregoDominio.DOMINIO_AGENDAMENTO_POR);
         assertThat(EmpregoDominio.alias(EmpregoDominio.DOMINIO_TIPO_OFERTA, "EMPREGO"))
                 .isEqualTo("OFERTA_EMPREGO");
         assertThat(EmpregoDominio.alias(EmpregoDominio.DOMINIO_HABILITACAO_LITERARIA, "12_ANO"))

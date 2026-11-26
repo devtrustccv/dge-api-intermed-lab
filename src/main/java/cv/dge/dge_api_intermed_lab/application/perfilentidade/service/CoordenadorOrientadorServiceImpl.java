@@ -55,7 +55,7 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
     @Transactional(readOnly = true)
     public PessoaGlobalResponse buscarPessoa(Integer entidadeId, String tipoDocumento, String numeroDocumento) {
         validarEntidade(entidadeId);
-        String numero = textoObrigatorio(numeroDocumento, "Informe o número do documento.");
+        String numero = texto(numeroDocumento);
         return coordenadorOrientadorRepository.buscarPessoaPorNumeroDocumento(numero)
                 .map(pessoa -> new PessoaGlobalResponse(
                         pessoa.id(),
@@ -75,9 +75,9 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
     @Transactional
     public CoordenadorOrientadorResponse criar(Integer entidadeId, CoordenadorOrientadorRequest request) {
         validarEntidade(entidadeId);
-        validarRequest(request);
-        String utilizador = utilizadorObrigatorio(request.utilizador());
-        String tipo = normalizarTipoObrigatorio(request.tipo());
+        validarRequestPresente(request);
+        String utilizador = texto(request.utilizador());
+        String tipo = normalizarTipoOpcional(request.tipo());
         CoordenadorOrientadorRequest dados = normalizarRequest(request, tipo);
         Integer id = coordenadorOrientadorRepository.inserir(
                 entidadeId,
@@ -98,9 +98,9 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
     ) {
         validarId(id);
         validarEntidade(entidadeId);
-        validarRequest(request);
-        String utilizador = utilizadorObrigatorio(request.utilizador());
-        String tipo = normalizarTipoObrigatorio(request.tipo());
+        validarRequestPresente(request);
+        String utilizador = texto(request.utilizador());
+        String tipo = normalizarTipoOpcional(request.tipo());
         buscarPorId(id, entidadeId);
 
         coordenadorOrientadorRepository.atualizar(
@@ -126,7 +126,7 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Não foi possível confirmar a eliminação do colaborador. Tente novamente.");
         }
-        String utilizador = utilizadorObrigatorio(request.utilizador());
+        String utilizador = texto(request.utilizador());
         buscarPorId(id, entidadeId);
         coordenadorOrientadorRepository.remover(id, entidadeId, utilizador, ESTADO_INATIVO);
         return buscarPorId(id, entidadeId);
@@ -179,16 +179,10 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
         );
     }
 
-    private void validarRequest(CoordenadorOrientadorRequest request) {
+    private void validarRequestPresente(CoordenadorOrientadorRequest request) {
         if (request == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Preencha os dados do colaborador antes de gravar.");
-        }
-        utilizadorObrigatorio(request.utilizador());
-        normalizarTipoObrigatorio(request.tipo());
-
-        if (!temTexto(request.nome())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe o nome do colaborador.");
         }
     }
 
@@ -217,28 +211,6 @@ public class CoordenadorOrientadorServiceImpl implements CoordenadorOrientadorSe
         if (entidadeId == null || entidadeId <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe uma entidade válida.");
         }
-    }
-
-    private String utilizadorObrigatorio(String utilizador) {
-        return textoObrigatorio(utilizador,
-                "Não foi possível identificar o utilizador. Inicie sessão novamente e repita a operação.");
-    }
-
-    private String textoObrigatorio(String valor, String mensagem) {
-        String texto = texto(valor);
-        if (texto == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, mensagem);
-        }
-        return texto;
-    }
-
-    private String normalizarTipoObrigatorio(String tipo) {
-        String normalizado = normalizarTipoOpcional(tipo);
-        if (normalizado == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Selecione se o colaborador é orientador ou coordenador.");
-        }
-        return normalizado;
     }
 
     private String normalizarTipoOpcional(String tipo) {
